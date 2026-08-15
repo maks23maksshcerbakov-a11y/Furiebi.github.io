@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Furiebi</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌚</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,12 +22,12 @@ body[data-theme="m"]{
   --shadow:0 14px 34px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:16.5px;line-height:1.55;overflow-x:hidden;min-height:100vh}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:16.5px;line-height:1.55;overflow-x:hidden;min-height:100vh;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 body,.themable,.themable *{transition:background-color .5s ease,border-color .5s ease,color .5s ease,box-shadow .5s ease}
 ::selection{background:var(--accent);color:#fff}
 img{display:block;max-width:100%}
-button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;-webkit-tap-highlight-color:transparent}
 .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
 body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:120;opacity:.05;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")}
@@ -36,7 +36,8 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:120;op
 body[data-theme="m"] .fl-f{display:none}
 body[data-theme="f"] .fl-m{display:none}
 @keyframes drift{from{transform:translateY(0) rotate(-8deg)}to{transform:translateY(-34px) rotate(10deg)}}
-.topbar{position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(10px);border-bottom:2px dashed var(--line)}
+
+.topbar{position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:2px dashed var(--line)}
 .topbar .wrap{display:flex;align-items:center;gap:14px;height:66px}
 .server-icon{width:42px;height:42px;border-radius:14px 14px 14px 4px;display:grid;place-items:center;font-size:22px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:var(--shadow);flex:none}
 .server-name{font-family:var(--font-d);font-size:20px;white-space:nowrap}
@@ -54,6 +55,20 @@ body[data-theme="f"] .fl-m{display:none}
 .track{width:54px;height:26px;border-radius:999px;background:var(--line);position:relative;flex:none}
 .knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--accent);transition:transform .45s cubic-bezier(.34,1.6,.64,1),background-color .5s}
 body[data-theme="m"] .knob{transform:translateX(28px)}
+
+.burger{display:none;width:44px;height:44px;border-radius:12px;background:var(--card);border:2px solid var(--line);place-items:center;flex:none;position:relative;z-index:101}
+.burger span{display:block;width:20px;height:2px;background:var(--ink);margin:4px auto;transition:all .3s;border-radius:2px}
+.burger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.burger.active span:nth-child(2){opacity:0}
+.burger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+.mobile-menu{position:fixed;top:0;right:-100%;width:min(320px,85vw);height:100vh;background:var(--bg);border-left:2px dashed var(--line);z-index:99;padding:80px 24px 24px;transition:right .4s ease;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.mobile-menu.open{right:0}
+.mobile-menu a{display:block;color:var(--ink);text-decoration:none;font-weight:800;font-size:18px;padding:16px 20px;border-radius:14px;border:2px solid var(--line);background:var(--card);transition:all .2s}
+.mobile-menu a:active{background:var(--soft);transform:scale(.97)}
+.mobile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:98;opacity:0;pointer-events:none;transition:opacity .3s}
+.mobile-overlay.open{opacity:1;pointer-events:auto}
+
 .hero{display:grid;grid-template-columns:1fr;gap:44px;align-items:center;padding:64px 0 46px;position:relative;z-index:1;max-width:720px}
 .hero-kick{font-size:12.5px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--accent)}
 .hero h1{font-family:var(--font-d);font-size:clamp(38px,6.4vw,72px);line-height:1.12;margin:14px 0 18px}
@@ -68,15 +83,18 @@ body[data-theme="m"] .knob{transform:translateX(28px)}
 .chipst{background:var(--card);border:2px dashed var(--line);border-radius:999px;padding:8px 15px;font-weight:900;font-size:13px;animation:pulseSoft 3s ease-in-out infinite}
 .chipst:nth-child(2){animation-delay:1s}.chipst:nth-child(3){animation-delay:2s}
 @keyframes pulseSoft{50%{transform:translateY(-4px)}}
+
 .ribbon{border-block:2px dashed var(--line);padding:11px 0;overflow:hidden;background:var(--card);position:relative;z-index:1}
 .mtrack{display:flex;gap:34px;width:max-content;animation:mq 26s linear infinite;font-family:var(--font-d);font-size:17px;color:var(--accent)}
 @keyframes mq{to{transform:translateX(-50%)}}
+
 section{position:relative;z-index:1;padding:58px 0}
 .sec-head{margin-bottom:32px}
 .sec-kick{font-size:12px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--accent2)}
 .sec-title{font-family:var(--font-d);font-size:clamp(30px,4.5vw,46px);margin-top:6px}
 .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
 .reveal.in{opacity:1;transform:none}
+
 .member{position:relative;background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:24px 20px 20px;text-align:center;box-shadow:var(--shadow);transition:transform .35s}
 .member:hover{transform:translateY(-6px) rotate(-1deg)}
 .member .sticker{position:absolute;top:-13px;right:14px;font-size:24px;transform:rotate(12deg)}
@@ -90,12 +108,14 @@ section{position:relative;z-index:1;padding:58px 0}
 .status.dnd i{background:#ff6b6b}
 .chip{display:inline-block;font-size:12.5px;font-weight:900;padding:5px 12px;border-radius:999px;background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--accent);margin-bottom:12px}
 .member q{display:block;font-size:13.5px;color:var(--muted);font-style:italic}
+
 .placeholder{background:var(--card);border:2px dashed var(--line);border-radius:var(--radius);padding:46px 24px;text-align:center;box-shadow:var(--shadow);transition:transform .35s}
 .placeholder:hover{transform:translateY(-4px)}
 .placeholder .ph-emo{font-size:44px;display:block;margin-bottom:14px}
 .placeholder h3{font-family:var(--font-d);font-size:22px;margin-bottom:8px}
 .placeholder p{color:var(--muted);font-weight:700;font-size:14.5px;max-width:520px;margin:0 auto}
 .placeholder-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+
 .poll-empty{background:var(--card);border:2px dashed var(--line);border-radius:var(--radius);padding:40px 24px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .poll-empty::before{content:"";position:absolute;inset:0;opacity:.05;background:radial-gradient(circle at 20% 30%,var(--accent),transparent 50%),radial-gradient(circle at 80% 70%,var(--accent2),transparent 50%);pointer-events:none}
 .poll-empty .pe-emo{font-size:56px;display:block;margin-bottom:14px;animation:float 3s ease-in-out infinite}
@@ -103,6 +123,7 @@ section{position:relative;z-index:1;padding:58px 0}
 .poll-empty h3{font-family:var(--font-d);font-size:24px;margin-bottom:10px;color:var(--ink)}
 .poll-empty p{color:var(--muted);font-weight:700;font-size:14.5px;max-width:420px;margin:0 auto;line-height:1.6}
 .poll-empty .pe-hint{display:inline-block;margin-top:16px;padding:6px 14px;border-radius:999px;background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent);font-size:12px;font-weight:900;letter-spacing:.5px}
+
 .note{position:relative;width:235px;background:var(--card);border:2px dashed var(--line);border-radius:6px;padding:26px 18px 20px;box-shadow:var(--shadow);transition:transform .35s}
 .note::before{content:"";position:absolute;top:-11px;left:50%;transform:translateX(-50%) rotate(-3deg);width:74px;height:22px;background:color-mix(in srgb,var(--accent) 35%,transparent);border-radius:3px}
 .notes{display:flex;flex-wrap:wrap;gap:24px;justify-content:center}
@@ -114,6 +135,7 @@ section{position:relative;z-index:1;padding:58px 0}
 .note h4{font-family:var(--font-d);font-size:19px;margin:7px 0}
 .note p{font-size:13.5px;color:var(--muted)}
 .note .emo{position:absolute;bottom:10px;right:12px;font-size:22px}
+
 .wall{display:flex;flex-wrap:wrap;gap:26px;justify-content:center;padding:14px 0}
 .pnote{width:225px;background:color-mix(in srgb,var(--accent) 18%,var(--card));border-radius:12px;padding:20px 16px 16px;font-size:14px;font-weight:700;box-shadow:var(--shadow);transition:transform .4s cubic-bezier(.34,1.4,.64,1);position:relative}
 .pnote small{display:block;margin-top:12px;color:var(--muted);font-weight:900;font-size:11.5px;letter-spacing:1px;text-transform:uppercase}
@@ -125,31 +147,37 @@ section{position:relative;z-index:1;padding:58px 0}
 .pnote:nth-child(5){transform:rotate(-3deg)}
 .pnote:nth-child(6){transform:rotate(2deg) translateY(18px)}
 .pnote:hover{transform:rotate(0) scale(1.07);z-index:2}
+
 .gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;align-items:start}
 .gitem{position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:3/2;border:2px solid var(--line);box-shadow:var(--shadow);background:rgba(0,0,0,.35);cursor:zoom-in;transition:transform .3s}
 .gitem:hover{transform:scale(1.03)}
 .gitem img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform-origin:center}
 .gitem figcaption{position:absolute;inset:auto 0 0;padding:34px 14px 12px;font-weight:900;font-size:14px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.55));pointer-events:none;z-index:2}
+
 .gal-strip{position:relative;overflow:hidden;width:100%;border-radius:var(--radius);padding:6px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%)}
 .gal-strip-track{display:flex;gap:18px;width:max-content;align-items:center;animation:galScroll 40s linear infinite}
 .gal-strip:hover .gal-strip-track{animation-play-state:paused}
 .gal-strip .gitem{flex:0 0 auto;margin:0}
 @keyframes galScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-#photoModal{background:rgba(0,0,0,.92);backdrop-filter:blur(18px)}
+
+#photoModal{background:rgba(0,0,0,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 #photoModal .modal-box{background:transparent;border:none;padding:0;max-width:92vw;max-height:92vh;display:flex;align-items:center;justify-content:center;position:relative;animation:photoZoomIn .4s cubic-bezier(.2,.9,.3,1.2)}
 @keyframes photoZoomIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
 #photoModal img{max-width:90vw;max-height:85vh;object-fit:contain;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.7);background:rgba(0,0,0,.5)}
 #photoModal .photo-cap{position:absolute;bottom:-44px;left:50%;transform:translateX(-50%);color:#fff;font-weight:800;font-size:14px;text-align:center;max-width:80vw;opacity:.85}
 #photoModal .photo-close{position:fixed;top:20px;right:24px;background:rgba(255,255,255,.15);color:#fff;width:46px;height:46px;border-radius:50%;font-size:22px;border:2px solid rgba(255,255,255,.2);z-index:10;backdrop-filter:blur(10px)}
 #photoModal .photo-close:hover{background:rgba(255,255,255,.3)}
+
 .admin-list-item .thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none;background:var(--soft);border:1px solid var(--line);margin-right:8px}
 .admin-list-item .thumb-wrap{display:flex;align-items:center;flex:1;min-width:0}
 .admin-list-item .thumb-wrap span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 .play{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
 .panel{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
 .panel h3{font-family:var(--font-d);font-size:21px;margin-bottom:12px;text-align:center}
 .panel .pdesc{color:var(--muted);font-weight:700;font-size:14px;text-align:center}
 .panel .pemo{font-size:56px;text-align:center;display:block;margin-bottom:14px}
+
 .poll{max-width:620px;margin:0 auto;background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
 .opt{position:relative;display:block;width:100%;text-align:left;border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;font-weight:800;font-size:15px;overflow:hidden;background:var(--bg2)}
 .opt .fill{position:absolute;inset:0;width:0;background:color-mix(in srgb,var(--accent) 20%,transparent);transition:width .9s cubic-bezier(.2,.8,.2,1)}
@@ -157,6 +185,7 @@ section{position:relative;z-index:1;padding:58px 0}
 .opt .pct{float:right;color:var(--accent);font-weight:900}
 .opt.mine{border-color:var(--accent)}
 .poll-foot{text-align:center;color:var(--muted);font-size:13px;font-weight:800;margin-top:16px}
+
 footer{border-top:2px dashed var(--line);padding:60px 0 40px;text-align:center;position:relative;z-index:1}
 footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-width:660px;margin:0 auto 26px}
 .love{display:inline-flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:28px;position:relative}
@@ -168,11 +197,13 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .foot-small{margin-top:26px;font-size:12.5px;color:var(--muted);font-weight:700}
 .admin-link{margin-top:16px;font-size:11px;color:var(--muted);opacity:.5;cursor:pointer}
 .admin-link:hover{opacity:1;color:var(--accent)}
+
 #wipe{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;clip-path:circle(0px at 50% 50%)}
-#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 24px;border-radius:999px;font-weight:900;font-size:14px;opacity:0;pointer-events:none;transition:all .35s;z-index:300}
+#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 24px;border-radius:999px;font-weight:900;font-size:14px;opacity:0;pointer-events:none;transition:all .35s;z-index:300;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 .trail{position:fixed;z-index:150;pointer-events:none;font-size:16px;animation:trailUp .8s ease-out forwards}
 @keyframes trailUp{to{transform:translateY(-46px) scale(.4);opacity:0}}
+
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
 .modal.open{display:flex}
 .modal-box{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:28px;max-width:720px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow)}
@@ -197,6 +228,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .setup-note{background:color-mix(in srgb,#37e6ff 15%,transparent);padding:12px 16px;border-radius:10px;font-size:13px;font-weight:700;color:#37e6ff;margin-bottom:14px;line-height:1.5}
 .debug-box{background:var(--bg2);border:2px solid var(--line);border-radius:10px;padding:12px;margin-top:12px;font-family:monospace;font-size:11px;max-height:200px;overflow-y:auto;color:var(--muted);white-space:pre-wrap}
 .debug-box .ok{color:#3ecf7a}.debug-box .err{color:#ff6b6b}.debug-box .warn{color:#ffcc00}
+
 .upload-block{border:2px dashed var(--line);border-radius:14px;padding:18px;background:var(--bg2);margin-bottom:14px;text-align:center;position:relative}
 .upload-block .up-preview{width:140px;height:140px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,var(--accent),var(--accent2));background-size:contain;background-position:center;background-repeat:no-repeat;display:grid;place-items:center;color:#fff;font-weight:900;font-size:44px;box-shadow:var(--shadow);overflow:hidden;cursor:grab;position:relative}
 .upload-block .up-preview:active{cursor:grabbing}
@@ -209,18 +241,21 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .upload-block input[type=file]{display:none}
 .upload-block .up-loading{position:absolute;inset:0;background:rgba(0,0,0,.6);border-radius:14px;display:none;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;z-index:2}
 .upload-block .up-loading.show{display:flex}
+
 .rotate-info{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:2px solid var(--line);padding:6px 14px;border-radius:999px;font-size:12px;font-weight:800;color:var(--muted);margin:8px 6px}
 .rotate-info b{color:var(--accent)}
 .crop-controls{display:flex;gap:6px;justify-content:center;margin-bottom:10px;align-items:center;flex-wrap:wrap}
 .crop-controls .btn{padding:5px 10px;font-size:12px}
 .crop-controls .zoom-info{font-size:11px;color:var(--muted);font-weight:800;font-family:monospace;min-width:60px;text-align:center}
 .crop-hint{font-size:11px;color:var(--muted);font-weight:700;background:color-mix(in srgb,var(--accent) 10%,transparent);padding:6px 10px;border-radius:8px;margin-top:6px;line-height:1.5}
+
 .import-header{display:flex;gap:10px;align-items:center;margin-bottom:12px;padding:14px;background:var(--bg2);border:2px solid var(--line);border-radius:12px;flex-wrap:wrap}
 .import-header input{flex:1;font-family:monospace;letter-spacing:.5px;min-width:200px}
 .import-header .btn{padding:8px 16px;font-size:13px}
 .import-info{font-size:12.5px;color:var(--muted);font-weight:700;padding:10px 14px;background:color-mix(in srgb,var(--accent) 8%,transparent);border-left:3px solid var(--accent);border-radius:4px;margin-bottom:14px;line-height:1.6}
 .import-info b{color:var(--accent)}
 .import-info code{background:var(--soft);padding:2px 6px;border-radius:4px;font-size:11.5px;color:var(--accent)}
+
 .member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;max-height:420px;overflow-y:auto;padding:6px}
 .mem-card{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s,transform .2s}
 .mem-card:hover{border-color:var(--accent);transform:translateY(-2px)}
@@ -244,11 +279,185 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .mem-filter input{flex:1;min-width:140px;padding:8px 12px;font-size:13px;border:2px solid var(--line);background:var(--bg2);color:var(--ink);border-radius:8px}
 .mem-filter .cnt{font-size:12px;color:var(--muted);font-weight:800}
 .imgbb-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:900;background:color-mix(in srgb,#6fdab8 20%,transparent);color:#6fdab8;margin-left:6px}
-@media (max-width:860px){.hero{padding-top:40px}.nav{display:none}}
-@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}.gal-strip-track{animation:none}}
+
+@media (max-width:860px){
+  .nav{display:none}
+  .burger{display:grid}
+  .hero{padding-top:40px;padding-bottom:30px;gap:30px}
+  .hero h1{font-size:clamp(32px,8vw,52px)}
+  .hero p.lead{font-size:16px}
+  .switch{padding:6px 10px;font-size:12px;gap:6px}
+  .switch .lbl{font-size:11px}
+  .track{width:44px;height:22px}
+  .knob{width:16px;height:16px}
+  body[data-theme="m"] .knob{transform:translateX(24px)}
+  section{padding:42px 0}
+  .sec-head{margin-bottom:24px}
+  .sec-title{font-size:clamp(26px,6vw,38px)}
+}
+
+@media (max-width:560px){
+  .wrap{padding:0 14px}
+  .topbar .wrap{height:60px;gap:10px}
+  .server-icon{width:38px;height:38px;font-size:20px}
+  .server-name{font-size:17px}
+  .hero{padding-top:30px;padding-bottom:20px;gap:22px}
+  .hero-kick{font-size:11px;letter-spacing:2px}
+  .hero h1{font-size:clamp(28px,9vw,44px);margin:10px 0 14px}
+  .hero p.lead{font-size:15px}
+  .hero-btns{gap:10px;margin-top:20px}
+  .hero-btns .btn{padding:12px 22px;font-size:14px;width:100%;text-align:center}
+  .chips{gap:8px;margin-top:22px;justify-content:center}
+  .chipst{font-size:11.5px;padding:6px 12px}
+  
+  .placeholder-grid{grid-template-columns:1fr;gap:16px}
+  .play{grid-template-columns:1fr;gap:16px}
+  .gal{grid-template-columns:1fr 1fr;gap:12px}
+  
+  .member{padding:20px 16px 16px}
+  .member h3{font-size:20px}
+  .mav{width:76px;height:76px;font-size:26px}
+  
+  .notes{gap:16px}
+  .note{width:100%;max-width:300px}
+  .note:nth-child(odd){transform:rotate(-1deg)}
+  .note:nth-child(even){transform:rotate(1deg) translateY(6px)}
+  .note:nth-child(3n){transform:rotate(-0.5deg) translateY(-4px)}
+  
+  .wall{gap:16px}
+  .pnote{width:calc(50% - 8px);min-width:140px}
+  .pnote:nth-child(1){transform:rotate(-2deg)}
+  .pnote:nth-child(2){transform:rotate(2deg) translateY(8px)}
+  .pnote:nth-child(3){transform:rotate(-1deg) translateY(-4px)}
+  .pnote:nth-child(4){transform:rotate(1deg) translateY(6px)}
+  .pnote:nth-child(5){transform:rotate(-1.5deg)}
+  .pnote:nth-child(6){transform:rotate(1.5deg) translateY(10px)}
+  
+  .panel{padding:18px}
+  .panel h3{font-size:19px}
+  .panel .pemo{font-size:48px;margin-bottom:10px}
+  
+  .poll{padding:20px}
+  .opt{padding:12px 14px;font-size:14px}
+  
+  footer{padding:44px 0 30px}
+  footer .thanks{font-size:clamp(22px,6vw,32px);margin-bottom:20px}
+  .foot-small{font-size:11.5px;margin-top:20px}
+  .heartbtn{width:66px;height:66px;font-size:30px}
+  
+  .modal-box{padding:22px;border-radius:18px;max-height:94vh}
+  .modal-box h2{font-size:22px;margin-bottom:14px}
+  
+  .admin-tabs{gap:3px}
+  .admin-tabs button{padding:7px 11px;font-size:12px}
+  
+  .admin-list-item{padding:10px;font-size:12.5px;flex-wrap:wrap;gap:8px}
+  .admin-list-item .thumb-wrap{flex:1 1 100%;margin-bottom:4px}
+  .admin-list-item .acts{flex:1 1 100%;justify-content:flex-end}
+  
+  .upload-block{padding:14px}
+  .upload-block .up-preview{width:120px;height:120px;font-size:36px}
+  .upload-block .up-preview.gal{max-width:280px}
+  
+  .member-grid{grid-template-columns:1fr;max-height:none}
+  .mem-card{padding:12px}
+  .mem-actions{flex-direction:row}
+  .mem-actions .btn{flex:1}
+  
+  .import-header{padding:12px;gap:8px}
+  .import-header input{min-width:0;font-size:13px}
+  .import-header .btn{padding:8px 12px;font-size:12px;width:100%}
+  
+  .btn{padding:12px 22px;font-size:14.5px}
+  .btns{gap:8px}
+  .btns .btn{flex:1;min-width:0;text-align:center}
+  
+  .modal{padding:10px}
+  
+  #toast{font-size:13px;padding:10px 18px;bottom:20px;max-width:calc(100vw - 30px)}
+  
+  .mtrack{gap:24px;font-size:15px}
+  .ribbon{padding:8px 0}
+  
+  .form-row input,.form-row textarea{font-size:16px !important;padding:12px 14px}
+}
+
+@media (max-width:380px){
+  .wrap{padding:0 10px}
+  body{font-size:15.5px}
+  .topbar .wrap{height:56px;gap:8px}
+  .server-icon{width:34px;height:34px;font-size:18px;border-radius:10px 10px 10px 3px}
+  .server-name{font-size:15px}
+  .burger{width:40px;height:40px}
+  .burger span{width:18px}
+  
+  .switch{padding:5px 8px;gap:4px;font-size:11px}
+  .switch .lbl{font-size:10px}
+  .track{width:38px;height:20px}
+  .knob{width:14px;height:14px;top:3px;left:3px}
+  body[data-theme="m"] .knob{transform:translateX(20px)}
+  
+  .hero h1{font-size:clamp(26px,10vw,36px);margin:8px 0 12px}
+  .hero p.lead{font-size:14px}
+  .chipst{font-size:10.5px;padding:5px 10px}
+  
+  .sec-title{font-size:clamp(22px,7vw,30px)}
+  .sec-kick{font-size:10px;letter-spacing:2px}
+  
+  .member h3{font-size:18px}
+  .member q{font-size:12.5px}
+  .mav{width:70px;height:70px;font-size:24px}
+  
+  .pnote{width:100%;max-width:none}
+  .pnote:nth-child(n){transform:none}
+  
+  .note{width:100%;max-width:none}
+  .note:nth-child(n){transform:none}
+  
+  .gal{grid-template-columns:1fr}
+  
+  .upload-block .up-preview{width:100px;height:100px;font-size:30px}
+  .upload-block .up-preview.gal{max-width:100%}
+  
+  .admin-tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;margin-bottom:14px;-webkit-overflow-scrolling:touch}
+  .admin-tabs button{flex-shrink:0;white-space:nowrap}
+  
+  .mobile-menu{width:90vw}
+  
+  footer .thanks{font-size:22px}
+}
+
+@media (min-width:1400px){
+  .wrap{max-width:1280px}
+}
+
+@media (hover:none){
+  .member:hover{transform:none}
+  .gitem:hover{transform:none}
+  .note:hover{transform:rotate(0) scale(1.02)}
+  .pnote:hover{transform:rotate(0) scale(1.03)}
+  .nav a:hover{background:none}
+  .btn:hover{transform:none}
+  .admin-link:hover{opacity:.5}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  .gal-strip-track{animation:none}
+}
+
+/* Пейзажная ориентация на мобильных */
+@media (max-height:500px) and (orientation:landscape){
+  .hero{padding-top:20px;padding-bottom:10px}
+  .hero h1{font-size:clamp(24px,5vw,36px);margin:8px 0 10px}
+  section{padding:30px 0}
+  .modal-box{max-height:98vh}
+}
 </style>
 </head>
 <body data-theme="f">
+
 <div class="floaters" aria-hidden="true">
   <span class="fl-f" style="left:6%;top:18%">🌸</span><span class="fl-f" style="left:88%;top:12%;animation-delay:-3s">✨</span>
   <span class="fl-f" style="left:14%;top:70%;animation-delay:-6s">💗</span><span class="fl-f" style="left:80%;top:64%;animation-delay:-2s">🎀</span>
@@ -257,8 +466,19 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
   <span class="fl-m" style="left:14%;top:70%;animation-delay:-6s">🎮</span><span class="fl-m" style="left:80%;top:64%;animation-delay:-2s">🛡️</span>
   <span class="fl-m" style="left:48%;top:38%;animation-delay:-8s">🚀</span><span class="fl-m" style="left:68%;top:86%;animation-delay:-4s">🏴</span>
 </div>
+
+<div class="mobile-overlay" id="mobileOverlay"></div>
+<nav class="mobile-menu" id="mobileMenu">
+  <a href="#team" data-close>команда</a>
+  <a href="#play" data-close>игровая</a>
+  <a href="#events" data-close>ивенты</a>
+  <a href="#wall" data-close>стена</a>
+  <a href="#gallery" data-close>моменты</a>
+</nav>
+
 <div id="wipe"></div>
 <div id="toast"></div>
+
 <header class="topbar themable">
   <div class="wrap">
     <div class="server-icon"><span id="logoEmoji">🌸</span></div>
@@ -266,6 +486,9 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     <nav class="nav">
       <a href="#team">команда</a><a href="#play">игровая</a><a href="#events">ивенты</a><a href="#wall">стена</a><a href="#gallery">моменты</a>
     </nav>
+    <button class="burger" id="burgerBtn" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
     <span class="sync-dot" id="syncDot" title="Статус синхронизации"></span>
     <button class="switch" id="themeBtn" aria-label="Переключить тему">
       <span class="lbl on" id="lblF">🌸 девичий</span>
@@ -274,6 +497,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     </button>
   </div>
 </header>
+
 <div class="wrap">
   <div class="hero">
     <div>
@@ -292,7 +516,9 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     </div>
   </div>
 </div>
+
 <div class="ribbon themable" aria-hidden="true"><div class="mtrack" id="marquee"></div></div>
+
 <section id="team">
   <div class="wrap">
     <div class="sec-head reveal">
@@ -302,6 +528,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     <div class="placeholder-grid" id="teamGrid"></div>
   </div>
 </section>
+
 <section id="play">
   <div class="wrap">
     <div class="sec-head reveal">
@@ -311,6 +538,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     <div class="play" id="playGrid"></div>
   </div>
 </section>
+
 <section id="events">
   <div class="wrap">
     <div class="sec-head reveal">
@@ -320,6 +548,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     <div class="notes" id="eventsGrid"></div>
   </div>
 </section>
+
 <section id="wall">
   <div class="wrap">
     <div class="sec-head reveal">
@@ -329,6 +558,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     <div class="wall" id="wallGrid"></div>
   </div>
 </section>
+
 <section id="vote">
   <div class="wrap">
     <div class="sec-head reveal" style="text-align:center">
@@ -338,6 +568,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     <div class="poll themable reveal" id="poll"></div>
   </div>
 </section>
+
 <section id="gallery">
   <div class="wrap">
     <div class="sec-head reveal">
@@ -347,6 +578,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     <div id="galGrid"></div>
   </div>
 </section>
+
 <footer class="themable">
   <div class="wrap">
     <p class="thanks" data-f="сделано с 💗 для самых лучших девчонок этого сервера" data-m="сделано с 🫡 для лучших бойцов этого сервера">сделано с 💗 для самых лучших девчонок этого сервера</p>
@@ -359,6 +591,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     <div class="admin-link" id="adminLink">⚙ админ</div>
   </div>
 </footer>
+
 <div class="modal" id="loginModal">
   <div class="modal-box">
     <h2>🔐 Вход админа</h2>
@@ -370,6 +603,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     </div>
   </div>
 </div>
+
 <div class="modal" id="adminModal">
   <div class="modal-box">
     <h2>⚙ Админ-панель</h2>
@@ -392,6 +626,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     </div>
   </div>
 </div>
+
 <div class="modal" id="photoModal">
   <div class="modal-box" onclick="if(event.target===this)closePhotoModal()">
     <button class="photo-close" onclick="closePhotoModal()" aria-label="Закрыть">✕</button>
@@ -399,14 +634,51 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     <div class="photo-cap" id="photoModalCap"></div>
   </div>
 </div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 "use strict";
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isMobile=matchMedia('(max-width:860px)').matches;
 let theme=localStorage.getItem('theme')||'f';
 document.body.dataset.theme=theme;
+
+const burgerBtn=$('#burgerBtn');
+const mobileMenu=$('#mobileMenu');
+const mobileOverlay=$('#mobileOverlay');
+
+function toggleMobileMenu(){
+  const isOpen=mobileMenu.classList.contains('open');
+  mobileMenu.classList.toggle('open');
+  mobileOverlay.classList.toggle('open');
+  burgerBtn.classList.toggle('active');
+  document.body.style.overflow=isOpen?'':'hidden';
+}
+
+function closeMobileMenu(){
+  mobileMenu.classList.remove('open');
+  mobileOverlay.classList.remove('open');
+  burgerBtn.classList.remove('active');
+  document.body.style.overflow='';
+}
+
+if(burgerBtn){
+  burgerBtn.addEventListener('click',toggleMobileMenu);
+}
+if(mobileOverlay){
+  mobileOverlay.addEventListener('click',closeMobileMenu);
+}
+$$('.mobile-menu a[data-close]').forEach(a=>{
+  a.addEventListener('click',()=>{
+    closeMobileMenu();
+  });
+});
+window.addEventListener('resize',()=>{
+  if(window.innerWidth>860) closeMobileMenu();
+});
+
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyB1nhmTV5XgdvgPJxG6xYJ_GeEkohMaykA",
   authDomain: "furiebi-ac7b6.firebaseapp.com",
@@ -415,6 +687,7 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "144716304483",
   appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
+
 const IMGBB_API_KEY = '537bc949008c85e49d38ae20d320f268';
 const STORAGE_KEY='siteData_v18';
 const ADMIN_USER='DEAD';
@@ -423,10 +696,12 @@ const MAX_GAL=25;
 const STRIP_H=240;
 const MAX_DOC_SIZE = 900 * 1024;
 const SAVE_COOLDOWN = 20000;
+
 const EMPTY_POLL_MSG = {
   f: { emo:'🌙', title:'Опрос пока не создан', text:'Админ ещё не придумал, что будем решать вместе. Открой админку → вкладка Опрос → добавь первый вариант ✨', hint:'✨ настрой опрос в админке' },
   m: { emo:'🎯', title:'Задач пока нет', text:'Штаб ещё не определил операцию. Открой админку → вкладка Опрос → добавь первый вариант ⚡', hint:'⚡ настрой опрос в админке' }
 };
+
 const DEFAULT_DATA={
   serverId:'',
   f:{
@@ -442,6 +717,7 @@ const DEFAULT_DATA={
     wall:[], gal:[], poll:[]
   }
 };
+
 let siteData;
 let db=null;
 let useFirebase=false;
@@ -455,17 +731,20 @@ let _savingUntil=0;
 let importedMembers=[];
 let importFilter='';
 let currentAvatarTransform={x:0,y:0,scale:1};
+
 function newId(){
   try{ return crypto.randomUUID(); }catch(e){
     return 'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,10);
   }
 }
+
 window.addEventListener('error', e=>{
   try{ dlog('JS error: '+e.message,'err'); }catch(_){}
 });
 window.addEventListener('unhandledrejection', e=>{
   try{ dlog('Promise error: '+(e.reason?.message||e.reason),'err'); }catch(_){}
 });
+
 function dlog(msg,type='info'){
   try{
     const time=new Date().toLocaleTimeString();
@@ -474,6 +753,7 @@ function dlog(msg,type='info'){
     console.log(`[${type}] ${time}: ${msg}`);
   }catch(e){}
 }
+
 function probe(url,cb){
   try{
     if(!url){ cb(4,3); return; }
@@ -486,6 +766,7 @@ function probe(url,cb){
     if(im.complete&&im.naturalWidth)fire(im.naturalWidth,im.naturalHeight);
   }catch(e){ cb(4,3); }
 }
+
 function initFirebase(){
   try{
     if(typeof firebase==='undefined'){ dlog('Firebase SDK не загружен','err'); useFirebase=false; return; }
@@ -510,6 +791,7 @@ function initFirebase(){
     updateSyncDot('off');
   }
 }
+
 function setupSnapshotListener(){
   if(!useFirebase || !db) return;
   if(unsubData){ try{ unsubData(); }catch(e){} }
@@ -545,6 +827,7 @@ function setupSnapshotListener(){
     updateSyncDot('error');
   });
 }
+
 function updateSyncDot(state){
   try{
     const dot=$('#syncDot');
@@ -556,6 +839,7 @@ function updateSyncDot(state){
     else if(state==='error'){ dot.classList.add('off'); dot.title='Ошибка'; }
   }catch(e){}
 }
+
 function dedupe(arr,keyFn){
   if(!Array.isArray(arr))return [];
   const seen=new Set(), out=[];
@@ -568,6 +852,7 @@ function dedupe(arr,keyFn){
   }
   return out;
 }
+
 function dedupeAll(){
   try{
     if(!siteData)return;
@@ -581,6 +866,7 @@ function dedupeAll(){
     });
   }catch(e){ dlog('dedupeAll error: '+e.message,'err'); }
 }
+
 async function loadData(){
   initFirebase();
   const localRaw = localStorage.getItem(STORAGE_KEY);
@@ -629,6 +915,7 @@ async function loadData(){
     loadLocal();
   }
 }
+
 function dataEqual(a,b){
   try{
     if(!a||!b) return false;
@@ -645,6 +932,7 @@ function dataEqual(a,b){
     return true;
   }catch(e){ return false; }
 }
+
 function migrateData(){
   try{
     ['f','m'].forEach(t=>{
@@ -666,6 +954,7 @@ function migrateData(){
     });
   }catch(e){ dlog('migrate error: '+e.message,'err'); }
 }
+
 function loadLocal(){
   try{
     const raw=localStorage.getItem(STORAGE_KEY);
@@ -679,6 +968,7 @@ function loadLocal(){
   migrateData();
   dedupeAll();
 }
+
 async function saveData(){
   if(isSaving){ dlog('Сохранение уже идёт — пропускаю','warn'); return; }
   isSaving = true;
@@ -732,6 +1022,7 @@ async function saveData(){
     isSaving = false;
   }
 }
+
 function compressImage(file, maxWidth=600, quality=0.6){
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
@@ -758,6 +1049,7 @@ function compressImage(file, maxWidth=600, quality=0.6){
     reader.readAsDataURL(file);
   });
 }
+
 async function uploadToImgBB(dataUrl){
   if(!useImgBB){
     throw new Error('ImgBB API ключ не настроен. Вставьте ключ в код (константа IMGBB_API_KEY)');
@@ -786,6 +1078,7 @@ async function uploadToImgBB(dataUrl){
     throw e;
   }
 }
+
 async function compressAndUpload(file, maxWidth, quality){
   const compressed = await compressImage(file, maxWidth, quality);
   const sizeKB = Math.round((compressed.length * 0.75) / 1024);
@@ -804,6 +1097,7 @@ async function compressAndUpload(file, maxWidth, quality){
     return {url: compressed, sizeKB, inCloud: false};
   }
 }
+
 window.migratePhotosToImgBB=async function(){
   try{
     if(!useImgBB){
@@ -852,10 +1146,12 @@ window.migratePhotosToImgBB=async function(){
     toast('Ошибка миграции: '+e.message);
   }
 };
+
 function cur(){
   try{ return siteData[theme] || siteData.f || DEFAULT_DATA.f; }
   catch(e){ return DEFAULT_DATA.f; }
 }
+
 function renderAll(){
   if(isRendering)return;
   isRendering=true;
@@ -863,6 +1159,7 @@ function renderAll(){
   catch(e){ dlog('renderAll error: '+e.message,'err'); }
   finally{ isRendering=false; }
 }
+
 function renderTeam(){
   try{
     const box=$('#teamGrid'); if(!box)return; box.innerHTML='';
@@ -881,6 +1178,7 @@ function renderTeam(){
     });
   }catch(e){ dlog('renderTeam error: '+e.message,'err'); }
 }
+
 function renderPlay(){
   try{
     const box=$('#playGrid'); if(!box)return; box.innerHTML='';
@@ -894,6 +1192,7 @@ function renderPlay(){
     });
   }catch(e){ dlog('renderPlay error: '+e.message,'err'); }
 }
+
 function renderEvents(){
   try{
     const box=$('#eventsGrid'); if(!box)return; box.innerHTML='';
@@ -907,6 +1206,7 @@ function renderEvents(){
     });
   }catch(e){ dlog('renderEvents error: '+e.message,'err'); }
 }
+
 function renderWall(){
   try{
     const box=$('#wallGrid'); if(!box)return; box.innerHTML='';
@@ -921,6 +1221,7 @@ function renderWall(){
     });
   }catch(e){ dlog('renderWall error: '+e.message,'err'); }
 }
+
 function openPhotoModal(url,caption,rotate){
   try{
     const img=$('#photoModalImg');
@@ -934,6 +1235,7 @@ function openPhotoModal(url,caption,rotate){
 }
 function closePhotoModal(){ try{ closeModal('photoModal'); }catch(e){} }
 window.closePhotoModal=closePhotoModal;
+
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
     try{
@@ -942,6 +1244,7 @@ document.addEventListener('keydown', e=>{
     }catch(_){}
   }
 });
+
 function buildGalItem(it, mode){
   const fig=document.createElement('figure');
   fig.className='gitem themable reveal';
@@ -990,12 +1293,13 @@ function buildGalItem(it, mode){
   fig.addEventListener('click', ()=>{ if(it.url) openPhotoModal(it.url, it.caption, rotate); });
   return fig;
 }
+
 function renderGal(){
   try{
     const box=$('#galGrid'); if(!box)return; box.innerHTML='';
     const items=cur().gal || [];
     if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📸</span><h3>Альбом пока пуст</h3><p>админ добавит фото через админ-панель (максимум ${MAX_GAL} фото)</p></div>`; return; }
-    if(items.length>5){
+    if(items.length>5 && !isMobile){
       const strip=document.createElement('div');
       strip.className='gal-strip';
       const track=document.createElement('div');
@@ -1012,8 +1316,11 @@ function renderGal(){
     observeReveal();
   }catch(e){ dlog('renderGal error: '+e.message,'err'); }
 }
+
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
 const MARQ={f:['нежность','дружба','мемы','караоке','какао','обнимашки','плейлисты','уют'],m:['братва','честь','мемы','катки','кофе','респект','плейлисты','строй']};
+
 function scrambleTo(el,txt){
   if(reduced){el.textContent=txt;return;}
   const chars='✦*#%&!?@'; let i=0; clearInterval(el._si);
@@ -1036,6 +1343,7 @@ function swapTexts(t,animate){
     $('#heartBtn').textContent=t==='f'?'💖':'🫡';
   }catch(e){ dlog('swapTexts error: '+e.message,'err'); }
 }
+
 function applyTheme(t,origin){
   const commit=()=>{
     try{
@@ -1043,7 +1351,7 @@ function applyTheme(t,origin){
       swapTexts(t,true); renderMarquee(t); renderPoll(); renderAll();
     }catch(e){ dlog('commit error: '+e.message,'err'); }
   };
-  if(reduced||!origin){commit();return;}
+  if(reduced||!origin||isMobile){commit();return;}
   try{
     const w=$('#wipe');
     w.style.background=t==='f'?'#1a0f18':'#0d1220';
@@ -1060,11 +1368,14 @@ $('#themeBtn').addEventListener('click',e=>{
     applyTheme(theme==='f'?'m':'f',{x:b.left+b.width/2,y:b.top+b.height/2});
   }catch(err){ dlog('themeBtn error: '+err.message,'err'); }
 });
+
 function renderMarquee(t){
   try{ $('#marquee').innerHTML=MARQ[t].map(w=>`<span>${w} ✦</span>`).join('').repeat(2); }catch(e){}
 }
+
 function pollKey(){return 'poll_'+theme;}
 function getPoll(){ try{return JSON.parse(localStorage.getItem(pollKey()))||{c:[],v:null};}catch(e){return{c:[],v:null};} }
+
 function renderPoll(){
   try{
     const curData = cur();
@@ -1102,6 +1413,7 @@ function renderPoll(){
     observeReveal();
   }catch(e){ dlog('renderPoll error: '+e.message,'err'); }
 }
+
 let hearts=parseInt(localStorage.getItem('hearts')||'0',10);
 $('#heartCnt').textContent=hearts;
 $('#heartBtn').addEventListener('click',()=>{
@@ -1117,6 +1429,7 @@ $('#heartBtn').addEventListener('click',()=>{
     }
   }catch(e){}
 });
+
 let toastT;
 function toast(msg){
   try{
@@ -1125,9 +1438,10 @@ function toast(msg){
     clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),3000);
   }catch(e){}
 }
+
 let lastTrail=0;
 addEventListener('pointermove',e=>{
-  if(reduced||e.pointerType==='touch')return;
+  if(reduced||e.pointerType==='touch'||isMobile)return;
   const now=performance.now(); if(now-lastTrail<80)return; lastTrail=now;
   try{
     const s=document.createElement('span'); s.className='trail';
@@ -1137,6 +1451,7 @@ addEventListener('pointermove',e=>{
     document.body.appendChild(s); setTimeout(()=>s.remove(),820);
   }catch(e){}
 });
+
 let io;
 function observeReveal(){
   try{
@@ -1145,8 +1460,10 @@ function observeReveal(){
     $$('.reveal').forEach(el=>io.observe(el));
   }catch(e){}
 }
+
 let isAdmin=false;
 let currentTab='import';
+
 function openModal(id){ try{ const m=$('#'+id); if(m)m.classList.add('open'); }catch(e){} }
 function closeModal(id){ try{ const m=$('#'+id); if(m)m.classList.remove('open'); }catch(e){} }
 function safeCloseModal(id){ try{ closeModal(id); }catch(e){} }
@@ -1154,6 +1471,7 @@ function safeLogout(){ try{ logout(); }catch(e){} }
 window.closeModal=closeModal;
 window.safeCloseModal=safeCloseModal;
 window.safeLogout=safeLogout;
+
 document.addEventListener('click', e=>{
   try{
     if(e.target && e.target.id === 'adminLink'){
@@ -1163,6 +1481,7 @@ document.addEventListener('click', e=>{
     }
   }catch(err){ try{ toast('Ошибка: '+err.message); }catch(_){} }
 });
+
 $('#loginOk').addEventListener('click',()=>{ try{ tryLogin(); }catch(e){} });
 $('#loginPass').addEventListener('keydown',e=>{ if(e.key==='Enter'){ try{ tryLogin(); }catch(_){} } });
 function tryLogin(){
@@ -1172,8 +1491,10 @@ function tryLogin(){
     else toast('Неверный логин или пароль');
   }catch(e){ toast('Ошибка входа'); }
 }
+
 function logout(){ isAdmin=false; closeModal('adminModal'); toast('Вы вышли из админки'); }
 window.logout=logout;
+
 function openAdmin(){
   try{
     updateThemeNote();
@@ -1185,12 +1506,14 @@ function openAdmin(){
     try{ toast('Ошибка при открытии: '+e.message); }catch(_){}
   }
 }
+
 function updateThemeNote(){
   try{
     const n=$('#themeNote');
     if(n) n.innerHTML=`<b>Редактируешь тему:</b> ${theme==='f'?'🌸 Девичья':'⚡ Мужская'}. Переключи тему сверху, чтобы редактировать другую.`;
   }catch(e){}
 }
+
 function updateSetupNote(){
   try{
     const note=$('#setupNote');
@@ -1203,6 +1526,7 @@ function updateSetupNote(){
     note.innerHTML=txt;
   }catch(e){}
 }
+
 $$('.admin-tabs button').forEach(b=>{
   b.addEventListener('click',()=>{
     try{
@@ -1213,6 +1537,7 @@ $$('.admin-tabs button').forEach(b=>{
     }catch(e){ dlog('tab click error: '+e.message,'err'); }
   });
 });
+
 function showTab(tab){
   try{
     const box=$('#adminContent');
@@ -1263,6 +1588,7 @@ function showTab(tab){
     try{ toast('Ошибка вкладки: '+e.message); }catch(_){}
   }
 }
+
 function renderPollEditor(){
   try{
     const box=$('#adminContent');
@@ -1282,6 +1608,7 @@ function renderPollEditor(){
     box.innerHTML=html;
   }catch(e){ dlog('renderPollEditor error: '+e.message,'err'); }
 }
+
 window.addPollItem=function(){try{editPollItem(-1);}catch(e){toast('Ошибка: '+e.message);}};
 window.delPollItem=async function(i){
   try{
@@ -1332,6 +1659,7 @@ window.editPollItem=function(i){
     }
   }catch(e){ toast('Ошибка: '+e.message); }
 };
+
 const FIELD_DEFS={
   team:[
     {k:'name',label:'Имя / Ник',type:'text'},
@@ -1350,6 +1678,7 @@ const FIELD_DEFS={
     {k:'caption',label:'Подпись',type:'text'}
   ]
 };
+
 function renderListEditor(tab){
   try{
     const box=$('#adminContent');
@@ -1388,6 +1717,7 @@ function renderListEditor(tab){
     box.innerHTML=html;
   }catch(e){ dlog('renderListEditor error: '+e.message,'err'); try{toast('Ошибка: '+e.message);}catch(_){} }
 }
+
 window.addItem=function(tab){
   try{
     if(tab==='gal'){
@@ -1406,6 +1736,7 @@ window.delItem=async function(tab,i){
     toast('Удалено ✓');
   }catch(e){ toast('Ошибка: '+e.message); }
 };
+
 function setupAvatarCropper(previewEl, innerEl, initialTransform, basePrefix){
   basePrefix = basePrefix || '';
   if(previewEl._cropper){
@@ -1462,6 +1793,7 @@ function setupAvatarCropper(previewEl, innerEl, initialTransform, basePrefix){
   previewEl._cropper=api;
   return api;
 }
+
 function extractUrlFromInner(inner){
   try{
     if(!inner) return null;
@@ -1479,6 +1811,7 @@ function extractUrlFromInner(inner){
     return url || null;
   }catch(e){ return null; }
 }
+
 window.editItem=function(tab,i){
   try{
     const fields=FIELD_DEFS[tab];
@@ -1725,7 +2058,6 @@ window.editItem=function(tab,i){
           }
         }catch(e){}
       }
-
       function setGalUrl(url){
         try{
           if(!preview)return;
@@ -1850,7 +2182,9 @@ window.editItem=function(tab,i){
     try{ toast('Ошибка: '+err.message); }catch(_){}
   }
 };
+
 window.showTab=showTab;
+
 function avatarUrl(member){
   try{
     if(member.avatar){
@@ -1864,6 +2198,7 @@ function avatarUrl(member){
     return `https://cdn.discordapp.com/embed/avatars/0.png`;
   }
 }
+
 function renderImportTab(){
   try{
     const box=$('#adminContent');
@@ -1900,6 +2235,7 @@ function renderImportTab(){
     dlog('renderImportTab error: '+e.message,'err');
   }
 }
+
 async function loadMembersFromDiscord(){
   try{
     const id=$('#serverIdInput').value.trim();
@@ -1949,6 +2285,7 @@ function isMemberAddedInTheme(memberId,targetTheme){
     return (siteData?.[targetTheme]?.team||[]).some(t=>t._discordId===memberId);
   }catch(e){ return false; }
 }
+
 function renderImportedMemberList(){
   try{
     const statusEl=$('#importStatus');
@@ -1964,6 +2301,7 @@ function renderImportedMemberList(){
     renderImportCards();
   }catch(e){ dlog('renderImportedMemberList error: '+e.message,'err'); }
 }
+
 function renderImportCards(){
   try{
     const listEl=$('#importList');
@@ -2000,6 +2338,7 @@ function renderImportCards(){
     listEl.innerHTML=html;
   }catch(e){ dlog('renderImportCards error: '+e.message,'err'); }
 }
+
 window.addImportedToTeam=async function(memberId,targetTheme){
   try{
     const m = importedMembers.find(x=>x.id===memberId);
@@ -2045,6 +2384,7 @@ window.addImportedToTeam=async function(memberId,targetTheme){
     try{ toast('Ошибка: '+err.message); }catch(_){}
   }
 };
+
 window.exportData=function(){
   try{
     const blob=new Blob([JSON.stringify(siteData,null,2)],{type:'application/json'});
@@ -2053,6 +2393,7 @@ window.exportData=function(){
     URL.revokeObjectURL(url); toast('Экспортировано 📥');
   }catch(e){ toast('Ошибка: '+e.message); }
 };
+
 window.importData=async function(e){
   try{
     const file=e.target.files[0]; if(!file)return;
@@ -2069,6 +2410,7 @@ window.importData=async function(e){
     r.readAsText(file); e.target.value='';
   }catch(err){ toast('Ошибка: '+err.message); }
 };
+
 window.resetData=async function(){
   try{
     if(!confirm('Сбросить ЛОКАЛЬНЫЕ данные?'))return;
@@ -2077,6 +2419,7 @@ window.resetData=async function(){
     toast('Сброшено');
   }catch(e){ toast('Ошибка: '+e.message); }
 };
+
 window.resetFirebase=async function(){
   try{
     if(!useFirebase){ toast('Firebase не активен'); return; }
@@ -2090,6 +2433,7 @@ window.resetFirebase=async function(){
     toast('Firebase очищен 🔥');
   }catch(e){ toast('Ошибка: '+e.message); }
 };
+
 (async ()=>{
   try{
     dlog('Старт. theme='+theme);
@@ -2105,6 +2449,7 @@ window.resetFirebase=async function(){
     try{ toast('Ошибка инициализации: '+e.message); }catch(_){}
   }
 })();
+
 window.addEventListener('beforeunload', ()=>{
   try{
     if(siteData) localStorage.setItem(STORAGE_KEY, JSON.stringify(siteData));
