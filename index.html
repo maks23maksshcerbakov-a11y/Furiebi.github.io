@@ -190,7 +190,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
 .modal.open{display:flex}
-.modal-box{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:28px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-box{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:28px;max-width:680px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow)}
 .modal-box h2{font-family:var(--font-d);font-size:26px;margin-bottom:16px}
 .modal-box .form-row{margin-bottom:14px}
 .modal-box label{display:block;font-size:13px;font-weight:800;color:var(--muted);margin-bottom:4px}
@@ -239,6 +239,59 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
   display:none;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;z-index:2;
 }
 .upload-block .up-loading.show{display:flex}
+
+/* ===== Импорт участников ===== */
+.import-header{
+  display:flex;gap:10px;align-items:center;margin-bottom:12px;padding:14px;
+  background:var(--bg2);border:2px solid var(--line);border-radius:12px;
+}
+.import-header input{flex:1;font-family:monospace;letter-spacing:.5px}
+.import-header .btn{padding:8px 16px;font-size:13px}
+.import-info{
+  font-size:12.5px;color:var(--muted);font-weight:700;padding:10px 14px;
+  background:color-mix(in srgb,var(--accent) 8%,transparent);
+  border-left:3px solid var(--accent);border-radius:4px;margin-bottom:14px;line-height:1.6
+}
+.import-info b{color:var(--accent)}
+.import-info code{background:var(--soft);padding:2px 6px;border-radius:4px;font-size:11.5px;color:var(--accent)}
+.member-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;
+  max-height:420px;overflow-y:auto;padding:6px;
+}
+.mem-card{
+  background:var(--card);border:2px solid var(--line);border-radius:12px;padding:14px;
+  display:flex;flex-direction:column;gap:10px;transition:border-color .2s,transform .2s;
+}
+.mem-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.mem-card.added{opacity:.5;border-style:dashed}
+.mem-top{display:flex;align-items:center;gap:10px}
+.mem-avatar{
+  width:44px;height:44px;border-radius:50%;flex:none;background:var(--soft);
+  background-size:cover;background-position:center;display:grid;place-items:center;
+  color:#fff;font-weight:900;font-size:18px;
+}
+.mem-info{flex:1;min-width:0}
+.mem-name{font-weight:900;font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mem-username{font-size:11.5px;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mem-status{
+  display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;
+  padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--muted);margin-top:2px;
+}
+.mem-status i{width:7px;height:7px;border-radius:50%}
+.mem-status.online i{background:#3ecf7a}
+.mem-status.idle i{background:#ffcc00}
+.mem-status.dnd i{background:#ff6b6b}
+.mem-status.offline i{background:#888}
+.mem-actions{display:flex;gap:6px;flex-wrap:wrap}
+.mem-actions .btn{padding:6px 12px;font-size:12px;flex:1;min-width:0}
+.mem-actions .btn.f-btn{background:var(--accent);color:#fff}
+.mem-actions .btn.m-btn{background:var(--accent2);color:#fff}
+.mem-actions .btn.edit-btn{border:2px solid var(--line);color:var(--muted)}
+.mem-filter{
+  display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap;
+}
+.mem-filter input{flex:1;min-width:140px;padding:8px 12px;font-size:13px}
+.mem-filter .cnt{font-size:12px;color:var(--muted);font-weight:800}
 
 @media (max-width:860px){
   .hero{padding-top:40px}
@@ -392,7 +445,8 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     <div class="theme-note" id="themeNote"></div>
     <div class="setup-note" id="setupNote"></div>
     <div class="admin-tabs">
-      <button class="active" data-tab="team">Команда</button>
+      <button class="active" data-tab="import">👥 Импорт</button>
+      <button data-tab="team">Команда</button>
       <button data-tab="play">Игровая</button>
       <button data-tab="events">Ивенты</button>
       <button data-tab="wall">Стена</button>
@@ -427,7 +481,7 @@ const FIREBASE_CONFIG = {
   appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
 
-const STORAGE_KEY='siteData_v5';
+const STORAGE_KEY='siteData_v6';
 const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
 
@@ -442,6 +496,7 @@ const EMPTY_POLL_MSG = {
 };
 
 const DEFAULT_DATA={
+  serverId:'',
   f:{
     team:[{name:'Пример Ани', discord:'anya_star', avatar:'', status:'в сети', role:'👑 Королева сервера', quote:'«Главное правило — уют для всех»', sticker:'🎀', color:'#ff5fa2'}],
     play:[{emo:'🔮', title:'Шар судьбы', desc:'скоро тут появится предсказание на день'},{emo:'💌', title:'Генератор комплиментов', desc:'скоро тут можно будет получить порцию тёплых слов'},{emo:'🎧', title:'Плейлист сервера', desc:'скоро тут зазвучит наша любимая музыка'}],
@@ -466,6 +521,10 @@ let useFirebase=false;
 let unsubData=null;
 let isRendering=false;
 let debugLog=[];
+
+// Кэш загруженных участников с Discord
+let importedMembers=[];
+let importFilter='';
 
 function dlog(msg,type='info'){
   const time=new Date().toLocaleTimeString();
@@ -575,6 +634,7 @@ function loadLocal(){
   }
   if(!siteData.f)siteData.f=JSON.parse(JSON.stringify(DEFAULT_DATA.f));
   if(!siteData.m)siteData.m=JSON.parse(JSON.stringify(DEFAULT_DATA.m));
+  if(typeof siteData.serverId!=='string')siteData.serverId='';
   ['team','play','events','wall','gal'].forEach(k=>{
     if(!Array.isArray(siteData.f[k]))siteData.f[k]=[];
     if(!Array.isArray(siteData.m[k]))siteData.m[k]=[];
@@ -786,7 +846,7 @@ function observeReveal(){
 }
 
 let isAdmin=false;
-let currentTab='team';
+let currentTab='import';
 
 function openModal(id){$('#'+id).classList.add('open');}
 function closeModal(id){$('#'+id).classList.remove('open');}
@@ -880,7 +940,7 @@ function updateAvatarPreview(){
     preview.classList.remove('has-img');
     const letter = ((nameInput.value || '?')[0] || '?').toUpperCase();
     const c1 = colorInput.value || '#ff6faf';
-    const c2 = c1; // используем тот же цвет для градиента
+    const c2 = c1;
     preview.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
     preview.textContent = letter;
   }
@@ -922,6 +982,7 @@ function showTab(tab){
     return;
   }
   if(tab==='poll'){ renderPollEditor(); return; }
+  if(tab==='import'){ renderImportTab(); return; }
   renderListEditor(tab);
 }
 
@@ -1030,7 +1091,7 @@ function renderListEditor(tab){
   let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}</h3>`;
   
   if(tab==='gal') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Загружай фото файлом или вставляй URL</p>`;
-  if(tab==='team') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">👤 Аватарку можно загрузить файлом или вставить URL</p>`;
+  if(tab==='team') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">👤 Аватарку можно загрузить файлом или вставить URL. Или импортируй из Discord во вкладке <b>👥 Импорт</b></p>`;
   
   html+=`<div class="admin-list">`;
   if(!items.length) html+=`<div class="admin-list-empty">Список пуст ↓</div>`;
@@ -1124,7 +1185,6 @@ window.editItem=function(tab,i){
   
   // ===== ПРИВЯЗЫВАЕМ ОБРАБОТЧИКИ =====
   
-  // Для команды: загрузка аватарки + синхронизация с полями
   if(tab==='team'){
     const fileInput = $('#avatarFile');
     const preview = $('#avatarPreview');
@@ -1135,17 +1195,14 @@ window.editItem=function(tab,i){
     const hint = $('#avatarHint');
     const clearBtn = $('#clearAvatarBtn');
     
-    // При изменении имени или цвета — обновляем превью
     nameInput.addEventListener('input', updateAvatarPreview);
     colorInput.addEventListener('input', updateAvatarPreview);
-    // При изменении URL — обновляем превью
     urlInput.addEventListener('input', ()=>{
       updateAvatarPreview();
       const v = (urlInput.value || '').trim();
       hint.textContent = v ? '✓ URL введён. Превью обновилось' : 'Поле пустое — будет градиент с буквой';
     });
     
-    // Загрузка файла
     fileInput.addEventListener('change', async e=>{
       const file = e.target.files[0];
       if(!file) return;
@@ -1178,7 +1235,6 @@ window.editItem=function(tab,i){
     });
   }
   
-  // Для галереи: загрузка фото
   if(tab==='gal'){
     const fileInput = $('#galFile');
     const urlInput = $('#adminContent [data-field="url"]');
@@ -1243,11 +1299,240 @@ window.editItem=function(tab,i){
 
 window.showTab=showTab;
 
+/* ======================================================================== */
+/* ===================   ИМПОРТ УЧАСТНИКОВ ИЗ DISCORD   ================== */
+/* ======================================================================== */
+
+function avatarUrl(member){
+  // Если у участника нет своей аватарки — генерируем дефолтную
+  if(member.avatar){
+    return `https://cdn.discordapp.com/avatars/${member.id}/${member.avatar}.${member.avatar.startsWith('a_')?'gif':'png'}?size=128`;
+  }
+  // Дефолтные аватарки Discord
+  const defIdx = member.discriminator && member.discriminator!=='0'
+    ? parseInt(member.discriminator)%5
+    : (BigInt(member.id)>>22)%6n;
+  return `https://cdn.discordapp.com/embed/avatars/${defIdx}.png`;
+}
+
+function renderImportTab(){
+  const box=$('#adminContent');
+  const serverId = siteData.serverId || '';
+  let html = `
+    <div class="import-info">
+      📖 <b>Как это работает:</b><br>
+      1. В настройках Discord-сервера включи <b>«Виджет сервера»</b> (Server Settings → Widget → Enable Server Widget)<br>
+      2. Скопируй <b>Server ID</b> (если не видно — включи Developer Mode в настройках Discord, ПКМ на иконке сервера → Copy Server ID)<br>
+      3. Вставь ID ниже и жми <b>«📡 Загрузить участников»</b> — сайт подтянет онлайн-участников с аватарками
+    </div>
+    
+    <div class="import-header">
+      <input type="text" id="serverIdInput" value="${escapeHtml(serverId)}" placeholder="Server ID (например: 123456789012345678)" style="font-size:14px">
+      <button class="btn solid" id="loadMembersBtn" type="button">📡 Загрузить участников</button>
+      <button class="btn ghost" id="saveServerIdBtn" type="button" title="Сохранить ID">💾</button>
+    </div>
+    
+    <div id="importStatus"></div>
+    <div id="importList"></div>
+  `;
+  box.innerHTML=html;
+  
+  $('#saveServerIdBtn').addEventListener('click',async ()=>{
+    const val=$('#serverIdInput').value.trim();
+    siteData.serverId=val;
+    await saveData();
+    toast('Server ID сохранён ✓');
+  });
+  
+  $('#loadMembersBtn').addEventListener('click',loadMembersFromDiscord);
+  
+  $('#serverIdInput').addEventListener('keydown',e=>{
+    if(e.key==='Enter')loadMembersFromDiscord();
+  });
+  
+  // Если есть ранее загруженные участники — показываем
+  if(importedMembers.length) renderImportedMembersList();
+}
+
+async function loadMembersFromDiscord(){
+  const id=$('#serverIdInput').value.trim();
+  if(!id){toast('Введи Server ID');return;}
+  if(!/^\d{15,25}$/.test(id)){toast('Server ID должен быть 15-25 цифр');return;}
+  
+  siteData.serverId=id;
+  await saveData();
+  
+  const statusEl=$('#importStatus');
+  statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px">⏳ Загружаю участников с сервера <code>${escapeHtml(id)}</code>...</div>`;
+  
+  try{
+    const url=`https://discord.com/api/v10/guilds/${id}/widget.json`;
+    const res=await fetch(url);
+    if(!res.ok){
+      if(res.status===404){
+        throw new Error('Виджет не включён или Server ID неверный. Включи Widget в настройках сервера Discord.');
+      }
+      throw new Error(`Ошибка Discord: ${res.status}`);
+    }
+    const data=await res.json();
+    
+    if(!data.members || !data.members.length){
+      statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px;background:color-mix(in srgb,#ffcc00 15%,transparent);color:#ffcc00">⚠️ Виджет работает, но сейчас никто не онлайн на сервере. Зайди позже.</div>`;
+      importedMembers=[];
+      $('#importList').innerHTML='';
+      return;
+    }
+    
+    importedMembers=data.members.map(m=>({
+      id:m.id,
+      username:m.username || `user_${m.id}`,
+      discriminator:m.discriminator || '0',
+      avatar:m.avatar || null,
+      avatarUrl:avatarUrl(m),
+      status:m.status || 'online'
+    }));
+    
+    dlog(`Загружено ${importedMembers.length} участников с Discord`,'ok');
+    renderImportedMemberList();
+    toast(`Загружено ${importedMembers.length} участников ✓`);
+  }catch(err){
+    dlog('Discord widget error: '+err.message,'err');
+    statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px;background:color-mix(in srgb,#ff6b6b 15%,transparent);color:#ff6b6b">❌ ${escapeHtml(err.message)}</div>`;
+    $('#importList').innerHTML='';
+  }
+}
+
+function isMemberAdded(memberId,targetTheme){
+  return cur().team.some(t=>t._discordId===memberId);
+}
+function isMemberAddedInTheme(memberId,targetTheme){
+  return (siteData[targetTheme].team||[]).some(t=>t._discordId===memberId);
+}
+
+function renderImportedMemberList(){
+  const statusEl=$('#importStatus');
+  const listEl=$('#importList');
+  
+  statusEl.innerHTML=`
+    <div class="mem-filter">
+      <input type="text" id="memFilter" placeholder="🔍 Поиск по нику..." value="${escapeHtml(importFilter)}">
+      <span class="cnt">Найдено: <b id="memCount">${importedMembers.length}</b></span>
+    </div>
+  `;
+  
+  $('#memFilter').addEventListener('input',e=>{
+    importFilter=e.target.value.toLowerCase().trim();
+    renderImportCards();
+  });
+  
+  renderImportCards();
+}
+
+function renderImportCards(){
+  const listEl=$('#importList');
+  const filter=importFilter;
+  const filtered = filter 
+    ? importedMembers.filter(m=>m.username.toLowerCase().includes(filter))
+    : importedMembers;
+  
+  $('#memCount').textContent=filtered.length;
+  
+  if(!filtered.length){
+    listEl.innerHTML=`<div class="admin-list-empty">Ничего не найдено</div>`;
+    return;
+  }
+  
+  let html='<div class="member-grid">';
+  filtered.forEach(m=>{
+    const inF = isMemberAddedInTheme(m.id,'f');
+    const inM = isMemberAddedInTheme(m.id,'m');
+    const addedClass = (inF||inM) ? 'added' : '';
+    
+    html+=`
+      <div class="mem-card ${addedClass}" data-id="${m.id}">
+        <div class="mem-top">
+          <div class="mem-avatar" style="background-image:url('${escapeHtml(m.avatarUrl)}')"></div>
+          <div class="mem-info">
+            <div class="mem-name">${escapeHtml(m.username)}</div>
+            <div class="mem-username">${m.discriminator&&m.discriminator!=='0'?'#'+m.discriminator:'@'+m.username}</div>
+            <span class="mem-status ${m.status}"><i></i>${escapeHtml(m.status)}</span>
+          </div>
+        </div>
+        <div class="mem-actions">
+          <button class="btn f-btn" ${inF?'disabled':''} onclick="addImportedToTeam('${m.id}','f')">🌸 Женская ${inF?'✓':''}</button>
+          <button class="btn m-btn" ${inM?'disabled':''} onclick="addImportedToTeam('${m.id}','m')">⚡ Мужская ${inM?'✓':''}</button>
+        </div>
+      </div>
+    `;
+  });
+  html+='</div>';
+  listEl.innerHTML=html;
+}
+
+window.addImportedToTeam=async function(memberId,targetTheme){
+  const m = importedMembers.find(x=>x.id===memberId);
+  if(!m){toast('Участник не найден');return;}
+  
+  // Проверяем, не добавлен ли уже
+  if(isMemberAddedInTheme(memberId,targetTheme)){
+    toast('Уже добавлен в эту команду');
+    return;
+  }
+  
+  // Определяем цвет по теме
+  const colors = targetTheme==='f' 
+    ? ['#ff5fa2','#c49cff','#ff8fc8','#b685f0','#ff6faf']
+    : ['#37e6ff','#ff9f45','#c6ff4a','#ffcc00','#6fdab8'];
+  const randColor = colors[Math.floor(Math.random()*colors.length)];
+  
+  const sticker = targetTheme==='f' 
+    ? ['🌸','💗','🎀','✨','🦋'][Math.floor(Math.random()*5)]
+    : ['⚡','🔥','🎖️','🛡️','⚔️'][Math.floor(Math.random()*5)];
+  
+  const role = targetTheme==='f' 
+    ? '🌸 Участница сервера'
+    : '⚡ Боец отряда';
+  
+  const newItem = {
+    _discordId: memberId,
+    name: m.username,
+    discord: m.discriminator&&m.discriminator!=='0' ? m.username+'#'+m.discriminator : m.username,
+    avatar: m.avatarUrl,
+    status: 'в сети',
+    role: role,
+    quote: targetTheme==='f' 
+      ? '«Оставь цитату через кнопку редактирования»' 
+      : '«Оставь цитату через кнопку редактирования»',
+    sticker: sticker,
+    color: randColor
+  };
+  
+  siteData[targetTheme].team.push(newItem);
+  dedupeAll();
+  await saveData();
+  renderAll();
+  renderImportCards();
+  
+  toast(`${m.username} добавлен в ${targetTheme==='f'?'женскую':'мужскую'} команду ✓`);
+  
+  // Автоматически открываем редактирование
+  const idx = siteData[targetTheme].team.findIndex(t=>t._discordId===memberId);
+  if(idx>=0){
+    const prevTheme = theme;
+    theme = targetTheme;
+    document.body.dataset.theme = targetTheme;
+    localStorage.setItem('theme',targetTheme);
+    swapTexts(targetTheme,false);
+    editItem('team',idx);
+    // Восстанавливаем тему обратно после сохранения/отмены не делаем — пусть останется
+  }
+};
+
 window.exportData=function(){
   const blob=new Blob([JSON.stringify(siteData,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='site-data-'+Date.now()+'.json'; a.click();
-  URL.revokeObjectURL(url); toast('Экспортировано 📥');
+  URL.revokeObjectURL(url); toast('Эспортировано 📥');
 };
 
 window.importData=async function(e){
