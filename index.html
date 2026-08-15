@@ -74,6 +74,13 @@ body[data-theme="m"] .knob{transform:translateX(28px)}
 .chipst:nth-child(2){animation-delay:1s}.chipst:nth-child(3){animation-delay:2s}
 @keyframes pulseSoft{50%{transform:translateY(-4px)}}
 
+/* ===== Случайный момент в шапке ===== */
+.random-shot{margin-top:34px}
+.rs-card{position:relative;width:min(360px,90%);background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px 12px 14px;box-shadow:var(--shadow);transform:rotate(-2deg)}
+.rs-card img{width:100%;max-height:280px;object-fit:contain;background:rgba(0,0,0,.35);border-radius:8px}
+.rs-card figcaption{margin-top:10px;font-weight:800;font-size:13.5px;color:var(--muted)}
+.rs-badge{position:absolute;top:-13px;right:10px;background:var(--accent);color:#fff;font-size:11px;font-weight:900;padding:4px 12px;border-radius:999px;box-shadow:var(--shadow)}
+
 .ribbon{border-block:2px dashed var(--line);padding:11px 0;overflow:hidden;background:var(--card);position:relative;z-index:1}
 .mtrack{display:flex;gap:34px;width:max-content;animation:mq 26s linear infinite;font-family:var(--font-d);font-size:17px;color:var(--accent)}
 @keyframes mq{to{transform:translateX(-50%)}}
@@ -89,7 +96,8 @@ section{position:relative;z-index:1;padding:58px 0}
 .member:hover{transform:translateY(-6px) rotate(-1deg)}
 .member .sticker{position:absolute;top:-13px;right:14px;font-size:24px;transform:rotate(12deg)}
 .mav{width:84px;height:84px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:900;font-size:28px;box-shadow:0 0 0 4px var(--soft),0 0 0 6px var(--accent);overflow:hidden;position:relative}
-.mav-img{width:100%;height:100%;background-size:cover;background-position:center;transition:none}
+.mav:has(.mav-img){background:var(--soft)}
+.mav-img{width:100%;height:100%;background-size:contain;background-position:center;background-repeat:no-repeat;transition:none}
 .member h3{font-family:var(--font-d);font-size:22px}
 .discord-nick{display:block;font-size:13px;font-weight:800;color:var(--muted);margin-top:2px}
 .status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--muted);margin:6px 0 10px}
@@ -146,8 +154,8 @@ section{position:relative;z-index:1;padding:58px 0}
 .pnote:hover{transform:rotate(0) scale(1.07);z-index:2}
 
 .gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
-.gitem{position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:3/2;border:2px solid var(--line);box-shadow:var(--shadow)}
-.gitem img{width:100%;height:100%;object-fit:cover;transform-origin:center}
+.gitem{position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:3/2;border:2px solid var(--line);box-shadow:var(--shadow);background:rgba(0,0,0,.35)}
+.gitem img{width:100%;height:100%;object-fit:contain;transform-origin:center}
 .gitem figcaption{position:absolute;inset:auto 0 0;padding:34px 14px 12px;font-weight:900;font-size:14px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.55))}
 
 .admin-list-item .thumb{
@@ -217,6 +225,9 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .debug-box{background:var(--bg2);border:2px solid var(--line);border-radius:10px;padding:12px;margin-top:12px;font-family:monospace;font-size:11px;max-height:140px;overflow-y:auto;color:var(--muted);white-space:pre-wrap}
 .debug-box .ok{color:#3ecf7a}.debug-box .err{color:#ff6b6b}.debug-box .warn{color:#ffcc00}
 
+.check-row label{display:flex;align-items:center;gap:10px;cursor:pointer;color:var(--ink);font-size:13.5px;font-weight:800;background:var(--bg2);border:2px solid var(--line);border-radius:10px;padding:10px 14px}
+.check-row input{width:auto;accent-color:var(--accent);transform:scale(1.2);cursor:pointer}
+
 .upload-block{
   border:2px dashed var(--line);border-radius:14px;padding:18px;
   background:var(--bg2);margin-bottom:14px;text-align:center;position:relative;
@@ -224,16 +235,16 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .upload-block .up-preview{
   width:140px;height:140px;border-radius:50%;margin:0 auto 12px;
   background:linear-gradient(135deg,var(--accent),var(--accent2));
-  background-size:cover;background-position:center;
+  background-size:contain;background-position:center;background-repeat:no-repeat;
   display:grid;place-items:center;color:#fff;font-weight:900;font-size:44px;
   box-shadow:var(--shadow);overflow:hidden;cursor:grab;
 }
 .upload-block .up-preview:active{cursor:grabbing}
 .upload-block .up-preview .up-inner{
-  width:100%;height:100%;background-size:cover;background-position:center;
+  width:100%;height:100%;background-size:contain;background-position:center;background-repeat:no-repeat;
   transition:none;
 }
-.upload-block .up-preview.has-img{color:transparent}
+.upload-block .up-preview.has-img{color:transparent;background:var(--soft)}
 .upload-block .up-preview.gal{border-radius:12px;width:100%;max-width:300px;height:auto;aspect-ratio:3/2;font-size:32px}
 .upload-block .up-hint{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:10px;min-height:16px}
 .upload-block .up-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
@@ -371,6 +382,13 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
         <span class="chipst" data-f="🎤 караоке: по субботам" data-m="🎮 катки: по средам">🎤 караоке: по субботам</span>
         <span class="chipst" data-f="🌙 онлайн: 24/7" data-m="📡 связь: 24/7">🌙 онлайн: 24/7</span>
       </div>
+      <div class="random-shot" id="randomShot" style="display:none">
+        <figure class="rs-card themable">
+          <span class="rs-badge" data-f="🎲 случайный момент" data-m="🎲 случайный кадр">🎲 случайный момент</span>
+          <img id="rsImg" alt="">
+          <figcaption id="rsCap"></figcaption>
+        </figure>
+      </div>
     </div>
   </div>
 </div>
@@ -504,7 +522,7 @@ const FIREBASE_CONFIG = {
   appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
 
-const STORAGE_KEY='siteData_v8';
+const STORAGE_KEY='siteData_v9';
 const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
 
@@ -543,6 +561,8 @@ let debugLog=[];
 let importedMembers=[];
 let importFilter='';
 let currentAvatarTransform={x:0,y:0,scale:1};
+
+let rsPicked=null, rsTheme=null;
 
 window.addEventListener('error', e=>{
   try{ dlog('JS error: '+e.message,'err'); }catch(_){}
@@ -644,6 +664,7 @@ async function loadData(){
             dedupeAll();
             renderAll();
             renderPoll();
+            renderRandomShot(false);
           }
           updateSyncDot('ok');
         }catch(e){ dlog('Snapshot error: '+e.message,'err'); }
@@ -667,6 +688,8 @@ function migrateData(){
     ['f','m'].forEach(t=>{
       if(!siteData[t]) siteData[t]=JSON.parse(JSON.stringify(DEFAULT_DATA[t]));
       if(!Array.isArray(siteData[t].poll)) siteData[t].poll=[];
+      if(!Array.isArray(siteData[t].gal)) siteData[t].gal=[];
+      siteData[t].gal.forEach(g=>{ if(typeof g.rnd!=='boolean') g.rnd=!!g.rnd; });
     });
   }catch(e){ dlog('migrate error: '+e.message,'err'); }
 }
@@ -796,6 +819,23 @@ function renderGal(){
   }catch(e){ dlog('renderGal error: '+e.message,'err'); }
 }
 
+function renderRandomShot(force){
+  try{
+    const box=$('#randomShot'); if(!box)return;
+    const items=(cur().gal||[]).filter(g=>g.rnd && g.url);
+    if(!items.length){ box.style.display='none'; rsPicked=null; rsTheme=null; return; }
+    if(force || !rsPicked || rsTheme!==theme || !items.some(g=>g.url===rsPicked.url)){
+      rsPicked=items[Math.floor(Math.random()*items.length)];
+      rsTheme=theme;
+    }
+    box.style.display='';
+    const img=$('#rsImg');
+    if(img){ img.src=rsPicked.url; img.alt=rsPicked.caption||''; }
+    const cap=$('#rsCap');
+    if(cap) cap.textContent=rsPicked.caption||'';
+  }catch(e){ dlog('renderRandomShot error: '+e.message,'err'); }
+}
+
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 const MARQ={f:['нежность','дружба','мемы','караоке','какао','обнимашки','плейлисты','уют'],m:['братва','честь','мемы','катки','кофе','респект','плейлисты','строй']};
@@ -818,7 +858,7 @@ function swapTexts(t,animate){
     });
     $('#lblF').classList.toggle('on',t==='f');
     $('#lblM').classList.toggle('on',t==='m');
-    $('#logoEmoji').textContent=t==='f'?'🌸':'';
+    $('#logoEmoji').textContent=t==='f'?'🌸':'⚡';
     $('#heartBtn').textContent=t==='f'?'💖':'🫡';
   }catch(e){ dlog('swapTexts error: '+e.message,'err'); }
 }
@@ -827,7 +867,7 @@ function applyTheme(t,origin){
   const commit=()=>{
     try{
       theme=t; document.body.dataset.theme=t; localStorage.setItem('theme',t);
-      swapTexts(t,true); renderMarquee(t); renderPoll(); renderAll();
+      swapTexts(t,true); renderMarquee(t); renderPoll(); renderAll(); renderRandomShot(true);
     }catch(e){ dlog('commit error: '+e.message,'err'); }
   };
   if(reduced||!origin){commit();return;}
@@ -924,7 +964,7 @@ addEventListener('pointermove',e=>{
   const now=performance.now(); if(now-lastTrail<80)return; lastTrail=now;
   try{
     const s=document.createElement('span'); s.className='trail';
-    const set=theme==='f'?['🌸','✨','💗']:['⚡','','✦'];
+    const set=theme==='f'?['🌸','✨','💗']:['⚡','🔥','✦'];
     s.textContent=set[Math.random()*set.length|0];
     s.style.left=e.clientX+'px'; s.style.top=e.clientY+'px';
     document.body.appendChild(s); setTimeout(()=>s.remove(),820);
@@ -1026,7 +1066,8 @@ $$('.admin-tabs button').forEach(b=>{
   });
 });
 
-function compressImage(file, maxWidth=1200, quality=0.85, square=false){
+/* Сжатие БЕЗ обрезки: сохраняем оригинальные пропорции */
+function compressImage(file, maxWidth=1200, quality=0.85){
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
     reader.onload = e => {
@@ -1036,18 +1077,10 @@ function compressImage(file, maxWidth=1200, quality=0.85, square=false){
           let w = img.width, h = img.height;
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-          if(square){
-            const size = Math.min(w, h);
-            const sx = (w - size) / 2;
-            const sy = (h - size) / 2;
-            canvas.width = maxWidth; canvas.height = maxWidth;
-            ctx.drawImage(img, sx, sy, size, size, 0, 0, maxWidth, maxWidth);
-          }else{
-            if(w > maxWidth){ h = Math.round(h * maxWidth / w); w = maxWidth; }
-            if(h > maxWidth){ w = Math.round(w * maxWidth / h); h = maxWidth; }
-            canvas.width = w; canvas.height = h;
-            ctx.drawImage(img, 0, 0, w, h);
-          }
+          if(w > maxWidth){ h = Math.round(h * maxWidth / w); w = maxWidth; }
+          if(h > maxWidth){ w = Math.round(w * maxWidth / h); h = maxWidth; }
+          canvas.width = w; canvas.height = h;
+          ctx.drawImage(img, 0, 0, w, h);
           const dataUrl = canvas.toDataURL('image/jpeg', quality);
           const sizeMB = (dataUrl.length * 0.75) / (1024*1024);
           if(sizeMB > 2){
@@ -1204,7 +1237,11 @@ const FIELD_DEFS={
   play:[{k:'emo',label:'Эмодзи',type:'text'},{k:'title',label:'Заголовок',type:'text'},{k:'desc',label:'Описание',type:'textarea'}],
   events:[{k:'day',label:'День и время',type:'text'},{k:'title',label:'Название',type:'text'},{k:'desc',label:'Описание',type:'textarea'},{k:'emo',label:'Эмодзи',type:'text'}],
   wall:[{k:'text',label:'Текст записи',type:'textarea'},{k:'author',label:'Автор',type:'text'},{k:'pin',label:'Иконка-пин',type:'text'}],
-  gal:[{k:'url',label:'🔗 URL фото (или загрузи файл ниже)',type:'text',placeholder:'https://...'},{k:'caption',label:'Подпись',type:'text'}]
+  gal:[
+    {k:'url',label:'🔗 URL фото (или загрузи файл ниже)',type:'text',placeholder:'https://...'},
+    {k:'caption',label:'Подпись',type:'text'},
+    {k:'rnd',label:'🎲 Показывать случайно при входе на сайт',type:'checkbox'}
+  ]
 };
 
 function renderListEditor(tab){
@@ -1215,15 +1252,15 @@ function renderListEditor(tab){
     const titles={team:'Участники команды',play:'Активности',events:'Ивенты',wall:'Записи на стене',gal:'Фото в галерее (моменты)'};
     let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}</h3>`;
 
-    if(tab==='gal') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Загружай фото файлом или вставляй URL. В редакторе можно двигать и увеличивать фото мышкой.</p>`;
-    if(tab==='team') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">👤 Аватарку можно загрузить файлом, вставить URL или импортировать из Discord во вкладке <b>👥 Импорт</b>. В редакторе можно двигать и увеличивать картинку мышкой.</p>`;
+    if(tab==='gal') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Загружай фото файлом или вставляй URL — фото показывается целиком, без обрезки. Отметь 🎲 чтобы фото рандомно показывалось в шапке при входе.</p>`;
+    if(tab==='team') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">👤 Аватарка загружается целиком без обрезки. В редакторе можно двигать и увеличивать картинку мышкой.</p>`;
 
     html+=`<div class="admin-list">`;
     if(!items.length) html+=`<div class="admin-list-empty">Список пуст ↓</div>`;
     else items.forEach((it,i)=>{
       if(tab==='gal'){
         const thumb = it.url ? `<img class="thumb" src="${escapeHtml(it.url)}" onerror="this.style.visibility='hidden'">` : '';
-        const caption = it.caption || 'без подписи';
+        const caption = (it.rnd?'🎲 ':'') + (it.caption || 'без подписи');
         html+=`<div class="admin-list-item"><div class="thumb-wrap">${thumb}<span>${i+1}. ${escapeHtml(caption).slice(0,40)}</span></div><div class="acts"><button class="edit" onclick="window.editItem('${tab}',${i})">✎</button><button class="del" onclick="window.delItem('${tab}',${i})">✕</button></div></div>`;
       }else if(tab==='team'){
         const thumb = it.avatar
@@ -1247,7 +1284,7 @@ window.delItem=async function(tab,i){
     if(!confirm('Удалить элемент?'))return;
     const arr = cur()[tab];
     if(Array.isArray(arr)) arr.splice(i,1);
-    await saveData(); renderListEditor(tab); renderAll();
+    await saveData(); renderListEditor(tab); renderAll(); renderRandomShot(false);
     toast('Удалено ✓');
   }catch(e){ toast('Ошибка: '+e.message); }
 };
@@ -1344,8 +1381,8 @@ window.editItem=function(tab,i){
                style="${hasImg?'':`background:linear-gradient(135deg,${color},${color})`}">
             ${hasImg?`<div class="up-inner" style="background-image:url('${escapeHtml(curUrl)}');transform:translate(${t.x}px,${t.y}px) scale(${t.scale})"></div>`:escapeHtml(letter)}
           </div>
-          <div class="up-hint" id="avatarHint">${hasImg?'🖱 Двигай мышкой • 🎚 Колесо для зума':'Аватарки нет — будет градиент с буквой'}</div>
-          ${hasImg?`<div class="crop-hint">💡 Перетаскивай картинку мышкой чтобы выбрать нужную область. Крути колесо мыши для увеличения. Позиция сохранится.</div>`:''}
+          <div class="up-hint" id="avatarHint">${hasImg?'🖱 Фото целиком • колесо — приблизить':'Аватарки нет — будет градиент с буквой'}</div>
+          ${hasImg?`<div class="crop-hint">💡 Фото показывается целиком, без обрезки. Колесом мыши можно приблизить, мышкой — сдвинуть. Позиция сохранится.</div>`:''}
           <div class="up-btns">
             <label class="btn solid" for="avatarFile" style="display:inline-block">📁 Загрузить файл</label>
             <input type="file" id="avatarFile" accept="image/*">
@@ -1374,8 +1411,8 @@ window.editItem=function(tab,i){
                style="${hasImg?'':`background:linear-gradient(135deg,var(--accent),var(--accent2))`}">
             ${hasImg?`<div class="up-inner" style="background-image:url('${escapeHtml(curUrl)}');transform:translate(${t.x}px,${t.y}px) scale(${t.scale})"></div>`:'📸'}
           </div>
-          <div class="up-hint" id="galHint">${hasImg?'🖱 Двигай мышкой • 🎚 Колесо для зума':'Фото не загружено'}</div>
-          ${hasImg?`<div class="crop-hint">💡 Перетаскивай фото мышкой и крути колесо для зума — выбери красивый кадр. Позиция сохранится.</div>`:''}
+          <div class="up-hint" id="galHint">${hasImg?'🖱 Фото целиком • колесо — приблизить':'Фото не загружено'}</div>
+          ${hasImg?`<div class="crop-hint">💡 Фото показывается целиком, без обрезки. Колесом мыши можно приблизить, мышкой — сдвинуть. Позиция сохранится.</div>`:''}
           <div class="up-btns">
             <label class="btn solid" for="galFile" style="display:inline-block">📁 Загрузить файл</label>
             <input type="file" id="galFile" accept="image/*">
@@ -1390,6 +1427,8 @@ window.editItem=function(tab,i){
       const ph=f.placeholder?`placeholder="${escapeHtml(f.placeholder)}"`:'';
       if(f.type==='textarea'){
         html+=`<div class="form-row"><label>${f.label}</label><textarea data-field="${f.k}" ${ph}>${escapeHtml(val)}</textarea></div>`;
+      }else if(f.type==='checkbox'){
+        html+=`<div class="form-row check-row"><label><input type="checkbox" data-field="${f.k}" ${val?'checked':''}> ${f.label}</label></div>`;
       }else{
         html+=`<div class="form-row"><label>${f.label}</label><input type="text" data-field="${f.k}" value="${escapeHtml(val)}" ${ph}></div>`;
       }
@@ -1449,7 +1488,7 @@ window.editItem=function(tab,i){
               controls.querySelector('#resetCropBtn').addEventListener('click',()=>{try{cropper.reset();}catch(e){}});
             }
 
-            if(hint) hint.textContent='🖱 Двигай мышкой • 🎚 Колесо для зума';
+            if(hint) hint.textContent='🖱 Фото целиком • колесо — приблизить';
           }else{
             preview.innerHTML = escapeHtml(((nameInput?.value||'?')[0]||'?').toUpperCase());
             preview.classList.remove('has-img');
@@ -1494,7 +1533,7 @@ window.editItem=function(tab,i){
             }
             if(loading)loading.classList.add('show');
             if(hint)hint.textContent = '⏳ Обрабатываю...';
-            const compressed = await compressImage(file, 800, 0.85, true);
+            const compressed = await compressImage(file, 800, 0.85);
             setAvatarUrl(compressed);
             const sizeKB = Math.round((compressed.length * 0.75) / 1024);
             toast(`Аватарка готова (${sizeKB} KB)`);
@@ -1556,7 +1595,7 @@ window.editItem=function(tab,i){
           if(!existingHint){
             const h=document.createElement('div');
             h.className='crop-hint';
-            h.textContent='💡 Перетаскивай фото мышкой и крути колесо для зума — выбери красивый кадр. Позиция сохранится.';
+            h.textContent='💡 Фото показывается целиком, без обрезки. Колесом мыши можно приблизить, мышкой — сдвинуть. Позиция сохранится.';
             preview.parentElement.insertBefore(h, preview.parentElement.querySelector('.up-btns'));
           }
         }catch(e){}
@@ -1572,7 +1611,7 @@ window.editItem=function(tab,i){
             const newInner = preview.querySelector('.up-inner');
             galCropper = setupAvatarCropper(preview, newInner, {x:0,y:0,scale:1});
             addGalCropControls();
-            if(hint) hint.textContent='🖱 Двигай мышкой • 🎚 Колесо для зума';
+            if(hint) hint.textContent='🖱 Фото целиком • колесо — приблизить';
           }else{
             preview.innerHTML='📸';
             preview.classList.remove('has-img');
@@ -1607,7 +1646,7 @@ window.editItem=function(tab,i){
             }
             if(loading)loading.classList.add('show');
             if(hint)hint.textContent = '⏳ Обрабатываю...';
-            const compressed = await compressImage(file, 1200, 0.82, false);
+            const compressed = await compressImage(file, 1200, 0.82);
             setGalUrl(compressed);
             if(urlField) urlField.value = compressed;
             const sizeKB = Math.round((compressed.length * 0.75) / 1024);
@@ -1639,10 +1678,10 @@ window.editItem=function(tab,i){
           const newObj={};
           fields.forEach(f=>{
             const el=$('#adminContent [data-field="'+f.k+'"]');
-            newObj[f.k]=el?el.value:'';
+            if(!el){ newObj[f.k]=(f.type==='checkbox')?false:''; return; }
+            newObj[f.k] = (el.type==='checkbox') ? el.checked : el.value;
           });
 
-          // СНАЧАЛА извлекаем фото и трансформации из превью
           if(tab==='team'){
             const preview = $('#avatarPreview');
             const inner = preview?.querySelector('.up-inner');
@@ -1668,7 +1707,6 @@ window.editItem=function(tab,i){
             }
           }
 
-          // ПОТОМ проверяем валидность
           if(tab==='gal' && !newObj.url && !newObj.caption){
             toast('Добавь хотя бы фото или подпись');
             return;
@@ -1676,7 +1714,7 @@ window.editItem=function(tab,i){
 
           if(i<0)cur()[tab].push(newObj); else cur()[tab][i]=newObj;
           dedupeAll();
-          await saveData(); renderListEditor(tab); renderAll();
+          await saveData(); renderListEditor(tab); renderAll(); renderRandomShot(false);
           toast(useFirebase?'Сохранено в облаке ✓':'Сохранено локально ✓');
         }catch(err){
           dlog('Save error: '+err.message,'err');
@@ -1902,7 +1940,7 @@ window.addImportedToTeam=async function(memberId,targetTheme){
 
     const sticker = targetTheme==='f'
       ? ['🌸','💗','🎀','✨','🦋'][Math.floor(Math.random()*5)]
-      : ['⚡','','🎖️','🛡️','⚔️'][Math.floor(Math.random()*5)];
+      : ['⚡','','🎖️','️','️'][Math.floor(Math.random()*5)];
 
     const role = targetTheme==='f' ? '🌸 Furiebi' : '⚡ Furiebi';
     const displayName = m.globalName || m.username;
@@ -1960,7 +1998,7 @@ window.importData=async function(e){
         const data=JSON.parse(ev.target.result);
         if(!data.f||!data.m)throw new Error('bad format');
         siteData=data; migrateData(); dedupeAll();
-        await saveData(); renderAll(); renderPoll(); showTab(currentTab);
+        await saveData(); renderAll(); renderPoll(); renderRandomShot(false); showTab(currentTab);
         toast('Импортировано ✓');
       }catch(err){ toast('Ошибка: '+err.message); }
     };
@@ -1974,7 +2012,7 @@ window.resetData=async function(){
   try{
     if(!confirm('Сбросить ЛОКАЛЬНЫЕ данные?'))return;
     siteData=JSON.parse(JSON.stringify(DEFAULT_DATA)); migrateData(); dedupeAll();
-    await saveData(); renderAll(); renderPoll(); showTab(currentTab);
+    await saveData(); renderAll(); renderPoll(); renderRandomShot(true); showTab(currentTab);
     toast('Сброшено');
   }catch(e){ toast('Ошибка: '+e.message); }
 };
@@ -1987,7 +2025,7 @@ window.resetFirebase=async function(){
     siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
     localStorage.setItem(STORAGE_KEY,JSON.stringify(siteData));
     migrateData(); dedupeAll();
-    renderAll(); renderPoll(); showTab(currentTab);
+    renderAll(); renderPoll(); renderRandomShot(true); showTab(currentTab);
     toast('Firebase очищен 🔥');
   }catch(e){ toast('Ошибка: '+e.message); }
 };
@@ -2000,6 +2038,7 @@ window.resetFirebase=async function(){
     renderMarquee(theme);
     renderPoll();
     renderAll();
+    renderRandomShot(true);
     dlog('Старт завершён','ok');
   }catch(e){
     dlog('Init error: '+e.message,'err');
