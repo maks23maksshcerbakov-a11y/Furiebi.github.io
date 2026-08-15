@@ -149,7 +149,6 @@ section{position:relative;z-index:1;padding:58px 0}
 .gitem img{width:100%;height:100%;object-fit:cover}
 .gitem figcaption{position:absolute;inset:auto 0 0;padding:34px 14px 12px;font-weight:900;font-size:14px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.55))}
 
-/* Превью миниатюр в списке админки */
 .admin-list-item .thumb{
   width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none;
   background:var(--soft);border:1px solid var(--line);margin-right:8px;
@@ -217,7 +216,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .debug-box{background:var(--bg2);border:2px solid var(--line);border-radius:10px;padding:12px;margin-top:12px;font-family:monospace;font-size:11px;max-height:140px;overflow-y:auto;color:var(--muted);white-space:pre-wrap}
 .debug-box .ok{color:#3ecf7a}.debug-box .err{color:#ff6b6b}.debug-box .warn{color:#ffcc00}
 
-/* Загрузка фото */
+/* Загрузка фото (для галереи и аватарок) */
 .img-upload-box{
   border:2px dashed var(--line);border-radius:12px;padding:20px;text-align:center;
   background:var(--bg2);margin-bottom:14px;position:relative;
@@ -225,6 +224,9 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .img-upload-box .preview{
   max-width:100%;max-height:200px;border-radius:10px;margin:10px auto;display:none;
   box-shadow:var(--shadow);
+}
+.img-upload-box .preview.square{
+  width:150px;height:150px;object-fit:cover;border-radius:50%;
 }
 .img-upload-box .preview.show{display:block}
 .img-upload-box .upload-hint{font-size:12px;color:var(--muted);margin-top:8px;font-weight:700}
@@ -821,29 +823,39 @@ $$('.admin-tabs button').forEach(b=>{
 });
 
 /* ===== ЗАГРУЗКА И СЖАТИЕ ФОТО ===== */
-function compressImage(file, maxWidth=1200, quality=0.82){
+function compressImage(file, maxWidth=1200, quality=0.82, square=false){
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
     reader.onload = e => {
       const img = new Image();
       img.onload = () => {
-        // Определяем новые размеры с сохранением пропорций
         let w = img.width, h = img.height;
-        if(w > maxWidth){ h = Math.round(h * maxWidth / w); w = maxWidth; }
-        if(h > maxWidth){ w = Math.round(w * maxWidth / h); h = maxWidth; }
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        // Проверка размера (лимит ~2MB в base64)
-        const sizeMB = (dataUrl.length * 0.75) / (1024*1024);
-        if(sizeMB > 2){
-          // Сжимаем сильнее
-          const smaller = canvas.toDataURL('image/jpeg', 0.6);
-          resolve(smaller);
+        if(square){
+          // Квадратная обрезка (для аватарок)
+          const size = Math.min(w, h);
+          const sx = (w - size) / 2;
+          const sy = (h - size) / 2;
+          const canvas = document.createElement('canvas');
+          canvas.width = maxWidth; canvas.height = maxWidth;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, maxWidth, maxWidth);
+          resolve(canvas.toDataURL('image/jpeg', quality));
         }else{
-          resolve(dataUrl);
+          // Обычное сжатие с сохранением пропорций
+          if(w > maxWidth){ h = Math.round(h * maxWidth / w); w = maxWidth; }
+          if(h > maxWidth){ w = Math.round(w * maxWidth / h); h = maxWidth; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          const sizeMB = (dataUrl.length * 0.75) / (1024*1024);
+          if(sizeMB > 2){
+            const smaller = canvas.toDataURL('image/jpeg', 0.6);
+            resolve(smaller);
+          }else{
+            resolve(dataUrl);
+          }
         }
       };
       img.onerror = () => reject(new Error('Не удалось загрузить изображение'));
@@ -958,14 +970,28 @@ window.resetPoll=async function(){
 };
 
 const FIELD_DEFS={
-  team:[{k:'name',label:'Имя / Ник',type:'text'},{k:'discord',label:'Discord username (без @)',type:'text'},{k:'avatar',label:'URL аватарки',type:'text'},{k:'sticker',label:'Стикер сверху',type:'text'},{k:'status',label:'Статус',type:'text'},{k:'role',label:'Роль',type:'text'},{k:'quote',label:'Цитата',type:'textarea'},{k:'color',label:'Цвет (hex)',type:'text'}],
+  team:[
+    {k:'name',label:'Имя / Ник',type:'text'},
+    {k:'discord',label:'Discord username (без @)',type:'text'},
+    {k:'avatar',label:'Аватарка (URL или загрузи файл ниже)',type:'text'},
+    {k:'sticker',label:'Стикер сверху',type:'text'},
+    {k:'status',label:'Статус',type:'text'},
+    {k:'role',label:'Роль',type:'text'},
+    {k:'quote',label:'Цитата',type:'textarea'},
+    {k:'color',label:'Цвет (hex)',type:'text'}
+  ],
   play:[{k:'emo',label:'Эмодзи',type:'text'},{k:'title',label:'Заголовок',type:'text'},{k:'desc',label:'Описание',type:'textarea'}],
   events:[{k:'day',label:'День и время',type:'text'},{k:'title',label:'Название',type:'text'},{k:'desc',label:'Описание',type:'textarea'},{k:'emo',label:'Эмодзи',type:'text'}],
   wall:[{k:'text',label:'Текст записи',type:'textarea'},{k:'author',label:'Автор',type:'text'},{k:'pin',label:'Иконка-пин',type:'text'}],
   gal:[{k:'url',label:'Фото (URL или загрузи файл ниже)',type:'text'},{k:'caption',label:'Подпись',type:'text'}]
 };
 
-/* ===== СПИСОК ЭЛЕМЕНТОВ С ПРЕВЬЮ ДЛЯ ГАЛЕРЕИ ===== */
+/* ===== ПОЛЯ, КОТОРЫЕ ЗАГРУЖАЮТСЯ ЧЕРЕЗ ФАЙЛ ===== */
+const UPLOADABLE_FIELDS = {
+  team: [{field:'avatar', maxWidth:400, quality:0.85, square:true, previewClass:'square'}],
+  gal:  [{field:'url',    maxWidth:1200, quality:0.82, square:false, previewClass:''}]
+};
+
 function renderListEditor(tab){
   const box=$('#adminContent');
   const items=cur()[tab]||[];
@@ -975,15 +1001,22 @@ function renderListEditor(tab){
   if(tab==='gal'){
     html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Загружай фото файлом или вставляй URL</p>`;
   }
+  if(tab==='team'){
+    html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">👤 Аватарку можно загрузить файлом или вставить URL</p>`;
+  }
   
   html+=`<div class="admin-list">`;
   if(!items.length) html+=`<div class="admin-list-empty">Список пуст ↓</div>`;
   else items.forEach((it,i)=>{
     if(tab==='gal'){
-      // Для галереи показываем миниатюру
       const thumb = it.url ? `<img class="thumb" src="${escapeHtml(it.url)}" onerror="this.style.visibility='hidden'">` : '';
       const caption = it.caption || 'без подписи';
       html+=`<div class="admin-list-item"><div class="thumb-wrap">${thumb}<span>${i+1}. ${escapeHtml(caption).slice(0,40)}</span></div><div class="acts"><button class="edit" onclick="editItem('${tab}',${i})">✎</button><button class="del" onclick="delItem('${tab}',${i})">✕</button></div></div>`;
+    }else if(tab==='team'){
+      // Для команды показываем аватарку и имя
+      const thumb = it.avatar ? `<img class="thumb" style="border-radius:50%" src="${escapeHtml(it.avatar)}" onerror="this.style.visibility='hidden'">` : `<div class="thumb" style="border-radius:50%;background:linear-gradient(135deg,${it.color||'#ff6faf'},${it.color||'#c49cff'});display:grid;place-items:center;color:#fff;font-weight:900">${escapeHtml((it.name||'?')[0].toUpperCase())}</div>`;
+      const name = it.name || 'без имени';
+      html+=`<div class="admin-list-item"><div class="thumb-wrap">${thumb}<span>${i+1}. ${escapeHtml(name).slice(0,40)}</span></div><div class="acts"><button class="edit" onclick="editItem('${tab}',${i})">✎</button><button class="del" onclick="delItem('${tab}',${i})">✕</button></div></div>`;
     }else{
       const main=it.name||it.title||it.text||it.url||'без названия';
       html+=`<div class="admin-list-item"><span>${i+1}. ${escapeHtml(main).slice(0,50)}</span><div class="acts"><button class="edit" onclick="editItem('${tab}',${i})">✎</button><button class="del" onclick="delItem('${tab}',${i})">✕</button></div></div>`;
@@ -1001,46 +1034,70 @@ window.delItem=async function(tab,i){
   toast('Удалено ✓');
 };
 
-/* ===== РЕДАКТИРОВАНИЕ С ЗАГРУЗКОЙ ФОТО ДЛЯ ГАЛЕРЕИ ===== */
+/* ===== РЕДАКТИРОВАНИЕ С ЗАГРУЗКОЙ ФОТО ===== */
 window.editItem=function(tab,i){
   const fields=FIELD_DEFS[tab];
   const item=i<0?{}:(cur()[tab][i]||{});
   let html=`<h3 style="font-size:16px;margin-bottom:12px">${i<0?'Добавить':'Редактировать'}</h3>`;
   
-  // Специальный блок для галереи — загрузка файла
-  if(tab==='gal'){
-    const currentUrl = item.url || '';
+  // Определяем, какие поля поддерживают загрузку файла
+  const uploadableFields = UPLOADABLE_FIELDS[tab] || [];
+  
+  // Создаём блок загрузки для каждого такого поля
+  uploadableFields.forEach(cfg=>{
+    const currentUrl = item[cfg.field] || '';
+    const boxId = 'imgBox_' + cfg.field;
+    const previewId = 'imgPreview_' + cfg.field;
+    const loadingId = 'imgLoading_' + cfg.field;
+    const hintId = 'uploadHint_' + cfg.field;
+    const fileId = 'imgFile_' + cfg.field;
+    const clearBtnId = 'clearImgBtn_' + cfg.field;
+    
     html += `
-      <div class="img-upload-box">
-        <div class="img-loading" id="imgLoading">⏳ Сжимаю фото...</div>
-        <img class="preview ${currentUrl?'show':''}" id="imgPreview" src="${escapeHtml(currentUrl)}" onerror="this.classList.remove('show')">
-        <div class="upload-hint" id="uploadHint">${currentUrl?'✓ Фото загружено. Можешь заменить или оставить':'Выбери фото с устройства или введи URL'}</div>
+      <div class="img-upload-box" id="${boxId}">
+        <div class="img-loading" id="${loadingId}">⏳ Сжимаю...</div>
+        <img class="preview ${cfg.previewClass} ${currentUrl?'show':''}" id="${previewId}" src="${escapeHtml(currentUrl)}" onerror="this.classList.remove('show')">
+        <div class="upload-hint" id="${hintId}">${currentUrl?'✓ Изображение загружено. Можешь заменить или оставить':'Выбери изображение или введи URL'}</div>
         <div class="upload-btns">
-          <label class="btn solid" for="imgFile" style="display:inline-block">📁 Загрузить файл</label>
-          <input type="file" id="imgFile" accept="image/*">
-          <button class="btn ghost" type="button" id="clearImgBtn">✕ Убрать фото</button>
+          <label class="btn solid" for="${fileId}" style="display:inline-block">📁 Загрузить файл</label>
+          <input type="file" id="${fileId}" accept="image/*">
+          <button class="btn ghost" type="button" id="${clearBtnId}">✕ Убрать</button>
         </div>
       </div>
-      <div style="text-align:center;color:var(--muted);font-size:12px;font-weight:700;margin-bottom:12px">— или вставь URL ниже —</div>
     `;
+  });
+  
+  if(uploadableFields.length){
+    html += `<div style="text-align:center;color:var(--muted);font-size:12px;font-weight:700;margin-bottom:12px">— или вставь URL в соответствующее поле ниже —</div>`;
   }
   
   fields.forEach(f=>{
     const val=item[f.k]||'';
-    if(f.type==='textarea') html+=`<div class="form-row"><label>${f.label}</label><textarea data-field="${f.k}">${escapeHtml(val)}</textarea></div>`;
-    else html+=`<div class="form-row"><label>${f.label}</label><input type="text" data-field="${f.k}" value="${escapeHtml(val)}" ${tab==='gal'&&f.k==='url'?'placeholder="https://... или оставь пустым, если загрузил файл"':''}></div>`;
+    // Если поле — загружаемое (avatar/url), не показываем его как обычное поле, 
+    // т.к. оно уже в блоке загрузки. Но нужно поле input чтобы сохранить значение.
+    // Поэтому делаем его скрытым для загружаемых полей.
+    const isUploadable = uploadableFields.some(cfg=>cfg.field===f.k);
+    const val2 = escapeHtml(val);
+    if(f.type==='textarea'){
+      html+=`<div class="form-row"><label>${f.label}</label><textarea data-field="${f.k}">${val2}</textarea></div>`;
+    }else if(isUploadable){
+      // Скрытый input, но видимый для URL-режима
+      html+=`<div class="form-row" style="display:none"><input type="text" data-field="${f.k}" value="${val2}"></div>`;
+    }else{
+      html+=`<div class="form-row"><label>${f.label}</label><input type="text" data-field="${f.k}" value="${val2}"></div>`;
+    }
   });
   html+=`<div class="btns"><button class="btn solid" id="saveItem">💾 Сохранить</button><button class="btn ghost" onclick="showTab('${tab}')">Отмена</button></div>`;
   $('#adminContent').innerHTML=html;
   
-  // Если галерея — вешаем обработчики на загрузку файла
-  if(tab==='gal'){
-    const fileInput = $('#imgFile');
-    const preview = $('#imgPreview');
-    const urlInput = $('#adminContent [data-field="url"]');
-    const loading = $('#imgLoading');
-    const hint = $('#uploadHint');
-    const clearBtn = $('#clearImgBtn');
+  // Вешаем обработчики на загрузку для каждого загружаемого поля
+  uploadableFields.forEach(cfg=>{
+    const fileInput = $('#imgFile_' + cfg.field);
+    const preview = $('#imgPreview_' + cfg.field);
+    const urlInput = $('#adminContent [data-field="'+cfg.field+'"]');
+    const loading = $('#imgLoading_' + cfg.field);
+    const hint = $('#uploadHint_' + cfg.field);
+    const clearBtn = $('#clearImgBtn_' + cfg.field);
     
     fileInput.addEventListener('change', async e=>{
       const file = e.target.files[0];
@@ -1049,20 +1106,19 @@ window.editItem=function(tab,i){
         toast('Выбери файл-картинку');
         return;
       }
-      // Показываем индикатор загрузки
       loading.classList.add('show');
-      hint.textContent = '⏳ Обрабатываю фото...';
+      hint.textContent = '⏳ Обрабатываю...';
       try{
-        const compressed = await compressImage(file, 1200, 0.82);
+        const compressed = await compressImage(file, cfg.maxWidth, cfg.quality, cfg.square);
         preview.src = compressed;
         preview.classList.add('show');
         urlInput.value = compressed;
         const sizeKB = Math.round((compressed.length * 0.75) / 1024);
-        hint.textContent = `✓ Фото сжато (${sizeKB} KB). Готово к сохранению`;
+        hint.textContent = `✓ Готово (${sizeKB} KB)`;
         toast(`Фото готово (${sizeKB} KB)`);
       }catch(err){
         toast('Ошибка: '+err.message);
-        hint.textContent = '❌ Не удалось обработать фото';
+        hint.textContent = '❌ Не удалось обработать';
       }finally{
         loading.classList.remove('show');
       }
@@ -1072,13 +1128,33 @@ window.editItem=function(tab,i){
       preview.classList.remove('show');
       preview.src = '';
       urlInput.value = '';
-      hint.textContent = 'Фото убрано';
+      hint.textContent = 'Изображение убрано';
       fileInput.value = '';
     });
     
-    // Когда пользователь вводит URL вручную — обновляем превью
+    // Если пользователь введёт URL в скрытый input программно — не нужно.
+    // Но добавим возможность вставить URL через отдельное поле:
+    // (На самом деле скрытое поле обновляется только загрузкой файла,
+    // но можно добавить видимое поле URL с синхронизацией)
+  });
+  
+  // Для загружаемых полей добавим видимое поле URL ниже блока загрузки
+  uploadableFields.forEach(cfg=>{
+    // Ищем блок img-upload-box для этого поля и добавляем видимый URL-input после него
+    const box = $('#imgBox_' + cfg.field);
+    if(!box) return;
+    const urlDiv = document.createElement('div');
+    urlDiv.className = 'form-row';
+    urlDiv.innerHTML = `<label style="margin-top:10px">🔗 Или вставь URL картинки</label><input type="text" class="url-input" value="${escapeHtml(item[cfg.field]||'')}" placeholder="https://...">`;
+    box.after(urlDiv);
+    const urlInput = urlDiv.querySelector('input');
+    const hiddenInput = $('#adminContent [data-field="'+cfg.field+'"]');
+    const preview = $('#imgPreview_' + cfg.field);
+    const hint = $('#uploadHint_' + cfg.field);
+    
     urlInput.addEventListener('input', ()=>{
       const v = urlInput.value.trim();
+      hiddenInput.value = v;
       if(v){
         preview.src = v;
         preview.classList.add('show');
@@ -1087,13 +1163,12 @@ window.editItem=function(tab,i){
         preview.src = '';
       }
     });
-  }
+  });
   
   $('#saveItem').addEventListener('click',async ()=>{
     const newObj={};
     fields.forEach(f=>{ newObj[f.k]=$('#adminContent [data-field="'+f.k+'"]').value; });
     
-    // Проверка для галереи — должна быть либо картинка, либо подпись
     if(tab==='gal' && !newObj.url && !newObj.caption){
       toast('Добавь хотя бы фото или подпись');
       return;
