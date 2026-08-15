@@ -561,7 +561,7 @@ const FIREBASE_CONFIG = {
   appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
 
-const STORAGE_KEY='siteData_v12';
+const STORAGE_KEY='siteData_v13';
 const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
 const MAX_GAL=25;
@@ -598,6 +598,9 @@ let useFirebase=false;
 let unsubData=null;
 let isRendering=false;
 let debugLog=[];
+
+/* === Флаг защиты от race condition === */
+let _savingUntil = 0;
 
 let importedMembers=[];
 let importFilter='';
@@ -666,18 +669,15 @@ function updateSyncDot(state){
   }catch(e){}
 }
 
-/* === ИСПРАВЛЕННАЯ дедупликация: не удаляет элементы при ошибках или отсутствии ключа === */
 function dedupe(arr,keyFn){
   if(!Array.isArray(arr))return [];
   const seen=new Set(), out=[];
   for(const it of arr){
     try{
       const key=keyFn(it);
-      // Если ключа нет (null/undefined/пустая строка) — оставляем элемент, не дедуплицируем
       if(key==null||key===''){ out.push(it); continue; }
       if(!seen.has(key)){ seen.add(key); out.push(it); }
     }catch(e){
-      // Ошибка в keyFn — оставляем элемент, не удаляем
       out.push(it);
     }
   }
@@ -691,7 +691,6 @@ function dedupeAll(){
       if(!siteData[t])siteData[t]={};
       ['team','play','events','wall','gal'].forEach(k=>{
         if(!Array.isArray(siteData[t][k]))siteData[t][k]=[];
-        // Дедупликация ТОЛЬКО по _id. Нет _id → элемент не дедуплицируется (остаётся)
         const before=siteData[t][k].length;
         siteData[t][k]=dedupe(siteData[t][k], i=>i._id);
         const after=siteData[t][k].length;
@@ -718,12 +717,26 @@ async function loadData(){
       }
       migrateData();
       dedupeAll();
+
+      /* === ИСПРАВЛЕНИЕ 1: onSnapshot игнорирует кеш и защищает от race condition === */
       unsubData=db.collection('site').doc('main').onSnapshot(snap=>{
         try{
           if(!snap.exists)return;
+          /* Игнорируем кешированные данные — Firestore может отдать старую версию */
+          if(snap.metadata && snap.metadata.fromCache){
+            dlog('Snapshot fromCache — пропускаю','warn');
+            return;
+          }
+          /* Игнорируем если мы сейчас сохраняем (race condition protection) */
+          if(Date.now() < _savingUntil){
+            dlog('Snapshot во время saveData — пропускаю','warn');
+            return;
+          }
           const newData=snap.data().data;
           if(!newData)return;
-          if(JSON.stringify(newData)!==JSON.stringify(siteData)){
+          /* Сравниваем по содержимому массивов, а не по JSON.stringify */
+          if(!dataEqual(newData, siteData)){
+            dlog('Snapshot: данные обновились из Firebase','ok');
             siteData=newData;
             migrateData();
             dedupeAll();
@@ -745,6 +758,26 @@ async function loadData(){
   }else{
     loadLocal();
   }
+}
+
+/* === ИСПРАВЛЕНИЕ 2: Надёжное сравнение данных (не по JSON.stringify) === */
+function dataEqual(a,b){
+  try{
+    if(!a||!b) return false;
+    for(const t of ['f','m']){
+      for(const k of ['team','play','events','wall','gal','poll']){
+        const arrA = (a[t]&&a[t][k]) || [];
+        const arrB = (b[t]&&b[t][k]) || [];
+        if(arrA.length !== arrB.length) return false;
+        for(let i=0;i<arrA.length;i++){
+          const idA = arrA[i]?._id;
+          const idB = arrB[i]?._id;
+          if(idA !== idB) return false;
+        }
+      }
+    }
+    return true;
+  }catch(e){ return false; }
 }
 
 function migrateData(){
@@ -787,7 +820,10 @@ function loadLocal(){
   dedupeAll();
 }
 
+/* === ИСПРАВЛЕНИЕ 3: saveData устанавливает флаг защиты === */
 async function saveData(){
+  /* Защищаем от onSnapshot на 3 секунды после записи */
+  _savingUntil = Date.now() + 3000;
   try{
     localStorage.setItem(STORAGE_KEY,JSON.stringify(siteData));
     if(useFirebase){
@@ -945,11 +981,9 @@ function buildGalItem(it, mode){
   };
 
   if(img.complete && img.naturalWidth) fit(); else img.onload=fit;
-  /* ИСПРАВЛЕНО: не скрываем карточку при ошибке — показываем пустую рамку с подписью */
   img.onerror=()=>{
     try{
       img.style.display='none';
-      fig.style.display='';
       fig.style.minHeight='120px';
       fig.style.display='flex';
       fig.style.alignItems='center';
@@ -1008,7 +1042,6 @@ function swapTexts(t,animate){
     });
     $('#lblF').classList.toggle('on',t==='f');
     $('#lblM').classList.toggle('on',t==='m');
-    /* ИСПРАВЛЕНО: ⚡ для мужской темы вместо пустой строки */
     $('#logoEmoji').textContent=t==='f'?'🌸':'⚡';
     $('#heartBtn').textContent=t==='f'?'💖':'🫡';
   }catch(e){ dlog('swapTexts error: '+e.message,'err'); }
@@ -1094,7 +1127,7 @@ $('#heartBtn').addEventListener('click',()=>{
     const zone=$('#loveZone');
     if(!reduced)for(let k=0;k<5;k++){
       const s=document.createElement('span'); s.className='fheart';
-      s.textContent=theme==='f'?['💖','💗','✨'][k%3]:['⚡','','🔥'][k%3];
+      s.textContent=theme==='f'?['💖','💗','✨'][k%3]:['⚡','🔥',''][k%3];
       s.style.left=(30+Math.random()*40)+'%'; s.style.top='10px';
       s.style.setProperty('--dx',(Math.random()*80-40)+'px');
       zone.appendChild(s); setTimeout(()=>s.remove(),1150);
@@ -1927,7 +1960,6 @@ window.editItem=function(tab,i){
             newObj[f.k] = (el.type==='checkbox') ? el.checked : el.value;
           });
 
-          /* === КЛЮЧЕВОЕ: всегда присваиваем _id === */
           if(i<0){
             newObj._id = newId();
           }else{
@@ -1975,7 +2007,7 @@ window.editItem=function(tab,i){
           }
 
           if(i<0)cur()[tab].push(newObj); else cur()[tab][i]=newObj;
-          dedupeAll();
+          /* === ИСПРАВЛЕНИЕ 4: Убрана лишняя дедупликация при сохранении === */
           await saveData(); renderListEditor(tab); renderAll();
           toast(useFirebase?'Сохранено в облаке ✓':'Сохранено локально ✓');
         }catch(err){
@@ -2012,7 +2044,7 @@ function renderImportTab(){
     const serverId = siteData?.serverId || '';
 
     let html = `
-      <div class="import-info">
+      <div class="import_info">
         📖 <b>Как это работает:</b><br>
         1. В настройках Discord-сервера включи <b>«Виджет сервера»</b> (Server Settings → Widget → Enable Server Widget)<br>
         2. Скопируй <b>Server ID</b> (если не видно — включи Developer Mode в настройках Discord, ПКМ на иконке сервера → Copy Server ID)<br>
@@ -2218,7 +2250,6 @@ window.addImportedToTeam=async function(memberId,targetTheme){
     };
 
     siteData[targetTheme].team.push(newItem);
-    dedupeAll();
     await saveData();
     renderAll();
     renderImportCards();
