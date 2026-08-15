@@ -1666,16 +1666,22 @@ function renderImportTab(){
   
   if(importedMembers.length) renderImportedMembersList();
 }
-
+const PROXY_URL = 'https://furiebi-proxy.maks23maks-shcerbakov.workers.dev';
 async function fetchWithBotToken(serverId, token, endpoint){
-  const res = await fetch(`https://discord.com/api/v10${endpoint}`, {
-    headers: { 'Authorization': `Bot ${token}` }
+  const discordUrl = `https://discord.com/api/v10${endpoint}`;
+  const proxyUrl = `${PROXY_URL}/discord?url=${encodeURIComponent(discordUrl)}`;
+  const res = await fetch(proxyUrl, {
+    headers: { 
+      'X-Bot-Token': token,
+      'Content-Type': 'application/json'
+    }
   });
   if(!res.ok){
+    const err = await res.json().catch(()=>({}));
     if(res.status===401) throw new Error('Неверный Bot Token');
-    if(res.status===403) throw new Error('У бота нет прав. Пригласи его на сервер с правом View Channels');
-    if(res.status===404) throw new Error('Сервер не найден или бот не на сервере');
-    throw new Error(`Discord API error: ${res.status}`);
+    if(res.status===403) throw new Error('У бота нет прав. Пригласи его на сервер');
+    if(res.status===404) throw new Error('Сервер не найден');
+    throw new Error(err.error || `Ошибка: ${res.status}`);
   }
   return res.json();
 }
