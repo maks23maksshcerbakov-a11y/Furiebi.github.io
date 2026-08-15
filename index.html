@@ -51,6 +51,8 @@ body[data-theme="f"] .fl-m{display:none}
 .sync-dot{width:10px;height:10px;border-radius:50%;background:var(--muted);transition:background .3s;flex:none}
 .sync-dot.on{background:#3ecf7a;box-shadow:0 0 10px #3ecf7a}
 .sync-dot.off{background:#ff6b6b}
+.sync-dot.loading{background:#ffcc00;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.3}}
 .switch{display:inline-flex;align-items:center;gap:10px;border:2px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-weight:900;font-size:13.5px;letter-spacing:.3px}
 .switch .lbl{color:var(--muted);transition:color .4s}
 .switch .lbl.on{color:var(--accent)}
@@ -165,7 +167,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
 .modal.open{display:flex}
-.modal-box{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-box{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:28px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow)}
 .modal-box h2{font-family:var(--font-d);font-size:26px;margin-bottom:16px}
 .modal-box .form-row{margin-bottom:14px}
 .modal-box label{display:block;font-size:13px;font-weight:800;color:var(--muted);margin-bottom:4px}
@@ -188,6 +190,8 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .admin-list-empty{text-align:center;padding:20px;color:var(--muted);font-weight:700;font-size:13px}
 .theme-note{background:color-mix(in srgb,var(--accent) 15%,transparent);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:800;color:var(--accent);margin-bottom:14px}
 .setup-note{background:color-mix(in srgb,#37e6ff 15%,transparent);padding:12px 16px;border-radius:10px;font-size:13px;font-weight:700;color:#37e6ff;margin-bottom:14px;line-height:1.5}
+.debug-box{background:var(--bg2);border:2px solid var(--line);border-radius:10px;padding:12px;margin-top:12px;font-family:monospace;font-size:11px;max-height:140px;overflow-y:auto;color:var(--muted);white-space:pre-wrap}
+.debug-box .ok{color:#3ecf7a}.debug-box .err{color:#ff6b6b}.debug-box .warn{color:#ffcc00}
 
 @media (max-width:860px){
   .hero{padding-top:40px}
@@ -356,7 +360,6 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
   </div>
 </div>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
@@ -367,21 +370,18 @@ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let theme=localStorage.getItem('theme')||'f';
 document.body.dataset.theme=theme;
 
-/* ==================================================================
-   👇 ВСТАВЬ СЮДА СВОЙ FIREBASE CONFIG из консоли Firebase
-   (Настройки проекта → Твои приложения → Web → firebaseConfig)
-   ================================================================== */
+/* ================================================================== */
 const FIREBASE_CONFIG = {
-  // apiKey: "твой_apiKey",
-  // authDomain: "твой-project.firebaseapp.com",
-  // projectId: "твой-project",
-  // storageBucket: "твой-project.appspot.com",
-  // messagingSenderId: "123456789",
-  // appId: "1:123456789:web:abcdef"
+  apiKey: "AIzaSyB1nhmTV5XgdvgPJxG6xYJ_GeEkohMaykA",
+  authDomain: "furiebi-ac7b6.firebaseapp.com",
+  projectId: "furiebi-ac7b6",
+  storageBucket: "furiebi-ac7b6.firebasestorage.app",
+  messagingSenderId: "144716304483",
+  appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
 /* ================================================================== */
 
-const STORAGE_KEY='siteData_v2';
+const STORAGE_KEY='siteData_v3'; // v3 — новая версия
 const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
 
@@ -429,59 +429,114 @@ let siteData;
 let db=null;
 let useFirebase=false;
 let unsubData=null;
+let isRendering=false;
+let debugLog=[];
+
+function dlog(msg,type='info'){
+  const time=new Date().toLocaleTimeString();
+  debugLog.push({time,msg,type});
+  if(debugLog.length>30)debugLog.shift();
+  console.log(`[${type}] ${time}: ${msg}`);
+}
 
 /* ---------- Firebase init ---------- */
 function initFirebase(){
   try{
-    if(!FIREBASE_CONFIG.apiKey){ useFirebase=false; return; }
+    if(typeof firebase==='undefined'){
+      dlog('Firebase SDK не загружен','err');
+      useFirebase=false; return;
+    }
+    if(!FIREBASE_CONFIG.apiKey){
+      dlog('apiKey пустой — Firebase отключен','warn');
+      useFirebase=false; return;
+    }
+    dlog('Инициализация Firebase... projectId='+FIREBASE_CONFIG.projectId);
     if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     db=firebase.firestore();
     useFirebase=true;
+    dlog('Firebase инициализирован ✓','ok');
     updateSyncDot('loading');
   }catch(e){
-    console.warn('Firebase init failed:',e);
+    dlog('Firebase init failed: '+e.message,'err');
     useFirebase=false;
   }
 }
 
 function updateSyncDot(state){
   const dot=$('#syncDot');
-  if(!useFirebase){ dot.classList.remove('on'); dot.classList.add('off'); dot.title='Локальный режим (Firebase не настроен)'; return; }
-  dot.classList.remove('off');
-  if(state==='loading'){ dot.classList.remove('on'); dot.title='Загрузка...'; }
+  if(!dot)return;
+  dot.classList.remove('on','off','loading');
+  if(!useFirebase){ dot.classList.add('off'); dot.title='Локальный режим (Firebase не настроен)'; return; }
+  if(state==='loading'){ dot.classList.add('loading'); dot.title='Загрузка...'; }
   else if(state==='ok'){ dot.classList.add('on'); dot.title='✓ Синхронизировано в облаке'; }
   else if(state==='error'){ dot.classList.add('off'); dot.title='Ошибка синхронизации'; }
+}
+
+/* ---------- Удаление дублей ---------- */
+function dedupe(arr,keyFn){
+  if(!Array.isArray(arr))return [];
+  const seen=new Set(), out=[];
+  for(const it of arr){
+    const key=keyFn(it);
+    if(!seen.has(key)){ seen.add(key); out.push(it); }
+  }
+  return out;
+}
+function dedupeAll(){
+  if(!siteData)return;
+  ['f','m'].forEach(t=>{
+    if(!siteData[t])siteData[t]={};
+    ['team','play','events','wall','gal'].forEach(k=>{
+      if(!Array.isArray(siteData[t][k]))siteData[t][k]=[];
+      const keyFns={
+        team:i=>(i.name||'')+'::'+(i.discord||''),
+        play:i=>(i.title||'')+'::'+(i.emo||''),
+        events:i=>(i.title||'')+'::'+(i.day||''),
+        wall:i=>(i.text||'')+'::'+(i.author||''),
+        gal:i=>(i.url||'')+'::'+(i.caption||'')
+      };
+      const before=siteData[t][k].length;
+      siteData[t][k]=dedupe(siteData[t][k],keyFns[k]);
+      const after=siteData[t][k].length;
+      if(before!==after) dlog(`Удалено ${before-after} дублей в ${t}.${k}`,'warn');
+    });
+  });
 }
 
 async function loadData(){
   initFirebase();
   if(useFirebase){
     try{
+      dlog('Чтение из Firestore collection=site doc=main');
       const doc=await db.collection('site').doc('main').get();
       if(doc.exists){
+        dlog('Документ найден в Firestore','ok');
         siteData=doc.data().data || JSON.parse(JSON.stringify(DEFAULT_DATA));
       }else{
+        dlog('Документ пуст — создаю дефолт','warn');
         siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
         await db.collection('site').doc('main').set({data:siteData,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
       }
-      // подписка на изменения в реальном времени
+      dedupeAll();
+      
       unsubData=db.collection('site').doc('main').onSnapshot(snap=>{
         if(!snap.exists)return;
         const newData=snap.data().data;
         if(!newData)return;
-        // сравниваем, чтобы не рендерить зря
         if(JSON.stringify(newData)!==JSON.stringify(siteData)){
           siteData=newData;
+          dedupeAll();
           renderAll();
         }
         updateSyncDot('ok');
       },err=>{
-        console.error('Snapshot error:',err);
+        dlog('Snapshot error: '+err.message,'err');
         updateSyncDot('error');
       });
       updateSyncDot('ok');
     }catch(e){
-      console.warn('Firebase load failed:',e);
+      dlog('Firebase load failed: '+e.message,'err');
+      dlog('Возможно Firestore rules блокируют доступ. Открой консоль (F12) для подробностей','warn');
       updateSyncDot('error');
       loadLocal();
     }
@@ -497,16 +552,16 @@ function loadLocal(){
   }catch(e){
     siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
   }
-  if(!siteData.f)siteData.f=DEFAULT_DATA.f;
-  if(!siteData.m)siteData.m=DEFAULT_DATA.m;
+  if(!siteData.f)siteData.f=JSON.parse(JSON.stringify(DEFAULT_DATA.f));
+  if(!siteData.m)siteData.m=JSON.parse(JSON.stringify(DEFAULT_DATA.m));
   ['team','play','events','wall','gal'].forEach(k=>{
     if(!Array.isArray(siteData.f[k]))siteData.f[k]=[];
     if(!Array.isArray(siteData.m[k]))siteData.m[k]=[];
   });
+  dedupeAll();
 }
 
 async function saveData(){
-  // всегда сохраняем локально (как кэш/fallback)
   localStorage.setItem(STORAGE_KEY,JSON.stringify(siteData));
   if(useFirebase){
     try{
@@ -514,24 +569,31 @@ async function saveData(){
         data:siteData,
         updatedAt:firebase.firestore.FieldValue.serverTimestamp()
       },{merge:true});
+      dlog('Сохранено в Firestore ✓','ok');
       updateSyncDot('ok');
     }catch(e){
-      console.warn('Firebase save failed:',e);
+      dlog('Firebase save failed: '+e.message,'err');
       updateSyncDot('error');
-      toast('⚠ Сохранено только локально. Проверь Firebase.');
+      toast('⚠ Сохранено только локально. Проверь Firebase rules.');
     }
   }
 }
 
 function cur(){return siteData[theme];}
 
-/* ============ РЕНДЕР СЕКЦИЙ ============ */
+/* ============ РЕНДЕР ============ */
 function renderAll(){
-  renderTeam(); renderPlay(); renderEvents(); renderWall(); renderGal(); observeReveal();
+  if(isRendering)return;
+  isRendering=true;
+  try{
+    renderTeam(); renderPlay(); renderEvents(); renderWall(); renderGal(); observeReveal();
+  }finally{
+    isRendering=false;
+  }
 }
 
 function renderTeam(){
-  const box=$('#teamGrid'); box.innerHTML='';
+  const box=$('#teamGrid'); if(!box)return; box.innerHTML='';
   const items=cur().team;
   if(!items.length){
     box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">✨</span><h3>Команда пока пуста</h3><p>админ добавит участников через админ-панель</p></div>`;
@@ -557,7 +619,7 @@ function renderTeam(){
 }
 
 function renderPlay(){
-  const box=$('#playGrid'); box.innerHTML='';
+  const box=$('#playGrid'); if(!box)return; box.innerHTML='';
   const items=cur().play;
   if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">🎲</span><h3>Игровая пока пуста</h3><p>админ добавит активности через админ-панель</p></div>`; return; }
   items.forEach(it=>{
@@ -569,7 +631,7 @@ function renderPlay(){
 }
 
 function renderEvents(){
-  const box=$('#eventsGrid'); box.innerHTML='';
+  const box=$('#eventsGrid'); if(!box)return; box.innerHTML='';
   const items=cur().events;
   if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📅</span><h3>Расписания пока нет</h3><p>админ добавит ивенты через админ-панель</p></div>`; return; }
   items.forEach(it=>{
@@ -581,7 +643,7 @@ function renderEvents(){
 }
 
 function renderWall(){
-  const box=$('#wallGrid'); box.innerHTML='';
+  const box=$('#wallGrid'); if(!box)return; box.innerHTML='';
   const items=cur().wall;
   if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📌</span><h3>Стена пока пуста</h3><p>сюда будут крепиться тёплые слова</p></div>`; return; }
   items.forEach(it=>{
@@ -594,7 +656,7 @@ function renderWall(){
 }
 
 function renderGal(){
-  const box=$('#galGrid'); box.innerHTML='';
+  const box=$('#galGrid'); if(!box)return; box.innerHTML='';
   const items=cur().gal;
   if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📸</span><h3>Альбом пока пуст</h3><p>сюда будут добавляться кадры</p></div>`; return; }
   items.forEach(it=>{
@@ -665,7 +727,7 @@ function renderMarquee(t){
 function pollKey(){return 'poll_'+theme;}
 function getPoll(){ try{return JSON.parse(localStorage.getItem(pollKey()))||{c:[0,0,0,0],v:null};}catch(e){return{c:[0,0,0,0],v:null};} }
 function renderPoll(){
-  const st=getPoll(), box=$('#poll'); box.innerHTML='';
+  const st=getPoll(), box=$('#poll'); if(!box)return; box.innerHTML='';
   const total=st.c.reduce((a,b)=>a+b,0);
   POLL_OPTS.forEach((o,i)=>{
     const b=document.createElement('button'); b.className='opt'+(st.v===i?' mine':'');
@@ -768,7 +830,7 @@ function updateSetupNote(){
   if(useFirebase){
     note.innerHTML='☁️ <b>Firebase подключён</b> — все изменения автоматически увидят все посетители сайта.';
   }else{
-    note.innerHTML='⚠️ <b>Firebase не настроен</b> — изменения видны только тебе. Чтобы другие тоже видели, вставь <code>FIREBASE_CONFIG</code> в начало &lt;script&gt; (инструкция в коде). Пока работают экспорт/импорт.';
+    note.innerHTML='⚠️ <b>Firebase не настроен</b> — изменения видны только тебе. Открой консоль (F12) чтобы увидеть ошибку. Пока работают экспорт/импорт.';
   }
 }
 
@@ -787,15 +849,19 @@ function showTab(tab){
     box.innerHTML=`
       <p style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:700">
         ${useFirebase
-          ? '🟢 Firebase активен: данные хранятся в облаке. Экспорт/импорт можно использовать как резервную копию.'
-          : '🟡 Firebase не настроен: используй экспорт, чтобы сохранить данные и импортировать на других устройствах.'}
+          ? '🟢 Firebase активен: данные хранятся в облаке.'
+          : '🟡 Firebase не настроен. Проверь консоль (F12).'}
       </p>
       <div class="btns">
-        <button class="btn solid" onclick="exportData()">📥 Экспорт (JSON)</button>
+        <button class="btn solid" onclick="exportData()">📥 Экспорт</button>
         <button class="btn ghost" onclick="document.getElementById('importFile').click()">📤 Импорт</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+        <button class="btn ghost" onclick="clearDuplicates()" style="border-color:#ffcc00;color:#ffcc00">🧹 Удалить дубли</button>
         <button class="btn ghost" onclick="resetData()" style="border-color:#ff6b6b;color:#ff6b6b">🗑 Сброс</button>
+        <button class="btn ghost" onclick="resetFirebase()" style="border-color:#ff3333;color:#ff3333">🔥 Очистить Firebase</button>
       </div>
+      <h4 style="font-size:13px;margin-top:14px;color:var(--muted)">📋 Диагностический лог:</h4>
+      <div class="debug-box" id="debugBox">${debugLog.map(e=>`<span class="${e.type}">[${e.time}] ${escapeHtml(e.msg)}</span>`).join('\n')}</div>
     `;
     return;
   }
@@ -806,12 +872,12 @@ const FIELD_DEFS={
   team:[
     {k:'name',label:'Имя / Ник',type:'text'},
     {k:'discord',label:'Discord username (без @)',type:'text'},
-    {k:'avatar',label:'URL аватарки (правый клик на аватарке в Discord → Копировать ссылку)',type:'text'},
+    {k:'avatar',label:'URL аватарки',type:'text'},
     {k:'sticker',label:'Стикер сверху (эмодзи)',type:'text'},
-    {k:'status',label:'Статус (напр. "в сети", "не беспокоить")',type:'text'},
+    {k:'status',label:'Статус',type:'text'},
     {k:'role',label:'Роль (с эмодзи)',type:'text'},
     {k:'quote',label:'Цитата',type:'textarea'},
-    {k:'color',label:'Цвет (hex, напр. #ff5fa2)',type:'text'}
+    {k:'color',label:'Цвет (hex)',type:'text'}
   ],
   play:[
     {k:'emo',label:'Эмодзи',type:'text'},
@@ -819,7 +885,7 @@ const FIELD_DEFS={
     {k:'desc',label:'Описание',type:'textarea'}
   ],
   events:[
-    {k:'day',label:'День и время (напр. "пятница • 20:00")',type:'text'},
+    {k:'day',label:'День и время',type:'text'},
     {k:'title',label:'Название',type:'text'},
     {k:'desc',label:'Описание',type:'textarea'},
     {k:'emo',label:'Эмодзи',type:'text'}
@@ -827,7 +893,7 @@ const FIELD_DEFS={
   wall:[
     {k:'text',label:'Текст записи',type:'textarea'},
     {k:'author',label:'Автор',type:'text'},
-    {k:'pin',label:'Иконка-пин (📌 💌 🌸 ☕)',type:'text'}
+    {k:'pin',label:'Иконка-пин',type:'text'}
   ],
   gal:[
     {k:'url',label:'URL картинки',type:'text'},
@@ -883,6 +949,7 @@ window.editItem=function(tab,i){
     fields.forEach(f=>{ newObj[f.k]=$('#adminContent [data-field="'+f.k+'"]').value; });
     if(i<0){ cur()[tab].push(newObj); }
     else{ cur()[tab][i]=newObj; }
+    dedupeAll();
     await saveData();
     renderListEditor(tab);
     renderAll();
@@ -912,6 +979,7 @@ window.importData=async function(e){
       const data=JSON.parse(ev.target.result);
       if(!data.f||!data.m)throw new Error('bad format');
       siteData=data;
+      dedupeAll();
       await saveData();
       renderAll();
       showTab(currentTab);
@@ -924,967 +992,48 @@ window.importData=async function(e){
   e.target.value='';
 };
 
-window.resetData=async function(){
-  if(!confirm('Точно сбросить все данные до стартовых?'))return;
-  siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
+window.clearDuplicates=async function(){
+  dedupeAll();
   await saveData();
   renderAll();
   showTab(currentTab);
-  toast('Данные сброшены');
+  toast('Дубли удалены 🧹');
 };
 
-/* ============ СТАРТ ============ */
-(async ()=>{
-  await loadData();
-  swapTexts(theme,false);
-  renderMarquee(theme);
-  renderPoll();
+window.resetData=async function(){
+  if(!confirm('Сбросить ЛОКАЛЬНЫЕ данные до стартовых?'))return;
+  siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
+  dedupeAll();
+  await saveData();
   renderAll();
-})();
-</script>
-</body>
-</html><!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Девичник • сайт нашего сервера</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800;900&family=Russo+One&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-/* ============ ТЕМЫ ============ */
-body[data-theme="f"]{
-  --bg:#1a0f18; --bg2:#261624; --card:#2d1a2a; --ink:#f5e3ec; --muted:#b98aa6;
-  --accent:#ff6faf; --accent2:#c49cff; --accent3:#6fdab8; --line:#4a2844;
-  --soft:#3a1e36; --radius:22px; --font-d:'Pacifico',cursive; --font-b:'Nunito',sans-serif;
-  --shadow:0 14px 34px rgba(0,0,0,.5);
-}
-body[data-theme="m"]{
-  --bg:#0d1220; --bg2:#131b32; --card:#161f38; --ink:#eaf2ff; --muted:#8fa3c8;
-  --accent:#37e6ff; --accent2:#ff9f45; --accent3:#c6ff4a; --line:#273353;
-  --soft:#1a2440; --radius:10px; --font-d:'Russo One',sans-serif; --font-b:'Manrope',sans-serif;
-  --shadow:0 14px 34px rgba(0,0,0,.45);
-}
-
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:16.5px;line-height:1.55;overflow-x:hidden;min-height:100vh}
-body,.themable,.themable *{transition:background-color .5s ease,border-color .5s ease,color .5s ease,box-shadow .5s ease}
-::selection{background:var(--accent);color:#fff}
-img{display:block;max-width:100%}
-button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
-.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
-
-body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:120;opacity:.05;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")}
-
-.floaters{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-.floaters span{position:absolute;font-size:26px;opacity:.28;animation:drift 12s ease-in-out infinite alternate}
-body[data-theme="m"] .fl-f{display:none}
-body[data-theme="f"] .fl-m{display:none}
-@keyframes drift{from{transform:translateY(0) rotate(-8deg)}to{transform:translateY(-34px) rotate(10deg)}}
-
-.topbar{position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(10px);border-bottom:2px dashed var(--line)}
-.topbar .wrap{display:flex;align-items:center;gap:14px;height:66px}
-.server-icon{width:42px;height:42px;border-radius:14px 14px 14px 4px;display:grid;place-items:center;font-size:22px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:var(--shadow);flex:none}
-.server-name{font-family:var(--font-d);font-size:20px;white-space:nowrap}
-.nav{display:flex;gap:4px;margin-left:auto}
-.nav a{color:var(--muted);text-decoration:none;font-weight:800;font-size:14px;padding:7px 12px;border-radius:999px}
-.nav a:hover{color:var(--accent);background:var(--soft)}
-.sync-dot{width:10px;height:10px;border-radius:50%;background:var(--muted);transition:background .3s;flex:none}
-.sync-dot.on{background:#3ecf7a;box-shadow:0 0 10px #3ecf7a}
-.sync-dot.off{background:#ff6b6b}
-.switch{display:inline-flex;align-items:center;gap:10px;border:2px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-weight:900;font-size:13.5px;letter-spacing:.3px}
-.switch .lbl{color:var(--muted);transition:color .4s}
-.switch .lbl.on{color:var(--accent)}
-.track{width:54px;height:26px;border-radius:999px;background:var(--line);position:relative;flex:none}
-.knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--accent);transition:transform .45s cubic-bezier(.34,1.6,.64,1),background-color .5s}
-body[data-theme="m"] .knob{transform:translateX(28px)}
-
-.hero{display:grid;grid-template-columns:1fr;gap:44px;align-items:center;padding:64px 0 46px;position:relative;z-index:1;max-width:720px}
-.hero-kick{font-size:12.5px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--accent)}
-.hero h1{font-family:var(--font-d);font-size:clamp(38px,6.4vw,72px);line-height:1.12;margin:14px 0 18px}
-.hero p.lead{font-size:17.5px;color:var(--muted);font-weight:700;max-width:580px}
-.hero-btns{display:flex;gap:14px;margin-top:26px;flex-wrap:wrap}
-.btn{display:inline-block;padding:14px 28px;border-radius:999px;font-weight:900;font-size:15.5px;letter-spacing:.3px;text-decoration:none;box-shadow:var(--shadow);transition:transform .15s;cursor:pointer;border:none}
-.btn:active{transform:scale(.94)}
-.btn.solid{background:var(--accent);color:#fff}
-.btn.ghost{border:2px solid var(--accent);color:var(--accent)}
-.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
-.chipst{background:var(--card);border:2px dashed var(--line);border-radius:999px;padding:8px 15px;font-weight:900;font-size:13px;animation:pulseSoft 3s ease-in-out infinite}
-.chipst:nth-child(2){animation-delay:1s}.chipst:nth-child(3){animation-delay:2s}
-@keyframes pulseSoft{50%{transform:translateY(-4px)}}
-
-.ribbon{border-block:2px dashed var(--line);padding:11px 0;overflow:hidden;background:var(--card);position:relative;z-index:1}
-.mtrack{display:flex;gap:34px;width:max-content;animation:mq 26s linear infinite;font-family:var(--font-d);font-size:17px;color:var(--accent)}
-@keyframes mq{to{transform:translateX(-50%)}}
-
-section{position:relative;z-index:1;padding:58px 0}
-.sec-head{margin-bottom:32px}
-.sec-kick{font-size:12px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--accent2)}
-.sec-title{font-family:var(--font-d);font-size:clamp(30px,4.5vw,46px);margin-top:6px}
-.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
-.reveal.in{opacity:1;transform:none}
-
-.member{position:relative;background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:24px 20px 20px;text-align:center;box-shadow:var(--shadow);transition:transform .35s}
-.member:hover{transform:translateY(-6px) rotate(-1deg)}
-.member .sticker{position:absolute;top:-13px;right:14px;font-size:24px;transform:rotate(12deg)}
-.mav{width:84px;height:84px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,var(--accent),var(--accent2)) center/cover;display:grid;place-items:center;color:#fff;font-weight:900;font-size:28px;box-shadow:0 0 0 4px var(--soft),0 0 0 6px var(--accent)}
-.member h3{font-family:var(--font-d);font-size:22px}
-.discord-nick{display:block;font-size:13px;font-weight:800;color:var(--muted);margin-top:2px}
-.status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--muted);margin:6px 0 10px}
-.status i{width:9px;height:9px;border-radius:50%;background:#3ecf7a}
-.status.dnd i{background:#ff6b6b}
-.chip{display:inline-block;font-size:12.5px;font-weight:900;padding:5px 12px;border-radius:999px;background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--accent);margin-bottom:12px}
-.member q{display:block;font-size:13.5px;color:var(--muted);font-style:italic}
-
-.placeholder{background:var(--card);border:2px dashed var(--line);border-radius:var(--radius);padding:46px 24px;text-align:center;box-shadow:var(--shadow);transition:transform .35s}
-.placeholder:hover{transform:translateY(-4px)}
-.placeholder .ph-emo{font-size:44px;display:block;margin-bottom:14px}
-.placeholder h3{font-family:var(--font-d);font-size:22px;margin-bottom:8px}
-.placeholder p{color:var(--muted);font-weight:700;font-size:14.5px;max-width:520px;margin:0 auto}
-.placeholder-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
-
-.note{position:relative;width:235px;background:var(--card);border:2px dashed var(--line);border-radius:6px;padding:26px 18px 20px;box-shadow:var(--shadow);transition:transform .35s}
-.note::before{content:"";position:absolute;top:-11px;left:50%;transform:translateX(-50%) rotate(-3deg);width:74px;height:22px;background:color-mix(in srgb,var(--accent) 35%,transparent);border-radius:3px}
-.notes{display:flex;flex-wrap:wrap;gap:24px;justify-content:center}
-.note:nth-child(odd){transform:rotate(-2.2deg)}
-.note:nth-child(even){transform:rotate(2deg) translateY(12px)}
-.note:nth-child(3n){transform:rotate(-1deg) translateY(-8px)}
-.note:hover{transform:rotate(0) scale(1.05);z-index:2}
-.note .day{font-size:11.5px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--accent)}
-.note h4{font-family:var(--font-d);font-size:19px;margin:7px 0}
-.note p{font-size:13.5px;color:var(--muted)}
-.note .emo{position:absolute;bottom:10px;right:12px;font-size:22px}
-
-.wall{display:flex;flex-wrap:wrap;gap:26px;justify-content:center;padding:14px 0}
-.pnote{width:225px;background:color-mix(in srgb,var(--accent) 18%,var(--card));border-radius:12px;padding:20px 16px 16px;font-size:14px;font-weight:700;box-shadow:var(--shadow);transition:transform .4s cubic-bezier(.34,1.4,.64,1);position:relative}
-.pnote small{display:block;margin-top:12px;color:var(--muted);font-weight:900;font-size:11.5px;letter-spacing:1px;text-transform:uppercase}
-.pnote::after{content:attr(data-pin);position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:20px}
-.pnote:nth-child(1){transform:rotate(-4deg)}
-.pnote:nth-child(2){transform:rotate(3deg) translateY(16px)}
-.pnote:nth-child(3){transform:rotate(-2deg) translateY(-6px)}
-.pnote:nth-child(4){transform:rotate(4deg) translateY(10px)}
-.pnote:nth-child(5){transform:rotate(-3deg)}
-.pnote:nth-child(6){transform:rotate(2deg) translateY(18px)}
-.pnote:hover{transform:rotate(0) scale(1.07);z-index:2}
-
-.gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
-.gitem{position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:3/2;border:2px solid var(--line);box-shadow:var(--shadow)}
-.gitem img{width:100%;height:100%;object-fit:cover}
-.gitem figcaption{position:absolute;inset:auto 0 0;padding:34px 14px 12px;font-weight:900;font-size:14px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.55))}
-
-.play{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
-.panel{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
-.panel h3{font-family:var(--font-d);font-size:21px;margin-bottom:12px;text-align:center}
-.panel .pdesc{color:var(--muted);font-weight:700;font-size:14px;text-align:center}
-.panel .pemo{font-size:56px;text-align:center;display:block;margin-bottom:14px}
-
-.poll{max-width:620px;margin:0 auto;background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
-.opt{position:relative;display:block;width:100%;text-align:left;border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;font-weight:800;font-size:15px;overflow:hidden;background:var(--bg2)}
-.opt .fill{position:absolute;inset:0;width:0;background:color-mix(in srgb,var(--accent) 20%,transparent);transition:width .9s cubic-bezier(.2,.8,.2,1)}
-.opt span{position:relative;z-index:1}
-.opt .pct{float:right;color:var(--accent);font-weight:900}
-.opt.mine{border-color:var(--accent)}
-.poll-foot{text-align:center;color:var(--muted);font-size:13px;font-weight:800;margin-top:16px}
-
-footer{border-top:2px dashed var(--line);padding:60px 0 40px;text-align:center;position:relative;z-index:1}
-footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-width:660px;margin:0 auto 26px}
-.love{display:inline-flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:28px;position:relative}
-.heartbtn{font-size:34px;background:var(--card);border:2px solid var(--line);border-radius:50%;width:74px;height:74px;transition:transform .15s;box-shadow:var(--shadow)}
-.heartbtn:active{transform:scale(.88)}
-.love .cnt{font-weight:900;font-size:13px;color:var(--muted)}
-.fheart{position:absolute;font-size:20px;pointer-events:none;animation:rise 1.1s ease-out forwards}
-@keyframes rise{to{transform:translate(var(--dx),-110px) rotate(20deg);opacity:0}}
-.foot-small{margin-top:26px;font-size:12.5px;color:var(--muted);font-weight:700}
-.admin-link{margin-top:16px;font-size:11px;color:var(--muted);opacity:.5;cursor:pointer}
-.admin-link:hover{opacity:1;color:var(--accent)}
-
-#wipe{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;clip-path:circle(0px at 50% 50%)}
-#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 24px;border-radius:999px;font-weight:900;font-size:14px;opacity:0;pointer-events:none;transition:all .35s;z-index:300}
-#toast.show{opacity:1;transform:translate(-50%,0)}
-.trail{position:fixed;z-index:150;pointer-events:none;font-size:16px;animation:trailUp .8s ease-out forwards}
-@keyframes trailUp{to{transform:translateY(-46px) scale(.4);opacity:0}}
-
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
-.modal.open{display:flex}
-.modal-box{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow)}
-.modal-box h2{font-family:var(--font-d);font-size:26px;margin-bottom:16px}
-.modal-box .form-row{margin-bottom:14px}
-.modal-box label{display:block;font-size:13px;font-weight:800;color:var(--muted);margin-bottom:4px}
-.modal-box input,.modal-box textarea,.modal-box select{
-  width:100%;padding:10px 14px;border-radius:10px;border:2px solid var(--line);
-  background:var(--bg2);color:var(--ink);font-family:inherit;font-size:14px;font-weight:700
-}
-.modal-box textarea{resize:vertical;min-height:60px}
-.modal-box input:focus,.modal-box textarea:focus,.modal-box select:focus{outline:none;border-color:var(--accent)}
-.modal-box .btns{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
-.admin-tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap}
-.admin-tabs button{padding:8px 14px;border-radius:999px;font-weight:800;font-size:13px;border:2px solid var(--line);background:var(--bg2);color:var(--muted)}
-.admin-tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.admin-list{max-height:280px;overflow-y:auto;border:2px solid var(--line);border-radius:12px;padding:10px;margin-bottom:14px;background:var(--bg2)}
-.admin-list-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:4px;background:var(--card);font-size:13px;font-weight:700}
-.admin-list-item .acts{display:flex;gap:6px}
-.admin-list-item button{padding:4px 10px;border-radius:6px;font-size:12px;font-weight:800}
-.admin-list-item .edit{background:var(--accent2);color:#fff}
-.admin-list-item .del{background:#ff6b6b;color:#fff}
-.admin-list-empty{text-align:center;padding:20px;color:var(--muted);font-weight:700;font-size:13px}
-.theme-note{background:color-mix(in srgb,var(--accent) 15%,transparent);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:800;color:var(--accent);margin-bottom:14px}
-.setup-note{background:color-mix(in srgb,#37e6ff 15%,transparent);padding:12px 16px;border-radius:10px;font-size:13px;font-weight:700;color:#37e6ff;margin-bottom:14px;line-height:1.5}
-
-@media (max-width:860px){
-  .hero{padding-top:40px}
-  .nav{display:none}
-}
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation:none!important;transition:none!important}
-  html{scroll-behavior:auto}
-}
-</style>
-</head>
-<body data-theme="f">
-
-<div class="floaters" aria-hidden="true">
-  <span class="fl-f" style="left:6%;top:18%">🌸</span><span class="fl-f" style="left:88%;top:12%;animation-delay:-3s">✨</span>
-  <span class="fl-f" style="left:14%;top:70%;animation-delay:-6s">💗</span><span class="fl-f" style="left:80%;top:64%;animation-delay:-2s">🎀</span>
-  <span class="fl-f" style="left:48%;top:38%;animation-delay:-8s">🫧</span><span class="fl-f" style="left:68%;top:86%;animation-delay:-4s">🌷</span>
-  <span class="fl-m" style="left:6%;top:18%">⚡</span><span class="fl-m" style="left:88%;top:12%;animation-delay:-3s">🔥</span>
-  <span class="fl-m" style="left:14%;top:70%;animation-delay:-6s">🎮</span><span class="fl-m" style="left:80%;top:64%;animation-delay:-2s">🛡️</span>
-  <span class="fl-m" style="left:48%;top:38%;animation-delay:-8s">🚀</span><span class="fl-m" style="left:68%;top:86%;animation-delay:-4s">🏴</span>
-</div>
-
-<div id="wipe"></div>
-<div id="toast"></div>
-
-<header class="topbar themable">
-  <div class="wrap">
-    <div class="server-icon"><span id="logoEmoji">🌸</span></div>
-    <div class="server-name" data-f="Девичник" data-m="Братство">Девичник</div>
-    <nav class="nav">
-      <a href="#team">команда</a><a href="#play">игровая</a><a href="#events">ивенты</a><a href="#wall">стена</a><a href="#gallery">моменты</a>
-    </nav>
-    <span class="sync-dot" id="syncDot" title="Статус синхронизации"></span>
-    <button class="switch" id="themeBtn" aria-label="Переключить тему">
-      <span class="lbl on" id="lblF">🌸 девичий</span>
-      <span class="track"><span class="knob"></span></span>
-      <span class="lbl" id="lblM">мужской ⚡</span>
-    </button>
-  </div>
-</header>
-
-<div class="wrap">
-  <div class="hero">
-    <div>
-      <div class="hero-kick" data-f="✦ сайт нашего сервера ✦" data-m="✦ сайт нашего сервера ✦">✦ сайт нашего сервера ✦</div>
-      <h1 class="scr" id="heroTitle" data-f="Привет, красавицы!" data-m="Привет, легенды!">Привет, красавицы!</h1>
-      <p class="lead" data-f="Это самый уютный уголок интернета: наш сервер, наши девочки, караоке по субботам и тёплые слова без лимита."
-         data-m="Это база нашего сервера: наша команда, турниры по средам и респекты без лимита.">Это самый уютный уголок интернета: наш сервер, наши девочки, караоке по субботам и тёплые слова без лимита.</p>
-      <div class="hero-btns">
-        <a href="https://discord.gg/GMyqZraKr5" target="_blank" rel="noopener" class="btn solid" data-f="залетай в Discord 💌" data-m="выдвигайся в Discord ⚡">залетай в Discord 💌</a>
-      </div>
-      <div class="chips">
-        <span class="chipst" data-f="💗 уют: включён" data-m="⚡ боеготовность: 100%">💗 уют: включён</span>
-        <span class="chipst" data-f="🎤 караоке: по субботам" data-m="🎮 катки: по средам">🎤 караоке: по субботам</span>
-        <span class="chipst" data-f="🌙 онлайн: 24/7" data-m="📡 связь: 24/7">🌙 онлайн: 24/7</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="ribbon themable" aria-hidden="true"><div class="mtrack" id="marquee"></div></div>
-
-<section id="team">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <div class="sec-kick" data-f="наш цветник" data-m="наш отряд">наш цветник</div>
-      <h2 class="sec-title scr" data-f="Наши звёздочки" data-m="Боевой состав">Наши звёздочки</h2>
-    </div>
-    <div class="placeholder-grid" id="teamGrid"></div>
-  </div>
-</section>
-
-<section id="play">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <div class="sec-kick" data-f="уголок веселья" data-m="полигон досуга">уголок веселья</div>
-      <h2 class="sec-title scr" data-f="Игровая комната" data-m="Штаб досуга">Игровая комната</h2>
-    </div>
-    <div class="play" id="playGrid"></div>
-  </div>
-</section>
-
-<section id="events">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <div class="sec-kick" data-f="доска объявлений" data-m="расписание операций">доска объявлений</div>
-      <h2 class="sec-title scr" data-f="Планы на неделю" data-m="Боевое расписание">Планы на неделю</h2>
-    </div>
-    <div class="notes" id="eventsGrid"></div>
-  </div>
-</section>
-
-<section id="wall">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <div class="sec-kick" data-f="прикреплено с любовью" data-m="прикреплено с уважением">прикреплено с любовью</div>
-      <h2 class="sec-title scr" data-f="Стена тёплых слов" data-m="Доска почёта">Стена тёплых слов</h2>
-    </div>
-    <div class="wall" id="wallGrid"></div>
-  </div>
-</section>
-
-<section id="vote">
-  <div class="wrap">
-    <div class="sec-head reveal" style="text-align:center">
-      <div class="sec-kick" data-f="решаем вместе" data-m="голосование отряда">решаем вместе</div>
-      <h2 class="sec-title scr" data-f="Что смотрим в пятницу?" data-m="Какая операция в пятницу?">Что смотрим в пятницу?</h2>
-    </div>
-    <div class="poll themable reveal" id="poll"></div>
-  </div>
-</section>
-
-<section id="gallery">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <div class="sec-kick" data-f="наш фотоальбом" data-m="архив записей">наш фотоальбом</div>
-      <h2 class="sec-title scr" data-f="Моменты сервера" data-m="Хроника отряда">Моменты сервера</h2>
-    </div>
-    <div class="gal" id="galGrid"></div>
-  </div>
-</section>
-
-<footer class="themable">
-  <div class="wrap">
-    <p class="thanks" data-f="сделано с 💗 для самых лучших девчонок этого сервера" data-m="сделано с 🫡 для лучших бойцов этого сервера">сделано с 💗 для самых лучших девчонок этого сервера</p>
-    <div class="love" id="loveZone">
-      <button class="heartbtn themable" id="heartBtn" aria-label="Отправить любовь">💖</button>
-      <span class="cnt"><span id="heartCnt">0</span> <span data-f="сердечек отправлено" data-m="респектов отдано">сердечек отправлено</span></span>
-    </div>
-    <div><a class="btn solid" href="https://discord.gg/GMyqZraKr5" target="_blank" rel="noopener" data-f="залетай в Discord 💌" data-m="выдвигайся в Discord ⚡">залетай в Discord 💌</a></div>
-    <p class="foot-small" data-f="✦ сервер «Девичник» • онлайн 24/7 • вход только с хорошим настроением ✦" data-m="✦ база «Братство» • онлайн 24/7 • вход только с хорошим настроением ✦">✦ сервер «Девичник» • онлайн 24/7 • вход только с хорошим настроением ✦</p>
-    <div class="admin-link" id="adminLink">⚙ админ</div>
-  </div>
-</footer>
-
-<div class="modal" id="loginModal">
-  <div class="modal-box">
-    <h2>🔐 Вход админа</h2>
-    <div class="form-row"><label>Имя пользователя</label><input type="text" id="loginUser" autocomplete="username"></div>
-    <div class="form-row"><label>Пароль</label><input type="password" id="loginPass" autocomplete="current-password"></div>
-    <div class="btns">
-      <button class="btn solid" id="loginOk">Войти</button>
-      <button class="btn ghost" onclick="closeModal('loginModal')">Отмена</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="adminModal">
-  <div class="modal-box">
-    <h2>⚙ Админ-панель</h2>
-    <div class="theme-note" id="themeNote"></div>
-    <div class="setup-note" id="setupNote"></div>
-    <div class="admin-tabs">
-      <button class="active" data-tab="team">Команда</button>
-      <button data-tab="play">Игровая</button>
-      <button data-tab="events">Ивенты</button>
-      <button data-tab="wall">Стена</button>
-      <button data-tab="gal">Галерея</button>
-      <button data-tab="data">Данные</button>
-    </div>
-    <div id="adminContent"></div>
-    <div class="btns">
-      <button class="btn ghost" onclick="closeModal('adminModal')">Закрыть</button>
-      <button class="btn solid" onclick="logout()">Выйти</button>
-    </div>
-  </div>
-</div>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
-<script>
-"use strict";
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-let theme=localStorage.getItem('theme')||'f';
-document.body.dataset.theme=theme;
-
-/* ==================================================================
-   👇 ВСТАВЬ СЮДА СВОЙ FIREBASE CONFIG из консоли Firebase
-   (Настройки проекта → Твои приложения → Web → firebaseConfig)
-   ================================================================== */
-const FIREBASE_CONFIG = {
-  // apiKey: "твой_apiKey",
-  // authDomain: "твой-project.firebaseapp.com",
-  // projectId: "твой-project",
-  // storageBucket: "твой-project.appspot.com",
-  // messagingSenderId: "123456789",
-  // appId: "1:123456789:web:abcdef"
-};
-/* ================================================================== */
-
-const STORAGE_KEY='siteData_v2';
-const ADMIN_USER='DEAD';
-const ADMIN_PASS='Dead12pull4';
-
-const DEFAULT_DATA={
-  f:{
-    team:[
-      {name:'Пример Ани', discord:'anya_star', avatar:'', status:'в сети', role:'👑 Королева сервера', quote:'«Главное правило — уют для всех»', sticker:'🎀', color:'#ff5fa2'}
-    ],
-    play:[
-      {emo:'🔮', title:'Шар судьбы', desc:'скоро тут появится предсказание на день'},
-      {emo:'💌', title:'Генератор комплиментов', desc:'скоро тут можно будет получить порцию тёплых слов'},
-      {emo:'🎧', title:'Плейлист сервера', desc:'скоро тут зазвучит наша любимая музыка'}
-    ],
-    events:[
-      {day:'пятница • 20:00', title:'Киновечер', desc:'ромком, пледы и какао. кто уснул — смотрит титры', emo:'🍿'},
-      {day:'суббота • 19:00', title:'Караоке', desc:'поём громко, стыдно никому. закажи песню заранее!', emo:'🎤'}
-    ],
-    wall:[
-      {text:'Пример: Аня, твой плейлист спас мне сессию 💗', author:'Соня', pin:'📌'},
-      {text:'Лучшие девчонки во всех измерениях ✨', author:'Мила', pin:'📌'}
-    ],
-    gal:[]
-  },
-  m:{
-    team:[
-      {name:'Пример бойца', discord:'warrior_01', avatar:'', status:'на посту', role:'⚔️ Командир отряда', quote:'«Главное правило — своих не бросаем»', sticker:'🎖️', color:'#37e6ff'}
-    ],
-    play:[
-      {emo:'🧭', title:'Оракул отряда', desc:'скоро тут появится боевой прогноз'},
-      {emo:'🏆', title:'Генератор похвалы', desc:'скоро тут можно будет получить заслуженный респект'},
-      {emo:'🎧', title:'Саундтрек базы', desc:'скоро тут зазвучит саундтрек отряда'}
-    ],
-    events:[
-      {day:'пятница • 20:00', title:'Кинооперация', desc:'фильм выбирает отряд. уснувшие смотрят титры', emo:'🎬'},
-      {day:'среда • 21:00', title:'Тактические катки', desc:'турнир отряда. реванш обязателен', emo:'🎯'}
-    ],
-    wall:[
-      {text:'Без отряда и пятница не в радость 👊', author:'Боец', pin:'📌'}
-    ],
-    gal:[]
-  }
+  showTab(currentTab);
+  toast('Локальные данные сброшены');
 };
 
-let siteData;
-let db=null;
-let useFirebase=false;
-let unsubData=null;
-
-/* ---------- Firebase init ---------- */
-function initFirebase(){
+window.resetFirebase=async function(){
+  if(!useFirebase){ toast('Firebase не активен'); return; }
+  if(!confirm('ПОЛНОСТЬЮ очистить данные в Firebase? Это сбросит всё для всех пользователей!'))return;
   try{
-    if(!FIREBASE_CONFIG.apiKey){ useFirebase=false; return; }
-    if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-    db=firebase.firestore();
-    useFirebase=true;
-    updateSyncDot('loading');
-  }catch(e){
-    console.warn('Firebase init failed:',e);
-    useFirebase=false;
-  }
-}
-
-function updateSyncDot(state){
-  const dot=$('#syncDot');
-  if(!useFirebase){ dot.classList.remove('on'); dot.classList.add('off'); dot.title='Локальный режим (Firebase не настроен)'; return; }
-  dot.classList.remove('off');
-  if(state==='loading'){ dot.classList.remove('on'); dot.title='Загрузка...'; }
-  else if(state==='ok'){ dot.classList.add('on'); dot.title='✓ Синхронизировано в облаке'; }
-  else if(state==='error'){ dot.classList.add('off'); dot.title='Ошибка синхронизации'; }
-}
-
-async function loadData(){
-  initFirebase();
-  if(useFirebase){
-    try{
-      const doc=await db.collection('site').doc('main').get();
-      if(doc.exists){
-        siteData=doc.data().data || JSON.parse(JSON.stringify(DEFAULT_DATA));
-      }else{
-        siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
-        await db.collection('site').doc('main').set({data:siteData,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-      }
-      // подписка на изменения в реальном времени
-      unsubData=db.collection('site').doc('main').onSnapshot(snap=>{
-        if(!snap.exists)return;
-        const newData=snap.data().data;
-        if(!newData)return;
-        // сравниваем, чтобы не рендерить зря
-        if(JSON.stringify(newData)!==JSON.stringify(siteData)){
-          siteData=newData;
-          renderAll();
-        }
-        updateSyncDot('ok');
-      },err=>{
-        console.error('Snapshot error:',err);
-        updateSyncDot('error');
-      });
-      updateSyncDot('ok');
-    }catch(e){
-      console.warn('Firebase load failed:',e);
-      updateSyncDot('error');
-      loadLocal();
-    }
-  }else{
-    loadLocal();
-  }
-}
-
-function loadLocal(){
-  try{
-    const raw=localStorage.getItem(STORAGE_KEY);
-    siteData=raw?JSON.parse(raw):JSON.parse(JSON.stringify(DEFAULT_DATA));
-  }catch(e){
+    await db.collection('site').doc('main').set({data:JSON.parse(JSON.stringify(DEFAULT_DATA)),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
-  }
-  if(!siteData.f)siteData.f=DEFAULT_DATA.f;
-  if(!siteData.m)siteData.m=DEFAULT_DATA.m;
-  ['team','play','events','wall','gal'].forEach(k=>{
-    if(!Array.isArray(siteData.f[k]))siteData.f[k]=[];
-    if(!Array.isArray(siteData.m[k]))siteData.m[k]=[];
-  });
-}
-
-async function saveData(){
-  // всегда сохраняем локально (как кэш/fallback)
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(siteData));
-  if(useFirebase){
-    try{
-      await db.collection('site').doc('main').set({
-        data:siteData,
-        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-      updateSyncDot('ok');
-    }catch(e){
-      console.warn('Firebase save failed:',e);
-      updateSyncDot('error');
-      toast('⚠ Сохранено только локально. Проверь Firebase.');
-    }
-  }
-}
-
-function cur(){return siteData[theme];}
-
-/* ============ РЕНДЕР СЕКЦИЙ ============ */
-function renderAll(){
-  renderTeam(); renderPlay(); renderEvents(); renderWall(); renderGal(); observeReveal();
-}
-
-function renderTeam(){
-  const box=$('#teamGrid'); box.innerHTML='';
-  const items=cur().team;
-  if(!items.length){
-    box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">✨</span><h3>Команда пока пуста</h3><p>админ добавит участников через админ-панель</p></div>`;
-    return;
-  }
-  items.forEach(it=>{
-    const el=document.createElement('div');
-    el.className='member themable reveal';
-    const av=it.avatar
-      ? `<div class="mav" style="background-image:url('${escapeHtml(it.avatar)}')"></div>`
-      : `<div class="mav" style="background:linear-gradient(135deg,${it.color||'var(--accent)'},${it.color||'var(--accent2)'})">${(it.name||'?')[0].toUpperCase()}</div>`;
-    el.innerHTML=`
-      <span class="sticker">${escapeHtml(it.sticker||'✨')}</span>
-      ${av}
-      <h3>${escapeHtml(it.name||'')}</h3>
-      <span class="discord-nick">${it.discord?'@'+escapeHtml(it.discord):''}</span>
-      <div class="status${it.status&&it.status.toLowerCase().includes('не')?' dnd':''}"><i></i><span>${escapeHtml(it.status||'в сети')}</span></div>
-      <div class="chip" style="background:color-mix(in srgb,${it.color||'var(--accent)'} 20%,transparent);color:${it.color||'var(--accent)'}">${escapeHtml(it.role||'')}</div>
-      <q>${escapeHtml(it.quote||'')}</q>
-    `;
-    box.appendChild(el);
-  });
-}
-
-function renderPlay(){
-  const box=$('#playGrid'); box.innerHTML='';
-  const items=cur().play;
-  if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">🎲</span><h3>Игровая пока пуста</h3><p>админ добавит активности через админ-панель</p></div>`; return; }
-  items.forEach(it=>{
-    const el=document.createElement('div');
-    el.className='panel themable reveal';
-    el.innerHTML=`<span class="pemo">${escapeHtml(it.emo||'🎲')}</span><h3>${escapeHtml(it.title||'')}</h3><div class="pdesc">${escapeHtml(it.desc||'')}</div>`;
-    box.appendChild(el);
-  });
-}
-
-function renderEvents(){
-  const box=$('#eventsGrid'); box.innerHTML='';
-  const items=cur().events;
-  if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📅</span><h3>Расписания пока нет</h3><p>админ добавит ивенты через админ-панель</p></div>`; return; }
-  items.forEach(it=>{
-    const el=document.createElement('div');
-    el.className='note themable reveal';
-    el.innerHTML=`<div class="day">${escapeHtml(it.day||'')}</div><h4>${escapeHtml(it.title||'')}</h4><p>${escapeHtml(it.desc||'')}</p><span class="emo">${escapeHtml(it.emo||'✨')}</span>`;
-    box.appendChild(el);
-  });
-}
-
-function renderWall(){
-  const box=$('#wallGrid'); box.innerHTML='';
-  const items=cur().wall;
-  if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📌</span><h3>Стена пока пуста</h3><p>сюда будут крепиться тёплые слова</p></div>`; return; }
-  items.forEach(it=>{
-    const el=document.createElement('div');
-    el.className='pnote themable reveal';
-    el.dataset.pin=it.pin||'📌';
-    el.innerHTML=`<span>${escapeHtml(it.text||'')}</span><small>— ${escapeHtml(it.author||'')}</small>`;
-    box.appendChild(el);
-  });
-}
-
-function renderGal(){
-  const box=$('#galGrid'); box.innerHTML='';
-  const items=cur().gal;
-  if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📸</span><h3>Альбом пока пуст</h3><p>сюда будут добавляться кадры</p></div>`; return; }
-  items.forEach(it=>{
-    const el=document.createElement('figure');
-    el.className='gitem themable reveal';
-    el.innerHTML=`<img src="${escapeHtml(it.url||'')}" alt="${escapeHtml(it.caption||'')}"><figcaption>${escapeHtml(it.caption||'')}</figcaption>`;
-    box.appendChild(el);
-  });
-}
-
-function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-
-/* ============ ТЕКСТЫ ============ */
-const MARQ={f:['нежность','дружба','мемы','караоке','какао','обнимашки','плейлисты','уют'],
-            m:['братва','честь','мемы','катки','кофе','респект','плейлисты','строй']};
-const POLL_OPTS=[
- {f:'🍿 Ромком и пледы',m:'🍿 Операция «Ромком»'},
- {f:'🌀 Аниме-марафон',m:'🌀 Марафон сериалов'},
- {f:'😱 Ужастики до мурашек',m:'😱 Хоррор для смелых'},
- {f:'🎬 Кино по заявкам',m:'🎬 Выбор отряда'}];
-
-function scrambleTo(el,txt){
-  if(reduced){el.textContent=txt;return;}
-  const chars='✦*#%&!?@'; let i=0; clearInterval(el._si);
-  el._si=setInterval(()=>{ i++;
-    el.textContent=txt.slice(0,i)+Array.from({length:Math.min(5,Math.max(0,txt.length-i))},()=>chars[Math.random()*chars.length|0]).join('');
-    if(i>=txt.length){clearInterval(el._si);el.textContent=txt;}
-  },26);
-}
-function swapTexts(t,animate){
-  $$('[data-f]').forEach(el=>{
-    const v=t==='f'?el.dataset.f:el.dataset.m;
-    if(v==null)return;
-    if(animate && el.classList.contains('scr')) scrambleTo(el,v);
-    else el.textContent=v;
-  });
-  $('#lblF').classList.toggle('on',t==='f');
-  $('#lblM').classList.toggle('on',t==='m');
-  $('#logoEmoji').textContent=t==='f'?'🌸':'⚡';
-  $('#heartBtn').textContent=t==='f'?'💖':'🫡';
-}
-
-function applyTheme(t,origin){
-  const commit=()=>{ theme=t; document.body.dataset.theme=t; localStorage.setItem('theme',t);
-    swapTexts(t,true); renderMarquee(t); renderPoll(); renderAll(); };
-  if(reduced||!origin){commit();return;}
-  const w=$('#wipe');
-  w.style.background=t==='f'?'#1a0f18':'#0d1220';
-  const r=Math.hypot(Math.max(origin.x,innerWidth-origin.x),Math.max(origin.y,innerHeight-origin.y))+20;
-  w.animate([{clipPath:`circle(0px at ${origin.x}px ${origin.y}px)`,opacity:1},
-             {clipPath:`circle(${r}px at ${origin.x}px ${origin.y}px)`,opacity:1}],
-            {duration:430,easing:'cubic-bezier(.4,0,.2,1)'}).onfinish=()=>{
-    commit();
-    w.animate([{opacity:1},{opacity:0}],{duration:420,easing:'ease'}).onfinish=()=>{
-      w.style.clipPath='circle(0px at 50% 50%)'; };
-  };
-}
-$('#themeBtn').addEventListener('click',e=>{
-  const b=e.currentTarget.getBoundingClientRect();
-  applyTheme(theme==='f'?'m':'f',{x:b.left+b.width/2,y:b.top+b.height/2});
-});
-
-function renderMarquee(t){
-  const items=MARQ[t].map(w=>`<span>${w} ✦</span>`).join('');
-  $('#marquee').innerHTML=items+items;
-}
-
-function pollKey(){return 'poll_'+theme;}
-function getPoll(){ try{return JSON.parse(localStorage.getItem(pollKey()))||{c:[0,0,0,0],v:null};}catch(e){return{c:[0,0,0,0],v:null};} }
-function renderPoll(){
-  const st=getPoll(), box=$('#poll'); box.innerHTML='';
-  const total=st.c.reduce((a,b)=>a+b,0);
-  POLL_OPTS.forEach((o,i)=>{
-    const b=document.createElement('button'); b.className='opt'+(st.v===i?' mine':'');
-    const pct=total?Math.round(st.c[i]/total*100):0;
-    b.innerHTML=`<span class="fill"></span><span>${o[theme]} <span class="pct">${st.v!=null?pct+'%':''}</span>${st.v===i?' ✓':''}</span>`;
-    b.addEventListener('click',()=>{
-      if(st.v!=null){toast(theme==='f'?'Голос уже отдан! 💗':'Голос уже принят 🫡');return;}
-      st.c[i]++; st.v=i; localStorage.setItem(pollKey(),JSON.stringify(st)); renderPoll();
-    });
-    box.appendChild(b);
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{b.querySelector('.fill').style.width=(st.v!=null?pct:0)+'%';}));
-  });
-  const f=document.createElement('div'); f.className='poll-foot';
-  f.textContent=(theme==='f'?'всего голосов: ':'голосов отряда: ')+total+(st.v==null?(theme==='f'?' — выбери свой вариант!':' — сделай свой выбор!'):'');
-  box.appendChild(f);
-}
-
-let hearts=parseInt(localStorage.getItem('hearts')||'0',10);
-$('#heartCnt').textContent=hearts;
-$('#heartBtn').addEventListener('click',()=>{
-  hearts++; localStorage.setItem('hearts',hearts); $('#heartCnt').textContent=hearts;
-  const zone=$('#loveZone');
-  if(!reduced)for(let k=0;k<5;k++){
-    const s=document.createElement('span'); s.className='fheart';
-    s.textContent=theme==='f'?['💖','💗','✨'][k%3]:['⚡','🫡','🔥'][k%3];
-    s.style.left=(30+Math.random()*40)+'%'; s.style.top='10px';
-    s.style.setProperty('--dx',(Math.random()*80-40)+'px');
-    zone.appendChild(s); setTimeout(()=>s.remove(),1150);
-  }
-});
-
-let toastT;
-function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show');
-  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200); }
-
-let lastTrail=0;
-addEventListener('pointermove',e=>{
-  if(reduced||e.pointerType==='touch')return;
-  const now=performance.now(); if(now-lastTrail<80)return; lastTrail=now;
-  const s=document.createElement('span'); s.className='trail';
-  const set=theme==='f'?['🌸','✨','💗']:['⚡','🔥','✦'];
-  s.textContent=set[Math.random()*set.length|0];
-  s.style.left=e.clientX+'px'; s.style.top=e.clientY+'px';
-  document.body.appendChild(s); setTimeout(()=>s.remove(),820);
-});
-
-let io;
-function observeReveal(){
-  if(io)io.disconnect();
-  io=new IntersectionObserver(es=>es.forEach(en=>{
-    if(en.isIntersecting){en.target.classList.add('in'); io.unobserve(en.target);}
-  }),{threshold:.12});
-  $$('.reveal').forEach(el=>io.observe(el));
-}
-
-/* ============ АДМИНКА ============ */
-let isAdmin=false;
-let currentTab='team';
-
-function openModal(id){$('#'+id).classList.add('open');}
-function closeModal(id){$('#'+id).classList.remove('open');}
-window.closeModal=closeModal;
-
-$('#adminLink').addEventListener('click',()=>{
-  if(isAdmin){ openAdmin(); }
-  else{ openModal('loginModal'); $('#loginUser').focus(); }
-});
-
-$('#loginOk').addEventListener('click',tryLogin);
-$('#loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin();});
-function tryLogin(){
-  const u=$('#loginUser').value.trim();
-  const p=$('#loginPass').value;
-  if(u===ADMIN_USER && p===ADMIN_PASS){
-    isAdmin=true;
-    closeModal('loginModal');
-    $('#loginPass').value='';
-    openAdmin();
-  }else{
-    toast('Неверный логин или пароль');
-  }
-}
-
-function logout(){ isAdmin=false; closeModal('adminModal'); toast('Вы вышли из админки'); }
-window.logout=logout;
-
-function openAdmin(){
-  updateThemeNote();
-  updateSetupNote();
-  showTab(currentTab);
-  openModal('adminModal');
-}
-
-function updateThemeNote(){
-  $('#themeNote').innerHTML=`<b>Редактируешь тему:</b> ${theme==='f'?'🌸 Девичья':'⚡ Мужская'}. Переключи тему сверху, чтобы редактировать другую.`;
-}
-
-function updateSetupNote(){
-  const note=$('#setupNote');
-  if(useFirebase){
-    note.innerHTML='☁️ <b>Firebase подключён</b> — все изменения автоматически увидят все посетители сайта.';
-  }else{
-    note.innerHTML='⚠️ <b>Firebase не настроен</b> — изменения видны только тебе. Чтобы другие тоже видели, вставь <code>FIREBASE_CONFIG</code> в начало &lt;script&gt; (инструкция в коде). Пока работают экспорт/импорт.';
-  }
-}
-
-$$('.admin-tabs button').forEach(b=>{
-  b.addEventListener('click',()=>{
-    $$('.admin-tabs button').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    currentTab=b.dataset.tab;
-    showTab(currentTab);
-  });
-});
-
-function showTab(tab){
-  const box=$('#adminContent');
-  if(tab==='data'){
-    box.innerHTML=`
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:700">
-        ${useFirebase
-          ? '🟢 Firebase активен: данные хранятся в облаке. Экспорт/импорт можно использовать как резервную копию.'
-          : '🟡 Firebase не настроен: используй экспорт, чтобы сохранить данные и импортировать на других устройствах.'}
-      </p>
-      <div class="btns">
-        <button class="btn solid" onclick="exportData()">📥 Экспорт (JSON)</button>
-        <button class="btn ghost" onclick="document.getElementById('importFile').click()">📤 Импорт</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-        <button class="btn ghost" onclick="resetData()" style="border-color:#ff6b6b;color:#ff6b6b">🗑 Сброс</button>
-      </div>
-    `;
-    return;
-  }
-  renderListEditor(tab);
-}
-
-const FIELD_DEFS={
-  team:[
-    {k:'name',label:'Имя / Ник',type:'text'},
-    {k:'discord',label:'Discord username (без @)',type:'text'},
-    {k:'avatar',label:'URL аватарки (правый клик на аватарке в Discord → Копировать ссылку)',type:'text'},
-    {k:'sticker',label:'Стикер сверху (эмодзи)',type:'text'},
-    {k:'status',label:'Статус (напр. "в сети", "не беспокоить")',type:'text'},
-    {k:'role',label:'Роль (с эмодзи)',type:'text'},
-    {k:'quote',label:'Цитата',type:'textarea'},
-    {k:'color',label:'Цвет (hex, напр. #ff5fa2)',type:'text'}
-  ],
-  play:[
-    {k:'emo',label:'Эмодзи',type:'text'},
-    {k:'title',label:'Заголовок',type:'text'},
-    {k:'desc',label:'Описание',type:'textarea'}
-  ],
-  events:[
-    {k:'day',label:'День и время (напр. "пятница • 20:00")',type:'text'},
-    {k:'title',label:'Название',type:'text'},
-    {k:'desc',label:'Описание',type:'textarea'},
-    {k:'emo',label:'Эмодзи',type:'text'}
-  ],
-  wall:[
-    {k:'text',label:'Текст записи',type:'textarea'},
-    {k:'author',label:'Автор',type:'text'},
-    {k:'pin',label:'Иконка-пин (📌 💌 🌸 ☕)',type:'text'}
-  ],
-  gal:[
-    {k:'url',label:'URL картинки',type:'text'},
-    {k:'caption',label:'Подпись',type:'text'}
-  ]
-};
-
-function renderListEditor(tab){
-  const box=$('#adminContent');
-  const items=cur()[tab]||[];
-  const titles={team:'Участники команды',play:'Активности',events:'Ивенты',wall:'Записи на стене',gal:'Фото в галерее'};
-  let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}</h3>`;
-  html+=`<div class="admin-list">`;
-  if(!items.length){
-    html+=`<div class="admin-list-empty">Список пуст. Добавь первый элемент ↓</div>`;
-  }else{
-    items.forEach((it,i)=>{
-      const main=it.name||it.title||it.text||it.url||'без названия';
-      html+=`<div class="admin-list-item"><span>${i+1}. ${escapeHtml(main).slice(0,50)}</span><div class="acts"><button class="edit" onclick="editItem('${tab}',${i})">✎</button><button class="del" onclick="delItem('${tab}',${i})">✕</button></div></div>`;
-    });
-  }
-  html+=`</div>`;
-  html+=`<button class="btn solid" onclick="addItem('${tab}')" style="width:100%">➕ Добавить</button>`;
-  box.innerHTML=html;
-}
-
-window.addItem=function(tab){editItem(tab,-1);};
-window.delItem=async function(tab,i){
-  if(!confirm('Удалить элемент?'))return;
-  cur()[tab].splice(i,1);
-  await saveData();
-  renderListEditor(tab);
-  renderAll();
-  toast('Удалено ✓');
-};
-
-window.editItem=function(tab,i){
-  const fields=FIELD_DEFS[tab];
-  const item=i<0?{}:(cur()[tab][i]||{});
-  let html=`<h3 style="font-size:16px;margin-bottom:12px">${i<0?'Добавить':'Редактировать'}</h3>`;
-  fields.forEach(f=>{
-    const val=item[f.k]||'';
-    if(f.type==='textarea'){
-      html+=`<div class="form-row"><label>${f.label}</label><textarea data-field="${f.k}">${escapeHtml(val)}</textarea></div>`;
-    }else{
-      html+=`<div class="form-row"><label>${f.label}</label><input type="text" data-field="${f.k}" value="${escapeHtml(val)}"></div>`;
-    }
-  });
-  html+=`<div class="btns"><button class="btn solid" id="saveItem">💾 Сохранить</button><button class="btn ghost" onclick="showTab('${tab}')">Отмена</button></div>`;
-  $('#adminContent').innerHTML=html;
-  $('#saveItem').addEventListener('click',async ()=>{
-    const newObj={};
-    fields.forEach(f=>{ newObj[f.k]=$('#adminContent [data-field="'+f.k+'"]').value; });
-    if(i<0){ cur()[tab].push(newObj); }
-    else{ cur()[tab][i]=newObj; }
-    await saveData();
-    renderListEditor(tab);
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(siteData));
     renderAll();
-    toast(useFirebase?'Сохранено в облаке ✓':'Сохранено локально ✓');
-  });
-};
-
-window.showTab=showTab;
-
-window.exportData=function(){
-  const data=JSON.stringify(siteData,null,2);
-  const blob=new Blob([data],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download='site-data-'+Date.now()+'.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('Данные экспортированы 📥');
-};
-
-window.importData=async function(e){
-  const file=e.target.files[0];
-  if(!file)return;
-  const r=new FileReader();
-  r.onload=async ev=>{
-    try{
-      const data=JSON.parse(ev.target.result);
-      if(!data.f||!data.m)throw new Error('bad format');
-      siteData=data;
-      await saveData();
-      renderAll();
-      showTab(currentTab);
-      toast('Данные импортированы ✓');
-    }catch(err){
-      toast('Ошибка импорта: '+err.message);
-    }
-  };
-  r.readAsText(file);
-  e.target.value='';
-};
-
-window.resetData=async function(){
-  if(!confirm('Точно сбросить все данные до стартовых?'))return;
-  siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
-  await saveData();
-  renderAll();
-  showTab(currentTab);
-  toast('Данные сброшены');
+    showTab(currentTab);
+    toast('Firebase очищен и заполнен дефолтами 🔥');
+  }catch(e){
+    toast('Ошибка: '+e.message);
+  }
 };
 
 /* ============ СТАРТ ============ */
 (async ()=>{
+  dlog('Старт сайта. theme='+theme);
   await loadData();
   swapTexts(theme,false);
   renderMarquee(theme);
   renderPoll();
   renderAll();
+  dlog('Старт завершён','ok');
 })();
 </script>
 </body>
