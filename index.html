@@ -262,7 +262,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .admin-list-empty{text-align:center;padding:20px;color:var(--muted);font-weight:700;font-size:13px}
 .theme-note{background:color-mix(in srgb,var(--accent) 15%,transparent);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:800;color:var(--accent);margin-bottom:14px}
 .setup-note{background:color-mix(in srgb,#37e6ff 15%,transparent);padding:12px 16px;border-radius:10px;font-size:13px;font-weight:700;color:#37e6ff;margin-bottom:14px;line-height:1.5}
-.debug-box{background:var(--bg2);border:2px solid var(--line);border-radius:10px;padding:12px;margin-top:12px;font-family:monospace;font-size:11px;max-height:140px;overflow-y:auto;color:var(--muted);white-space:pre-wrap}
+.debug-box{background:var(--bg2);border:2px solid var(--line);border-radius:10px;padding:12px;margin-top:12px;font-family:monospace;font-size:11px;max-height:200px;overflow-y:auto;color:var(--muted);white-space:pre-wrap}
 .debug-box .ok{color:#3ecf7a}.debug-box .err{color:#ff6b6b}.debug-box .warn{color:#ffcc00}
 
 .upload-block{
@@ -364,6 +364,15 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .mem-filter input{flex:1;min-width:140px;padding:8px 12px;font-size:13px;border:2px solid var(--line);background:var(--bg2);color:var(--ink);border-radius:8px}
 .mem-filter .cnt{font-size:12px;color:var(--muted);font-weight:800}
 
+.status-banner{
+  position:fixed;top:0;left:0;right:0;z-index:1000;padding:8px 16px;text-align:center;
+  font-weight:800;font-size:12px;pointer-events:none;transition:opacity .3s;opacity:0;
+}
+.status-banner.show{opacity:1}
+.status-banner.ok{background:#3ecf7a;color:#000}
+.status-banner.err{background:#ff6b6b;color:#fff}
+.status-banner.warn{background:#ffcc00;color:#000}
+
 @media (max-width:860px){
   .hero{padding-top:40px}
   .nav{display:none}
@@ -376,6 +385,8 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 </style>
 </head>
 <body data-theme="f">
+
+<div class="status-banner" id="statusBanner"></div>
 
 <div class="floaters" aria-hidden="true">
   <span class="fl-f" style="left:6%;top:18%">🌸</span><span class="fl-f" style="left:88%;top:12%;animation-delay:-3s">✨</span>
@@ -561,13 +572,13 @@ const FIREBASE_CONFIG = {
   appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
 
-const STORAGE_KEY='siteData_v14';
+const STORAGE_KEY='siteData_v15';
 const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
 const MAX_GAL=25;
 const STRIP_H=240;
-/* Максимальный размер документа Firestore (1MB) с запасом */
 const MAX_DOC_SIZE = 900 * 1024;
+const SAVE_COOLDOWN = 20000; // 20 секунд защиты от onSnapshot
 
 const EMPTY_POLL_MSG = {
   f: { emo:'🌙', title:'Опрос пока не создан', text:'Админ ещё не придумал, что будем решать вместе. Открой админку → вкладка Опрос → добавь первый вариант ✨', hint:'✨ настрой опрос в админке' },
@@ -600,9 +611,9 @@ let useFirebase=false;
 let unsubData=null;
 let isRendering=false;
 let debugLog=[];
-
-let _savingUntil = 0;
-
+let isSaving=false;
+let lastSaveAttempt=0;
+let _savingUntil=0;
 let importedMembers=[];
 let importFilter='';
 let currentAvatarTransform={x:0,y:0,scale:1};
@@ -624,7 +635,7 @@ function dlog(msg,type='info'){
   try{
     const time=new Date().toLocaleTimeString();
     debugLog.push({time,msg,type});
-    if(debugLog.length>50)debugLog.shift();
+    if(debugLog.length>100)debugLog.shift();
     console.log(`[${type}] ${time}: ${msg}`);
   }catch(e){}
 }
@@ -642,6 +653,21 @@ function probe(url,cb){
   }catch(e){ cb(4,3); }
 }
 
+// === СТАТУС БАННЕР ===
+let statusBannerTimeout=null;
+function showStatus(msg,type='ok',duration=3000){
+  try{
+    const banner=$('#statusBanner');
+    if(!banner)return;
+    banner.textContent=msg;
+    banner.className='status-banner show '+type;
+    if(statusBannerTimeout) clearTimeout(statusBannerTimeout);
+    statusBannerTimeout=setTimeout(()=>{
+      banner.classList.remove('show');
+    },duration);
+  }catch(e){}
+}
+
 function initFirebase(){
   try{
     if(typeof firebase==='undefined'){ dlog('Firebase SDK не загружен','err'); useFirebase=false; return; }
@@ -649,13 +675,74 @@ function initFirebase(){
     dlog('Инициализация Firebase... projectId='+FIREBASE_CONFIG.projectId);
     if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     db=firebase.firestore();
+    
+    // Включаем offline persistence для надёжности
+    try{
+      db.enablePersistence({synchronizeTabs: true})
+        .then(()=>dlog('✓ Offline persistence включена','ok'))
+        .catch(err=>dlog('⚠ Persistence error: '+err.message,'warn'));
+    }catch(e){ dlog('⚠ Не удалось включить persistence: '+e.message,'warn'); }
+    
     useFirebase=true;
     dlog('Firebase инициализирован ✓','ok');
     updateSyncDot('loading');
+    
+    // Настраиваем onSnapshot ПОСЛЕ инициализации
+    setupSnapshotListener();
   }catch(e){
     dlog('Firebase init failed: '+e.message,'err');
     useFirebase=false;
+    updateSyncDot('off');
   }
+}
+
+function setupSnapshotListener(){
+  if(!useFirebase || !db) return;
+  
+  if(unsubData){ try{ unsubData(); }catch(e){} }
+  
+  unsubData=db.collection('site').doc('main').onSnapshot(snap=>{
+    try{
+      if(!snap.exists) return;
+      
+      // Игнорируем кеш Firestore
+      if(snap.metadata && snap.metadata.fromCache){
+        dlog('Snapshot fromCache — пропускаю','warn');
+        return;
+      }
+      
+      // КРИТИЧЕСКАЯ ЗАЩИТА от race condition (20 секунд после сохранения)
+      const now = Date.now();
+      if(now < _savingUntil){
+        const remaining = Math.round((_savingUntil - now) / 1000);
+        dlog(`Snapshot во время saveData (${remaining}с осталось) — пропускаю`,'warn');
+        return;
+      }
+      
+      // Защита от слишком раннего срабатывания
+      if(now - lastSaveAttempt < 3000){
+        dlog('Snapshot слишком рано после сохранения — пропускаю','warn');
+        return;
+      }
+      
+      const newData=snap.data()?.data;
+      if(!newData) return;
+      
+      // Проверяем, действительно ли данные изменились
+      if(!dataEqual(newData, siteData)){
+        dlog('Snapshot: данные обновились из Firebase','ok');
+        siteData=newData;
+        migrateData();
+        dedupeAll();
+        renderAll();
+        renderPoll();
+      }
+      updateSyncDot('ok');
+    }catch(e){ dlog('Snapshot error: '+e.message,'err'); }
+  },err=>{
+    dlog('Snapshot subscription error: '+err.message,'err');
+    updateSyncDot('error');
+  });
 }
 
 function updateSyncDot(state){
@@ -678,9 +765,7 @@ function dedupe(arr,keyFn){
       const key=keyFn(it);
       if(key==null||key===''){ out.push(it); continue; }
       if(!seen.has(key)){ seen.add(key); out.push(it); }
-    }catch(e){
-      out.push(it);
-    }
+    }catch(e){ out.push(it); }
   }
   return out;
 }
@@ -702,57 +787,99 @@ function dedupeAll(){
   }catch(e){ dlog('dedupeAll error: '+e.message,'err'); }
 }
 
+// === ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ С ПРИОРИТЕТОМ ===
 async function loadData(){
   initFirebase();
-  if(useFirebase){
+  
+  // Всегда читаем локальные данные
+  const localRaw = localStorage.getItem(STORAGE_KEY);
+  let localData = null;
+  let localSize = 0;
+  
+  if(localRaw){
     try{
-      dlog('Чтение из Firestore');
+      localData = JSON.parse(localRaw);
+      localSize = JSON.stringify(localData).length;
+      dlog(`Локальные данные: ${Math.round(localSize*0.75/1024)} KB`,'info');
+    }catch(e){
+      dlog('Повреждены локальные данные','warn');
+    }
+  }
+  
+  if(useFirebase && db){
+    try{
+      dlog('Чтение из Firestore...');
       const doc=await db.collection('site').doc('main').get();
+      
       if(doc.exists){
-        dlog('Документ найден ✓','ok');
-        siteData=doc.data().data || JSON.parse(JSON.stringify(DEFAULT_DATA));
+        const firebaseData = doc.data()?.data;
+        const fbSize = firebaseData ? JSON.stringify(firebaseData).length : 0;
+        
+        dlog(`Firebase: ${Math.round(fbSize*0.75/1024)} KB`,'info');
+        
+        // ПРИОРИТЕТ: используем данные с БОЛЬШИМ размером (предполагаем, что новее)
+        if(localData && localSize > fbSize){
+          dlog('⚠ Локальные данные больше — используем их','warn');
+          siteData = localData;
+          
+          // Пытаемся синхронизировать с Firebase
+          try{
+            _savingUntil = Date.now() + SAVE_COOLDOWN;
+            await db.collection('site').doc('main').set({
+              data: siteData,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+              version: Date.now()
+            });
+            dlog('✓ Локальные данные синхронизированы с Firebase','ok');
+            updateSyncDot('ok');
+          }catch(e){
+            dlog('✗ Не удалось синхронизировать: '+e.message,'err');
+          }
+        }else{
+          dlog('✓ Используем данные из Firebase','ok');
+          siteData = firebaseData || JSON.parse(JSON.stringify(DEFAULT_DATA));
+        }
       }else{
-        dlog('Документ пуст — создаю дефолт','warn');
-        siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
-        await db.collection('site').doc('main').set({data:siteData,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+        dlog('Документ пуст в Firebase','warn');
+        
+        if(localData){
+          dlog('✓ Используем локальные данные','ok');
+          siteData = localData;
+        }else{
+          siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        }
+        
+        // Создаём документ в Firebase
+        try{
+          _savingUntil = Date.now() + SAVE_COOLDOWN;
+          await db.collection('site').doc('main').set({
+            data: siteData,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            version: Date.now()
+          });
+          dlog('✓ Документ создан в Firebase','ok');
+        }catch(e){
+          dlog('✗ Не удалось создать документ: '+e.message,'err');
+        }
       }
+      
       migrateData();
       dedupeAll();
-
-      unsubData=db.collection('site').doc('main').onSnapshot(snap=>{
-        try{
-          if(!snap.exists)return;
-          /* Игнорируем кеш Firestore */
-          if(snap.metadata && snap.metadata.fromCache){
-            dlog('Snapshot fromCache — пропускаю','warn');
-            return;
-          }
-          /* Защита от race condition во время сохранения */
-          if(Date.now() < _savingUntil){
-            dlog('Snapshot во время saveData — пропускаю','warn');
-            return;
-          }
-          const newData=snap.data().data;
-          if(!newData)return;
-          if(!dataEqual(newData, siteData)){
-            dlog('Snapshot: данные обновились из Firebase','ok');
-            siteData=newData;
-            migrateData();
-            dedupeAll();
-            renderAll();
-            renderPoll();
-          }
-          updateSyncDot('ok');
-        }catch(e){ dlog('Snapshot error: '+e.message,'err'); }
-      },err=>{
-        dlog('Snapshot error: '+err.message,'err');
-        updateSyncDot('error');
-      });
       updateSyncDot('ok');
+      
     }catch(e){
       dlog('Firebase load failed: '+e.message,'err');
       updateSyncDot('error');
-      loadLocal();
+      
+      // Fallback на локальные данные
+      if(localData){
+        dlog('Используем локальные данные как fallback','warn');
+        siteData = localData;
+        migrateData();
+        dedupeAll();
+      }else{
+        loadLocal();
+      }
     }
   }else{
     loadLocal();
@@ -818,45 +945,87 @@ function loadLocal(){
   dedupeAll();
 }
 
-/* === ИСПРАВЛЕНИЕ: проверка размера перед записью + без merge === */
+// === ИСПРАВЛЕННАЯ ФУНКЦИЯ СОХРАНЕНИЯ ===
 async function saveData(){
-  _savingUntil = Date.now() + 10000; /* 10 секунд защиты от onSnapshot */
+  // Защита от параллельных сохранений
+  if(isSaving){
+    dlog('Сохранение уже идёт — пропускаю','warn');
+    return;
+  }
+  
+  isSaving = true;
+  lastSaveAttempt = Date.now();
+  _savingUntil = lastSaveAttempt + SAVE_COOLDOWN; // 20 секунд защиты
+  
   try{
     const json = JSON.stringify(siteData);
-    const sizeKB = Math.round((json.length * 0.75) / 1024);
-    dlog(`Размер данных: ${sizeKB} KB (лимит ~${Math.round(MAX_DOC_SIZE/1024)} KB)`,'info');
+    const sizeBytes = json.length;
+    const sizeKB = Math.round((sizeBytes * 0.75) / 1024);
+    const sizeMB = (sizeKB / 1024).toFixed(2);
+    
+    dlog(`📊 Сохранение: ${sizeMB} MB`,'info');
 
-    localStorage.setItem(STORAGE_KEY, json);
+    // 1. ВСЕГДА сохраняем в localStorage (самое надёжное)
+    try{
+      localStorage.setItem(STORAGE_KEY, json);
+      dlog('✓ localStorage сохранён','ok');
+    }catch(e){
+      dlog('✗ Ошибка localStorage: '+e.message,'err');
+      showStatus('✗ Ошибка сохранения локально','err');
+    }
 
-    if(useFirebase){
-      /* Проверка размера ДО записи в Firestore */
-      if(json.length * 0.75 > MAX_DOC_SIZE){
-        const sizeMB = (sizeKB / 1024).toFixed(1);
+    // 2. Сохраняем в Firebase если активен
+    if(useFirebase && db){
+      if(sizeBytes * 0.75 > MAX_DOC_SIZE){
         dlog(`⚠ Данные слишком большие: ${sizeMB} MB > 1 MB`,'err');
         updateSyncDot('error');
-        toast(`⚠ Слишком много фото! Размер: ${sizeMB} MB (лимит 1 MB). Удали несколько фото.`);
-        return;
-      }
-      try{
-        /* БЕЗ {merge: true} — полная перезапись надёжнее */
-        await db.collection('site').doc('main').set({
-          data: siteData,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        dlog('Сохранено в Firestore ✓','ok');
-        updateSyncDot('ok');
-      }catch(e){
-        dlog('Firebase save failed: '+e.message,'err');
-        updateSyncDot('error');
-        /* Понятное сообщение о причине ошибки */
-        if(e.message && e.message.includes('size')){
-          toast('⚠ Превышен лимит Firebase. Удали несколько фото.');
-        }else{
-          toast('⚠ Ошибка Firebase. Сохранено локально.');
+        toast(`⚠ Слишком много данных: ${sizeMB} MB. Удалите несколько фото.`);
+        showStatus('⚠ Лимит размера превышен','err',5000);
+      }else{
+        try{
+          dlog('⏳ Сохраняю в Firestore...','info');
+          
+          await db.collection('site').doc('main').set({
+            data: siteData,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            version: Date.now()
+          });
+          
+          dlog('✓ Firestore сохранён','ok');
+          updateSyncDot('ok');
+          showStatus('✓ Сохранено в облаке','ok');
+        }catch(e){
+          dlog('✗ Ошибка Firestore: '+e.message,'err');
+          updateSyncDot('error');
+          
+          if(e.code === 'permission-denied'){
+            toast('⚠ Нет прав для записи в Firebase');
+            showStatus('⚠ Нет прав в Firebase','err',5000);
+          }else if(e.message && e.message.includes('size')){
+            toast('⚠ Превышен лимит размера');
+            showStatus('⚠ Превышен лимит','err',5000);
+          }else if(e.message && (e.message.includes('offline') || e.message.includes('network'))){
+            toast('⚠ Нет интернета. Сохранено локально.');
+            showStatus('⚠ Офлайн режим','warn');
+          }else{
+            toast('⚠ Ошибка Firebase: '+e.message);
+            showStatus('⚠ Ошибка Firebase','err',5000);
+          }
         }
       }
+    }else{
+      dlog('⚠ Firebase не активен','warn');
+      updateSyncDot('off');
+      showStatus('📱 Сохранено локально','warn');
     }
-  }catch(e){ dlog('saveData error: '+e.message,'err'); }
+    
+  }catch(e){
+    dlog('✗ Критическая ошибка saveData: '+e.message,'err');
+    toast('✗ Ошибка сохранения');
+    showStatus('✗ Критическая ошибка','err');
+  }finally{
+    isSaving = false;
+  }
 }
 
 function cur(){
@@ -1271,8 +1440,8 @@ $$('.admin-tabs button').forEach(b=>{
   });
 });
 
-/* === ИСПРАВЛЕНИЕ: более агрессивное сжатие фото === */
-function compressImage(file, maxWidth=1200, quality=0.85){
+// === ИСПРАВЛЕНИЕ: агрессивное сжатие фото ===
+function compressImage(file, maxWidth=600, quality=0.5){
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
     reader.onload = e => {
@@ -1282,16 +1451,31 @@ function compressImage(file, maxWidth=1200, quality=0.85){
           let w = img.width, h = img.height;
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-          if(w > maxWidth){ h = Math.round(h * maxWidth / w); w = maxWidth; }
-          if(h > maxWidth){ w = Math.round(w * maxWidth / h); h = maxWidth; }
+          
+          const targetSize = maxWidth || 600;
+          if(w > targetSize){ h = Math.round(h * targetSize / w); w = targetSize; }
+          if(h > targetSize){ w = Math.round(w * targetSize / h); h = targetSize; }
+          
           canvas.width = w; canvas.height = h;
           ctx.drawImage(img, 0, 0, w, h);
+          
           let dataUrl = canvas.toDataURL('image/jpeg', quality);
-          /* Если всё ещё больше 250KB — снижаем качество ещё */
-          const sizeKB = (dataUrl.length * 0.75) / 1024;
-          if(sizeKB > 250){
-            dataUrl = canvas.toDataURL('image/jpeg', Math.max(0.5, quality * 0.7));
+          let sizeKB = (dataUrl.length * 0.75) / 1024;
+          
+          if(sizeKB > 150){
+            dataUrl = canvas.toDataURL('image/jpeg', Math.max(0.35, quality * 0.7));
+            sizeKB = (dataUrl.length * 0.75) / 1024;
           }
+          
+          if(sizeKB > 200){
+            canvas.width = Math.round(w * 0.7);
+            canvas.height = Math.round(h * 0.7);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            dataUrl = canvas.toDataURL('image/jpeg', 0.45);
+            sizeKB = (dataUrl.length * 0.75) / 1024;
+          }
+          
+          dlog(`Сжато: ${sizeKB.toFixed(1)} KB (${w}x${h})`,'info');
           resolve(dataUrl);
         }catch(err){ reject(err); }
       };
@@ -1308,11 +1492,11 @@ function showTab(tab){
     const box=$('#adminContent');
     if(!box) return;
     if(tab==='data'){
-      /* Показываем текущий размер данных */
       const sizeKB = Math.round((JSON.stringify(siteData).length * 0.75) / 1024);
       const sizeMB = (sizeKB / 1024).toFixed(2);
       const pct = Math.min(100, Math.round((sizeKB / (MAX_DOC_SIZE/1024)) * 100));
       const color = pct > 80 ? '#ff6b6b' : pct > 60 ? '#ffcc00' : '#3ecf7a';
+      const diag = window.diagnoseSync ? window.diagnoseSync() : {};
       box.innerHTML=`
         <p style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:700">${useFirebase?'🟢 Firebase активен.':'🟡 Firebase не настроен.'}</p>
         <div style="margin-bottom:14px;padding:12px;border-radius:10px;background:var(--bg2);border:2px solid var(--line)">
@@ -1323,10 +1507,20 @@ function showTab(tab){
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:6px">${pct}% от лимита Firestore</div>
         </div>
+        <div style="margin-bottom:14px;padding:12px;border-radius:10px;background:var(--bg2);border:2px solid var(--line);font-size:12px">
+          <div style="font-weight:800;margin-bottom:6px">🔍 Диагностика:</div>
+          <div style="font-family:monospace;font-size:11px;color:var(--muted);white-space:pre-wrap">Firebase: ${diag.firebaseActive?'✓':'✗'}
+DB: ${diag.dbExists?'✓':'✗'}
+Sync: ${diag.syncDotState}
+Секунд с сохранения: ${diag.timeSinceLastSave?Math.round(diag.timeSinceLastSave/1000):'-'}
+Локально: ${diag.localStorageSize} KB
+В памяти: ${diag.siteDataSize} KB</div>
+        </div>
         <div class="btns">
           <button class="btn solid" onclick="window.exportData()">📥 Экспорт</button>
           <button class="btn ghost" onclick="document.getElementById('importFile').click()">📤 Импорт</button>
           <input type="file" id="importFile" accept=".json" style="display:none" onchange="window.importData(event)">
+          <button class="btn ghost" onclick="window.forceSync()" style="border-color:#37e6ff;color:#37e6ff">🔄 Принудительная синхронизация</button>
           <button class="btn ghost" onclick="window.clearDuplicates()" style="border-color:#ffcc00;color:#ffcc00">🧹 Удалить дубли</button>
           <button class="btn ghost" onclick="window.resetData()" style="border-color:#ff6b6b;color:#ff6b6b">🗑 Сброс</button>
           <button class="btn ghost" onclick="window.resetFirebase()" style="border-color:#ff3333;color:#ff3333">🔥 Очистить Firebase</button>
@@ -1470,7 +1664,6 @@ function renderListEditor(tab){
     let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}</h3>`;
 
     if(tab==='gal'){
-      /* Показываем текущий размер данных */
       const sizeKB = Math.round((JSON.stringify(siteData).length * 0.75) / 1024);
       const sizeMB = (sizeKB / 1024).toFixed(2);
       const pct = Math.min(100, Math.round((sizeKB / (MAX_DOC_SIZE/1024)) * 100));
@@ -1806,7 +1999,7 @@ window.editItem=function(tab,i){
             }
             if(loading)loading.classList.add('show');
             if(hint)hint.textContent = '⏳ Обрабатываю...';
-            const compressed = await compressImage(file, 800, 0.85);
+            const compressed = await compressImage(file, 600, 0.5);
             setAvatarUrl(compressed);
             const sizeKB = Math.round((compressed.length * 0.75) / 1024);
             toast(`Аватарка готова (${sizeKB} KB)`);
@@ -1973,8 +2166,7 @@ window.editItem=function(tab,i){
             }
             if(loading)loading.classList.add('show');
             if(hint)hint.textContent = '⏳ Обрабатываю...';
-            /* === ИСПРАВЛЕНИЕ: для галереи сжимаем сильнее (800px, 70%) === */
-            const compressed = await compressImage(file, 800, 0.7);
+            const compressed = await compressImage(file, 600, 0.5);
             setGalUrl(compressed);
             if(urlField) urlField.value = compressed;
             const sizeKB = Math.round((compressed.length * 0.75) / 1024);
@@ -2360,6 +2552,7 @@ window.resetFirebase=async function(){
   try{
     if(!useFirebase){ toast('Firebase не активен'); return; }
     if(!confirm('Очистить Firebase для всех?'))return;
+    _savingUntil = Date.now() + SAVE_COOLDOWN;
     await db.collection('site').doc('main').set({data:JSON.parse(JSON.stringify(DEFAULT_DATA)),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
     localStorage.setItem(STORAGE_KEY,JSON.stringify(siteData));
@@ -2367,6 +2560,72 @@ window.resetFirebase=async function(){
     renderAll(); renderPoll(); showTab(currentTab);
     toast('Firebase очищен 🔥');
   }catch(e){ toast('Ошибка: '+e.message); }
+};
+
+// === ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ ===
+window.forceSync=async function(){
+  try{
+    if(!useFirebase || !db){
+      toast('Firebase не активен');
+      return;
+    }
+    dlog('Принудительная синхронизация...','info');
+    showStatus('🔄 Синхронизация...','ok');
+    
+    _savingUntil = Date.now() + SAVE_COOLDOWN;
+    await db.collection('site').doc('main').set({
+      data: siteData,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      version: Date.now()
+    });
+    
+    dlog('✓ Принудительная синхронизация завершена','ok');
+    updateSyncDot('ok');
+    showStatus('✓ Синхронизировано','ok');
+    toast('✓ Данные синхронизированы с Firebase');
+  }catch(e){
+    dlog('forceSync error: '+e.message,'err');
+    toast('Ошибка: '+e.message);
+    showStatus('✗ Ошибка синхронизации','err');
+  }
+};
+
+// === ДИАГНОСТИКА ===
+window.diagnoseSync=function(){
+  const diag = {
+    firebaseActive: useFirebase,
+    dbExists: !!db,
+    lastSaveAttempt: lastSaveAttempt,
+    savingUntil: _savingUntil,
+    timeSinceLastSave: lastSaveAttempt ? Date.now() - lastSaveAttempt : null,
+    theme: theme,
+    syncDotState: 'unknown',
+    localStorageSize: 0,
+    siteDataSize: 0,
+    isCurrentlySaving: isSaving
+  };
+  
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) diag.localStorageSize = Math.round((raw.length * 0.75) / 1024);
+  }catch(e){}
+  
+  try{
+    if(siteData){
+      diag.siteDataSize = Math.round((JSON.stringify(siteData).length * 0.75) / 1024);
+    }
+  }catch(e){}
+  
+  try{
+    const dot = document.querySelector('#syncDot');
+    if(dot){
+      if(dot.classList.contains('on')) diag.syncDotState = 'ok (зелёный)';
+      else if(dot.classList.contains('off')) diag.syncDotState = 'error (красный)';
+      else if(dot.classList.contains('loading')) diag.syncDotState = 'loading (жёлтый)';
+    }
+  }catch(e){}
+  
+  return diag;
 };
 
 (async ()=>{
@@ -2379,11 +2638,37 @@ window.resetFirebase=async function(){
     renderAll();
     renderPoll();
     dlog('Старт завершён','ok');
+    
+    // Показываем состояние при старте
+    if(useFirebase){
+      showStatus('✓ Синхронизировано с облаком','ok',2000);
+    }else{
+      showStatus('📱 Локальный режим','warn',2000);
+    }
   }catch(e){
     dlog('Init error: '+e.message,'err');
     try{ toast('Ошибка инициализации: '+e.message); }catch(_){}
   }
 })();
+
+// === СОХРАНЕНИЕ ПРИ УХОДЕ СО СТРАНИЦЫ ===
+window.addEventListener('beforeunload', ()=>{
+  try{
+    if(siteData){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(siteData));
+    }
+  }catch(e){}
+});
+
+// === АВТОСОХРАНЕНИЕ ПРИ ИЗМЕНЕНИИ ВИДИМОСТИ (например, при переключении вкладок) ===
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden && siteData){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(siteData));
+      dlog('Автосохранение при уходе со страницы','info');
+    }catch(e){}
+  }
+});
 </script>
 </body>
 </html>
