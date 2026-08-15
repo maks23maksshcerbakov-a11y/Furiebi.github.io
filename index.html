@@ -68,6 +68,7 @@ body[data-theme="m"] .knob{transform:translateX(28px)}
 .btn:active{transform:scale(.94)}
 .btn.solid{background:var(--accent);color:#fff}
 .btn.ghost{border:2px solid var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
 .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
 .chipst{background:var(--card);border:2px dashed var(--line);border-radius:999px;padding:8px 15px;font-weight:900;font-size:13px;animation:pulseSoft 3s ease-in-out infinite}
 .chipst:nth-child(2){animation-delay:1s}.chipst:nth-child(3){animation-delay:2s}
@@ -103,7 +104,6 @@ section{position:relative;z-index:1;padding:58px 0}
 .placeholder p{color:var(--muted);font-weight:700;font-size:14.5px;max-width:520px;margin:0 auto}
 .placeholder-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
 
-/* Креативная заглушка опроса */
 .poll-empty{
   background:var(--card);border:2px dashed var(--line);border-radius:var(--radius);
   padding:40px 24px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden;
@@ -148,6 +148,14 @@ section{position:relative;z-index:1;padding:58px 0}
 .gitem{position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:3/2;border:2px solid var(--line);box-shadow:var(--shadow)}
 .gitem img{width:100%;height:100%;object-fit:cover}
 .gitem figcaption{position:absolute;inset:auto 0 0;padding:34px 14px 12px;font-weight:900;font-size:14px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.55))}
+
+/* Превью миниатюр в списке админки */
+.admin-list-item .thumb{
+  width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none;
+  background:var(--soft);border:1px solid var(--line);margin-right:8px;
+}
+.admin-list-item .thumb-wrap{display:flex;align-items:center;flex:1;min-width:0}
+.admin-list-item .thumb-wrap span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .play{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
 .panel{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
@@ -197,9 +205,9 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .admin-tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap}
 .admin-tabs button{padding:8px 14px;border-radius:999px;font-weight:800;font-size:13px;border:2px solid var(--line);background:var(--bg2);color:var(--muted)}
 .admin-tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.admin-list{max-height:280px;overflow-y:auto;border:2px solid var(--line);border-radius:12px;padding:10px;margin-bottom:14px;background:var(--bg2)}
+.admin-list{max-height:320px;overflow-y:auto;border:2px solid var(--line);border-radius:12px;padding:10px;margin-bottom:14px;background:var(--bg2)}
 .admin-list-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:4px;background:var(--card);font-size:13px;font-weight:700}
-.admin-list-item .acts{display:flex;gap:6px}
+.admin-list-item .acts{display:flex;gap:6px;flex:none}
 .admin-list-item button{padding:4px 10px;border-radius:6px;font-size:12px;font-weight:800}
 .admin-list-item .edit{background:var(--accent2);color:#fff}
 .admin-list-item .del{background:#ff6b6b;color:#fff}
@@ -208,6 +216,24 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .setup-note{background:color-mix(in srgb,#37e6ff 15%,transparent);padding:12px 16px;border-radius:10px;font-size:13px;font-weight:700;color:#37e6ff;margin-bottom:14px;line-height:1.5}
 .debug-box{background:var(--bg2);border:2px solid var(--line);border-radius:10px;padding:12px;margin-top:12px;font-family:monospace;font-size:11px;max-height:140px;overflow-y:auto;color:var(--muted);white-space:pre-wrap}
 .debug-box .ok{color:#3ecf7a}.debug-box .err{color:#ff6b6b}.debug-box .warn{color:#ffcc00}
+
+/* Загрузка фото */
+.img-upload-box{
+  border:2px dashed var(--line);border-radius:12px;padding:20px;text-align:center;
+  background:var(--bg2);margin-bottom:14px;position:relative;
+}
+.img-upload-box .preview{
+  max-width:100%;max-height:200px;border-radius:10px;margin:10px auto;display:none;
+  box-shadow:var(--shadow);
+}
+.img-upload-box .preview.show{display:block}
+.img-upload-box .upload-hint{font-size:12px;color:var(--muted);margin-top:8px;font-weight:700}
+.img-upload-box .upload-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.img-upload-box .upload-btns .btn{padding:8px 16px;font-size:13px}
+.img-upload-box input[type=file]{display:none}
+.img-loading{display:none;position:absolute;inset:0;background:rgba(0,0,0,.5);border-radius:12px;
+  align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;z-index:2}
+.img-loading.show{display:flex}
 
 @media (max-width:860px){
   .hero{padding-top:40px}
@@ -405,20 +431,9 @@ const DEFAULT_POLL={
   m:['🍿 Операция «Ромком»','🌀 Марафон сериалов','😱 Хоррор для смелых','🎬 Выбор отряда']
 };
 
-/* Креативные сообщения для пустого опроса */
 const EMPTY_POLL_MSG = {
-  f: {
-    emo: '🌙',
-    title: 'Опрос пока не создан',
-    text: 'Админ ещё не придумал, что будем решать вместе. Загляни позже — тут появится что-то интересное ✨',
-    hint: '✨ скоро тут что-то появится'
-  },
-  m: {
-    emo: '🎯',
-    title: 'Задач пока нет',
-    text: 'Штаб ещё не определил операцию. Ждём приказа, боец. Оперативная обстановка уточняется ⚡',
-    hint: '⚡ ожидание приказа'
-  }
+  f: { emo:'🌙', title:'Опрос пока не создан', text:'Админ ещё не придумал, что будем решать вместе. Загляни позже ✨', hint:'✨ скоро тут что-то появится' },
+  m: { emo:'🎯', title:'Задач пока нет', text:'Штаб ещё не определил операцию. Ждём приказа, боец ⚡', hint:'⚡ ожидание приказа' }
 };
 
 const DEFAULT_DATA={
@@ -501,7 +516,6 @@ function dedupeAll(){
       const after=siteData[t][k].length;
       if(before!==after) dlog(`Удалено ${before-after} дублей в ${t}.${k}`,'warn');
     });
-    // Если poll отсутствует — ставим дефолт (для старых данных)
     if(!Array.isArray(siteData[t].poll))siteData[t].poll=DEFAULT_POLL[t].slice();
   });
 }
@@ -639,11 +653,11 @@ function renderWall(){
 function renderGal(){
   const box=$('#galGrid'); if(!box)return; box.innerHTML='';
   const items=cur().gal;
-  if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📸</span><h3>Альбом пока пуст</h3><p>сюда будут добавляться кадры</p></div>`; return; }
+  if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📸</span><h3>Альбом пока пуст</h3><p>админ добавит фото через админ-панель</p></div>`; return; }
   items.forEach(it=>{
     const el=document.createElement('figure');
     el.className='gitem themable reveal';
-    el.innerHTML=`<img src="${escapeHtml(it.url||'')}" alt="${escapeHtml(it.caption||'')}"><figcaption>${escapeHtml(it.caption||'')}</figcaption>`;
+    el.innerHTML=`<img src="${escapeHtml(it.url||'')}" alt="${escapeHtml(it.caption||'')}" onerror="this.style.display='none'"><figcaption>${escapeHtml(it.caption||'')}</figcaption>`;
     box.appendChild(el);
   });
 }
@@ -696,14 +710,10 @@ function renderMarquee(t){ $('#marquee').innerHTML=MARQ[t].map(w=>`<span>${w} �
 function pollKey(){return 'poll_'+theme;}
 function getPoll(){ try{return JSON.parse(localStorage.getItem(pollKey()))||{c:[],v:null};}catch(e){return{c:[],v:null};} }
 
-/* ===== РЕНДЕР ОПРОСА С ЗАГЛУШКОЙ ===== */
 function renderPoll(){
-  // Получаем варианты: если poll — пустой массив, значит админ его очистил
   const opts = Array.isArray(cur().poll) ? cur().poll : DEFAULT_POLL[theme];
   const st=getPoll();
   const box=$('#poll'); if(!box)return; box.innerHTML='';
-  
-  // Если опрос пустой — показываем креативную заглушку
   if(!opts.length){
     const msg = EMPTY_POLL_MSG[theme];
     box.innerHTML = `
@@ -716,8 +726,6 @@ function renderPoll(){
     `;
     return;
   }
-  
-  // Иначе — обычный опрос
   if(st.c.length!==opts.length)st.c=opts.map(()=>0);
   const total=st.c.reduce((a,b)=>a+b,0);
   opts.forEach((o,i)=>{
@@ -812,6 +820,40 @@ $$('.admin-tabs button').forEach(b=>{
   });
 });
 
+/* ===== ЗАГРУЗКА И СЖАТИЕ ФОТО ===== */
+function compressImage(file, maxWidth=1200, quality=0.82){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        // Определяем новые размеры с сохранением пропорций
+        let w = img.width, h = img.height;
+        if(w > maxWidth){ h = Math.round(h * maxWidth / w); w = maxWidth; }
+        if(h > maxWidth){ w = Math.round(w * maxWidth / h); h = maxWidth; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        // Проверка размера (лимит ~2MB в base64)
+        const sizeMB = (dataUrl.length * 0.75) / (1024*1024);
+        if(sizeMB > 2){
+          // Сжимаем сильнее
+          const smaller = canvas.toDataURL('image/jpeg', 0.6);
+          resolve(smaller);
+        }else{
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => reject(new Error('Не удалось загрузить изображение'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Ошибка чтения файла'));
+    reader.readAsDataURL(file);
+  });
+}
+
 function showTab(tab){
   const box=$('#adminContent');
   if(tab==='data'){
@@ -834,14 +876,11 @@ function showTab(tab){
   renderListEditor(tab);
 }
 
-/* ===== РЕДАКТОР ОПРОСА С ЗАГЛУШКОЙ ===== */
 function renderPollEditor(){
   const box=$('#adminContent');
   const opts=cur().poll||[];
   let html=`<h3 style="font-size:16px;margin-bottom:8px">Варианты опроса (тема: ${theme==='f'?'🌸':'⚡'})</h3>`;
-  
   if(!opts.length){
-    // Креативная заглушка в админке
     const msg = theme==='f' 
       ? {emo:'🌸', title:'Опрос пуст', text:'Добавь первый вариант для девочек ↓'}
       : {emo:'⚡', title:'Опрос пуст', text:'Добавь первый вариант для пацанов ↓'};
@@ -860,7 +899,6 @@ function renderPollEditor(){
     });
     html += `</div>`;
   }
-  
   html += `<button class="btn solid" onclick="addPollItem()" style="width:100%">➕ Добавить вариант</button>`;
   html += `<div class="btns" style="margin-top:10px"><button class="btn ghost" onclick="resetPoll()" style="border-color:#ff6b6b;color:#ff6b6b">↻ Вернуть стандартные</button><button class="btn ghost" onclick="clearPoll()" style="border-color:#ffcc00;color:#ffcc00">🗑 Очистить всё</button></div>`;
   box.innerHTML=html;
@@ -924,19 +962,32 @@ const FIELD_DEFS={
   play:[{k:'emo',label:'Эмодзи',type:'text'},{k:'title',label:'Заголовок',type:'text'},{k:'desc',label:'Описание',type:'textarea'}],
   events:[{k:'day',label:'День и время',type:'text'},{k:'title',label:'Название',type:'text'},{k:'desc',label:'Описание',type:'textarea'},{k:'emo',label:'Эмодзи',type:'text'}],
   wall:[{k:'text',label:'Текст записи',type:'textarea'},{k:'author',label:'Автор',type:'text'},{k:'pin',label:'Иконка-пин',type:'text'}],
-  gal:[{k:'url',label:'URL картинки',type:'text'},{k:'caption',label:'Подпись',type:'text'}]
+  gal:[{k:'url',label:'Фото (URL или загрузи файл ниже)',type:'text'},{k:'caption',label:'Подпись',type:'text'}]
 };
 
+/* ===== СПИСОК ЭЛЕМЕНТОВ С ПРЕВЬЮ ДЛЯ ГАЛЕРЕИ ===== */
 function renderListEditor(tab){
   const box=$('#adminContent');
   const items=cur()[tab]||[];
-  const titles={team:'Участники команды',play:'Активности',events:'Ивенты',wall:'Записи на стене',gal:'Фото в галерее'};
+  const titles={team:'Участники команды',play:'Активности',events:'Ивенты',wall:'Записи на стене',gal:'Фото в галерее (моменты)'};
   let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}</h3>`;
+  
+  if(tab==='gal'){
+    html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Загружай фото файлом или вставляй URL</p>`;
+  }
+  
   html+=`<div class="admin-list">`;
   if(!items.length) html+=`<div class="admin-list-empty">Список пуст ↓</div>`;
   else items.forEach((it,i)=>{
-    const main=it.name||it.title||it.text||it.url||'без названия';
-    html+=`<div class="admin-list-item"><span>${i+1}. ${escapeHtml(main).slice(0,50)}</span><div class="acts"><button class="edit" onclick="editItem('${tab}',${i})">✎</button><button class="del" onclick="delItem('${tab}',${i})">✕</button></div></div>`;
+    if(tab==='gal'){
+      // Для галереи показываем миниатюру
+      const thumb = it.url ? `<img class="thumb" src="${escapeHtml(it.url)}" onerror="this.style.visibility='hidden'">` : '';
+      const caption = it.caption || 'без подписи';
+      html+=`<div class="admin-list-item"><div class="thumb-wrap">${thumb}<span>${i+1}. ${escapeHtml(caption).slice(0,40)}</span></div><div class="acts"><button class="edit" onclick="editItem('${tab}',${i})">✎</button><button class="del" onclick="delItem('${tab}',${i})">✕</button></div></div>`;
+    }else{
+      const main=it.name||it.title||it.text||it.url||'без названия';
+      html+=`<div class="admin-list-item"><span>${i+1}. ${escapeHtml(main).slice(0,50)}</span><div class="acts"><button class="edit" onclick="editItem('${tab}',${i})">✎</button><button class="del" onclick="delItem('${tab}',${i})">✕</button></div></div>`;
+    }
   });
   html+=`</div><button class="btn solid" onclick="addItem('${tab}')" style="width:100%">➕ Добавить</button>`;
   box.innerHTML=html;
@@ -950,20 +1001,104 @@ window.delItem=async function(tab,i){
   toast('Удалено ✓');
 };
 
+/* ===== РЕДАКТИРОВАНИЕ С ЗАГРУЗКОЙ ФОТО ДЛЯ ГАЛЕРЕИ ===== */
 window.editItem=function(tab,i){
   const fields=FIELD_DEFS[tab];
   const item=i<0?{}:(cur()[tab][i]||{});
   let html=`<h3 style="font-size:16px;margin-bottom:12px">${i<0?'Добавить':'Редактировать'}</h3>`;
+  
+  // Специальный блок для галереи — загрузка файла
+  if(tab==='gal'){
+    const currentUrl = item.url || '';
+    html += `
+      <div class="img-upload-box">
+        <div class="img-loading" id="imgLoading">⏳ Сжимаю фото...</div>
+        <img class="preview ${currentUrl?'show':''}" id="imgPreview" src="${escapeHtml(currentUrl)}" onerror="this.classList.remove('show')">
+        <div class="upload-hint" id="uploadHint">${currentUrl?'✓ Фото загружено. Можешь заменить или оставить':'Выбери фото с устройства или введи URL'}</div>
+        <div class="upload-btns">
+          <label class="btn solid" for="imgFile" style="display:inline-block">📁 Загрузить файл</label>
+          <input type="file" id="imgFile" accept="image/*">
+          <button class="btn ghost" type="button" id="clearImgBtn">✕ Убрать фото</button>
+        </div>
+      </div>
+      <div style="text-align:center;color:var(--muted);font-size:12px;font-weight:700;margin-bottom:12px">— или вставь URL ниже —</div>
+    `;
+  }
+  
   fields.forEach(f=>{
     const val=item[f.k]||'';
     if(f.type==='textarea') html+=`<div class="form-row"><label>${f.label}</label><textarea data-field="${f.k}">${escapeHtml(val)}</textarea></div>`;
-    else html+=`<div class="form-row"><label>${f.label}</label><input type="text" data-field="${f.k}" value="${escapeHtml(val)}"></div>`;
+    else html+=`<div class="form-row"><label>${f.label}</label><input type="text" data-field="${f.k}" value="${escapeHtml(val)}" ${tab==='gal'&&f.k==='url'?'placeholder="https://... или оставь пустым, если загрузил файл"':''}></div>`;
   });
   html+=`<div class="btns"><button class="btn solid" id="saveItem">💾 Сохранить</button><button class="btn ghost" onclick="showTab('${tab}')">Отмена</button></div>`;
   $('#adminContent').innerHTML=html;
+  
+  // Если галерея — вешаем обработчики на загрузку файла
+  if(tab==='gal'){
+    const fileInput = $('#imgFile');
+    const preview = $('#imgPreview');
+    const urlInput = $('#adminContent [data-field="url"]');
+    const loading = $('#imgLoading');
+    const hint = $('#uploadHint');
+    const clearBtn = $('#clearImgBtn');
+    
+    fileInput.addEventListener('change', async e=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      if(!file.type.startsWith('image/')){
+        toast('Выбери файл-картинку');
+        return;
+      }
+      // Показываем индикатор загрузки
+      loading.classList.add('show');
+      hint.textContent = '⏳ Обрабатываю фото...';
+      try{
+        const compressed = await compressImage(file, 1200, 0.82);
+        preview.src = compressed;
+        preview.classList.add('show');
+        urlInput.value = compressed;
+        const sizeKB = Math.round((compressed.length * 0.75) / 1024);
+        hint.textContent = `✓ Фото сжато (${sizeKB} KB). Готово к сохранению`;
+        toast(`Фото готово (${sizeKB} KB)`);
+      }catch(err){
+        toast('Ошибка: '+err.message);
+        hint.textContent = '❌ Не удалось обработать фото';
+      }finally{
+        loading.classList.remove('show');
+      }
+    });
+    
+    clearBtn.addEventListener('click', ()=>{
+      preview.classList.remove('show');
+      preview.src = '';
+      urlInput.value = '';
+      hint.textContent = 'Фото убрано';
+      fileInput.value = '';
+    });
+    
+    // Когда пользователь вводит URL вручную — обновляем превью
+    urlInput.addEventListener('input', ()=>{
+      const v = urlInput.value.trim();
+      if(v){
+        preview.src = v;
+        preview.classList.add('show');
+      }else{
+        preview.classList.remove('show');
+        preview.src = '';
+      }
+    });
+  }
+  
   $('#saveItem').addEventListener('click',async ()=>{
     const newObj={};
     fields.forEach(f=>{ newObj[f.k]=$('#adminContent [data-field="'+f.k+'"]').value; });
+    
+    // Проверка для галереи — должна быть либо картинка, либо подпись
+    if(tab==='gal' && !newObj.url && !newObj.caption){
+      toast('Добавь хотя бы фото или подпись');
+      return;
+    }
+    
     if(i<0)cur()[tab].push(newObj); else cur()[tab][i]=newObj;
     dedupeAll();
     await saveData(); renderListEditor(tab); renderAll();
