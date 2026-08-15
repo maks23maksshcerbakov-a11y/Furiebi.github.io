@@ -1674,7 +1674,7 @@ function renderImportTab(){
       if(e.key==='Enter'){try{loadMembersFromDiscord();}catch(err){}}
     });
 
-    if(importedMembers.length) renderImportedMembersList();
+    if(importedMembers.length) renderImportedMemberList();
   }catch(e){
     dlog('renderImportTab error: '+e.message,'err');
     try{ $('#adminContent').innerHTML = `<div class="admin-list-empty">Ошибка загрузки вкладки: ${escapeHtml(e.message)}</div>`; }catch(_){}
