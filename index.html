@@ -147,7 +147,7 @@ section{position:relative;z-index:1;padding:58px 0}
 
 .gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
 .gitem{position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:3/2;border:2px solid var(--line);box-shadow:var(--shadow)}
-.gitem img{width:100%;height:100%;object-fit:cover}
+.gitem img{width:100%;height:100%;object-fit:cover;transform-origin:center}
 .gitem figcaption{position:absolute;inset:auto 0 0;padding:34px 14px 12px;font-weight:900;font-size:14px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.55))}
 
 .admin-list-item .thumb{
@@ -504,7 +504,6 @@ const FIREBASE_CONFIG = {
   appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
 
-// v8 - миграция: старые данные сбрасываются
 const STORAGE_KEY='siteData_v8';
 const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
@@ -545,7 +544,6 @@ let importedMembers=[];
 let importFilter='';
 let currentAvatarTransform={x:0,y:0,scale:1};
 
-// Глобальный обработчик ошибок
 window.addEventListener('error', e=>{
   try{ dlog('JS error: '+e.message,'err'); }catch(_){}
 });
@@ -664,7 +662,6 @@ async function loadData(){
   }
 }
 
-// Миграция: очистка старых дефолтных опросов при переходе на v8
 function migrateData(){
   try{
     ['f','m'].forEach(t=>{
@@ -792,7 +789,8 @@ function renderGal(){
     items.forEach(it=>{
       const el=document.createElement('figure');
       el.className='gitem themable reveal';
-      el.innerHTML=`<img src="${escapeHtml(it.url||'')}" alt="${escapeHtml(it.caption||'')}" onerror="this.style.display='none'"><figcaption>${escapeHtml(it.caption||'')}</figcaption>`;
+      const t = it.galTransform || {x:0,y:0,scale:1};
+      el.innerHTML=`<img src="${escapeHtml(it.url||'')}" alt="${escapeHtml(it.caption||'')}" style="transform:translate(${t.x}px,${t.y}px) scale(${t.scale})" onerror="this.style.display='none'"><figcaption>${escapeHtml(it.caption||'')}</figcaption>`;
       box.appendChild(el);
     });
   }catch(e){ dlog('renderGal error: '+e.message,'err'); }
@@ -820,7 +818,7 @@ function swapTexts(t,animate){
     });
     $('#lblF').classList.toggle('on',t==='f');
     $('#lblM').classList.toggle('on',t==='m');
-    $('#logoEmoji').textContent=t==='f'?'🌸':'⚡';
+    $('#logoEmoji').textContent=t==='f'?'🌸':'';
     $('#heartBtn').textContent=t==='f'?'💖':'🫡';
   }catch(e){ dlog('swapTexts error: '+e.message,'err'); }
 }
@@ -903,7 +901,7 @@ $('#heartBtn').addEventListener('click',()=>{
     const zone=$('#loveZone');
     if(!reduced)for(let k=0;k<5;k++){
       const s=document.createElement('span'); s.className='fheart';
-      s.textContent=theme==='f'?['💖','💗','✨'][k%3]:['⚡','🫡','🔥'][k%3];
+      s.textContent=theme==='f'?['💖','💗','✨'][k%3]:['⚡','','🔥'][k%3];
       s.style.left=(30+Math.random()*40)+'%'; s.style.top='10px';
       s.style.setProperty('--dx',(Math.random()*80-40)+'px');
       zone.appendChild(s); setTimeout(()=>s.remove(),1150);
@@ -926,7 +924,7 @@ addEventListener('pointermove',e=>{
   const now=performance.now(); if(now-lastTrail<80)return; lastTrail=now;
   try{
     const s=document.createElement('span'); s.className='trail';
-    const set=theme==='f'?['🌸','✨','💗']:['⚡','🔥','✦'];
+    const set=theme==='f'?['🌸','✨','💗']:['⚡','','✦'];
     s.textContent=set[Math.random()*set.length|0];
     s.style.left=e.clientX+'px'; s.style.top=e.clientY+'px';
     document.body.appendChild(s); setTimeout(()=>s.remove(),820);
@@ -963,7 +961,6 @@ window.closeModal=closeModal;
 window.safeCloseModal=safeCloseModal;
 window.safeLogout=safeLogout;
 
-// Делегированный обработчик для adminLink - всегда работает
 document.addEventListener('click', e=>{
   try{
     if(e.target && e.target.id === 'adminLink'){
@@ -1159,7 +1156,7 @@ window.editPollItem=function(i){
     const val=i<0?'':(opts[i]||'');
     let html=`<h3 style="font-size:16px;margin-bottom:12px">${i<0?'Добавить вариант':'Редактировать вариант'}</h3>`;
     html+=`<div class="form-row"><label>Текст варианта (можно с эмодзи)</label><input type="text" id="pollInput" value="${escapeHtml(val)}" placeholder="🍿 Ромком и пледы"></div>`;
-    html+=`<div class="btns"><button class="btn solid" id="savePollItem">💾 Сохранить</button><button class="btn ghost" onclick="safeCloseModal('adminModal');window.showTab('poll')">Отмена</button></div>`;
+    html+=`<div class="btns"><button class="btn solid" id="savePollItem">💾 Сохранить</button><button class="btn ghost" onclick="window.showTab('poll')">Отмена</button></div>`;
     $('#adminContent').innerHTML=html;
     const input=$('#pollInput'); if(input){input.focus();input.select();}
     const saveBtn=$('#savePollItem');
@@ -1218,7 +1215,7 @@ function renderListEditor(tab){
     const titles={team:'Участники команды',play:'Активности',events:'Ивенты',wall:'Записи на стене',gal:'Фото в галерее (моменты)'};
     let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}</h3>`;
 
-    if(tab==='gal') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Загружай фото файлом или вставляй URL</p>`;
+    if(tab==='gal') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Загружай фото файлом или вставляй URL. В редакторе можно двигать и увеличивать фото мышкой.</p>`;
     if(tab==='team') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">👤 Аватарку можно загрузить файлом, вставить URL или импортировать из Discord во вкладке <b>👥 Импорт</b>. В редакторе можно двигать и увеличивать картинку мышкой.</p>`;
 
     html+=`<div class="admin-list">`;
@@ -1305,6 +1302,19 @@ function setupAvatarCropper(previewEl, innerEl, initialTransform){
   };
 }
 
+function extractUrlFromInner(inner){
+  try{
+    if(!inner) return null;
+    const bg = inner.style.backgroundImage;
+    if(!bg) return null;
+    const match = bg.match(/url\(['"]?(.+?)['"]?\)$/);
+    if(match) return match[1];
+    const match2 = bg.match(/url\(['"]?([^'"]+)['"]?\)/);
+    if(match2) return match2[1];
+    return null;
+  }catch(e){ return null; }
+}
+
 window.editItem=function(tab,i){
   try{
     const fields=FIELD_DEFS[tab];
@@ -1348,14 +1358,24 @@ window.editItem=function(tab,i){
     if(tab==='gal'){
       const curUrl = item.url || '';
       const hasImg = !!curUrl;
+      const t = item.galTransform || {x:0,y:0,scale:1};
       html += `
         <div class="upload-block">
           <div class="up-loading" id="galLoading">⏳ Сжимаю фото...</div>
+          ${hasImg?`
+            <div class="crop-controls">
+              <button class="btn ghost" id="galZoomOutBtn" type="button">➖</button>
+              <span class="zoom-info">${Math.round(t.scale*100)}%</span>
+              <button class="btn ghost" id="galZoomInBtn" type="button">➕</button>
+              <button class="btn ghost" id="galResetCropBtn" type="button">↻ Сброс</button>
+            </div>
+          `:''}
           <div class="up-preview gal ${hasImg?'has-img':''}" id="galPreview"
                style="${hasImg?'':`background:linear-gradient(135deg,var(--accent),var(--accent2))`}">
-            ${hasImg?`<div class="up-inner" style="background-image:url('${escapeHtml(curUrl)}')"></div>`:'📸'}
+            ${hasImg?`<div class="up-inner" style="background-image:url('${escapeHtml(curUrl)}');transform:translate(${t.x}px,${t.y}px) scale(${t.scale})"></div>`:'📸'}
           </div>
-          <div class="up-hint" id="galHint">${hasImg?'✓ Фото загружено':'Фото не загружено'}</div>
+          <div class="up-hint" id="galHint">${hasImg?'🖱 Двигай мышкой • 🎚 Колесо для зума':'Фото не загружено'}</div>
+          ${hasImg?`<div class="crop-hint">💡 Перетаскивай фото мышкой и крути колесо для зума — выбери красивый кадр. Позиция сохранится.</div>`:''}
           <div class="up-btns">
             <label class="btn solid" for="galFile" style="display:inline-block">📁 Загрузить файл</label>
             <input type="file" id="galFile" accept="image/*">
@@ -1379,6 +1399,7 @@ window.editItem=function(tab,i){
     $('#adminContent').innerHTML=html;
 
     let cropper=null;
+    let galCropper=null;
 
     if(tab==='team'){
       const fileInput = $('#avatarFile');
@@ -1499,25 +1520,80 @@ window.editItem=function(tab,i){
     if(tab==='gal'){
       const fileInput = $('#galFile');
       const preview = $('#galPreview');
+      const inner = preview ? preview.querySelector('.up-inner') : null;
       const loading = $('#galLoading');
       const hint = $('#galHint');
       const clearBtn = $('#clearGalBtn');
+      const urlField = $('#adminContent [data-field="url"]');
+
+      if(inner){
+        galCropper = setupAvatarCropper(preview, inner, item.galTransform || {x:0,y:0,scale:1});
+      }
+
+      const gZoomIn=$('#galZoomInBtn'), gZoomOut=$('#galZoomOutBtn'), gReset=$('#galResetCropBtn');
+      if(gZoomIn) gZoomIn.addEventListener('click',()=>{try{galCropper&&galCropper.zoom(1.2);}catch(e){}});
+      if(gZoomOut) gZoomOut.addEventListener('click',()=>{try{galCropper&&galCropper.zoom(0.8);}catch(e){}});
+      if(gReset) gReset.addEventListener('click',()=>{try{galCropper&&galCropper.reset();}catch(e){}});
+
+      function addGalCropControls(){
+        try{
+          const existingControls = preview.parentElement.querySelector('.crop-controls');
+          if(!existingControls){
+            const controls = document.createElement('div');
+            controls.className='crop-controls';
+            controls.innerHTML=`
+              <button class="btn ghost" id="galZoomOutBtn" type="button">➖</button>
+              <span class="zoom-info">100%</span>
+              <button class="btn ghost" id="galZoomInBtn" type="button">➕</button>
+              <button class="btn ghost" id="galResetCropBtn" type="button">↻ Сброс</button>
+            `;
+            preview.parentElement.insertBefore(controls, preview);
+            controls.querySelector('#galZoomInBtn').addEventListener('click',()=>{try{galCropper.zoom(1.2);}catch(e){}});
+            controls.querySelector('#galZoomOutBtn').addEventListener('click',()=>{try{galCropper.zoom(0.8);}catch(e){}});
+            controls.querySelector('#galResetCropBtn').addEventListener('click',()=>{try{galCropper.reset();}catch(e){}});
+          }
+          const existingHint = preview.parentElement.querySelector('.crop-hint');
+          if(!existingHint){
+            const h=document.createElement('div');
+            h.className='crop-hint';
+            h.textContent='💡 Перетаскивай фото мышкой и крути колесо для зума — выбери красивый кадр. Позиция сохранится.';
+            preview.parentElement.insertBefore(h, preview.parentElement.querySelector('.up-btns'));
+          }
+        }catch(e){}
+      }
 
       function setGalUrl(url){
         try{
           if(!preview)return;
           if(url){
-            preview.innerHTML=`<div class="up-inner" style="background-image:url('${url}')"></div>`;
+            preview.innerHTML=`<div class="up-inner" style="background-image:url('${url}');transform:translate(0,0) scale(1)"></div>`;
             preview.classList.add('has-img');
             preview.style.background='';
-            if(hint) hint.textContent='✓ Фото загружено';
+            const newInner = preview.querySelector('.up-inner');
+            galCropper = setupAvatarCropper(preview, newInner, {x:0,y:0,scale:1});
+            addGalCropControls();
+            if(hint) hint.textContent='🖱 Двигай мышкой • 🎚 Колесо для зума';
           }else{
             preview.innerHTML='📸';
             preview.classList.remove('has-img');
             preview.style.background=`linear-gradient(135deg,var(--accent),var(--accent2))`;
+            galCropper=null;
+            const existingControls = preview.parentElement.querySelector('.crop-controls');
+            if(existingControls) existingControls.remove();
+            const existingHint = preview.parentElement.querySelector('.crop-hint');
+            if(existingHint) existingHint.remove();
             if(hint) hint.textContent='Фото не загружено';
           }
         }catch(e){}
+      }
+
+      if(urlField){
+        urlField.addEventListener('change', ()=>{
+          try{
+            const v=(urlField.value||'').trim();
+            if(v) setGalUrl(v);
+          }catch(e){}
+        });
       }
 
       if(fileInput){
@@ -1533,6 +1609,7 @@ window.editItem=function(tab,i){
             if(hint)hint.textContent = '⏳ Обрабатываю...';
             const compressed = await compressImage(file, 1200, 0.82, false);
             setGalUrl(compressed);
+            if(urlField) urlField.value = compressed;
             const sizeKB = Math.round((compressed.length * 0.75) / 1024);
             toast(`Фото готово (${sizeKB} KB)`);
           }catch(err){
@@ -1548,6 +1625,7 @@ window.editItem=function(tab,i){
         clearBtn.addEventListener('click', ()=>{
           try{
             if(fileInput) fileInput.value = '';
+            if(urlField) urlField.value = '';
             setGalUrl('');
           }catch(e){}
         });
@@ -1564,38 +1642,36 @@ window.editItem=function(tab,i){
             newObj[f.k]=el?el.value:'';
           });
 
-          if(tab==='gal' && !newObj.url && !newObj.caption){
-            toast('Добавь хотя бы фото или подпись');
-            return;
-          }
-
+          // СНАЧАЛА извлекаем фото и трансформации из превью
           if(tab==='team'){
             const preview = $('#avatarPreview');
-            if(preview && preview.classList.contains('has-img') && cropper){
-              newObj.avatarTransform = cropper.getState();
+            const inner = preview?.querySelector('.up-inner');
+            if(preview && preview.classList.contains('has-img')){
+              if(cropper) newObj.avatarTransform = cropper.getState();
+              const url = extractUrlFromInner(inner);
+              if(url) newObj.avatar = url;
             } else {
               delete newObj.avatarTransform;
-            }
-            const inner = preview?.querySelector('.up-inner');
-            if(inner){
-              const bg = inner.style.backgroundImage;
-              if(bg){
-                const match = bg.match(/url\(['"]?(.+?)['"]?\)/);
-                if(match) newObj.avatar = match[1];
-              }
+              if(!newObj.avatar) newObj.avatar='';
             }
           }
 
           if(tab==='gal'){
             const preview = $('#galPreview');
             const inner = preview?.querySelector('.up-inner');
-            if(inner){
-              const bg = inner.style.backgroundImage;
-              if(bg){
-                const match = bg.match(/url\(['"]?(.+?)['"]?\)/);
-                if(match) newObj.url = match[1];
-              }
+            if(preview && preview.classList.contains('has-img')){
+              if(galCropper) newObj.galTransform = galCropper.getState();
+              const url = extractUrlFromInner(inner);
+              if(url) newObj.url = url;
+            } else {
+              delete newObj.galTransform;
             }
+          }
+
+          // ПОТОМ проверяем валидность
+          if(tab==='gal' && !newObj.url && !newObj.caption){
+            toast('Добавь хотя бы фото или подпись');
+            return;
           }
 
           if(i<0)cur()[tab].push(newObj); else cur()[tab][i]=newObj;
@@ -1826,7 +1902,7 @@ window.addImportedToTeam=async function(memberId,targetTheme){
 
     const sticker = targetTheme==='f'
       ? ['🌸','💗','🎀','✨','🦋'][Math.floor(Math.random()*5)]
-      : ['⚡','🔥','🎖️','🛡️','⚔️'][Math.floor(Math.random()*5)];
+      : ['⚡','','🎖️','🛡️','⚔️'][Math.floor(Math.random()*5)];
 
     const role = targetTheme==='f' ? '🌸 Furiebi' : '⚡ Furiebi';
     const displayName = m.globalName || m.username;
