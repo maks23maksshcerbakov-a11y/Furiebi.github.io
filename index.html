@@ -33,9 +33,11 @@ img{display:block;max-width:100%}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
 
+/* зерно */
 body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:120;opacity:.05;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")}
 
+/* плавающие эмодзи фона */
 .floaters{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
 .floaters span{position:absolute;font-size:26px;opacity:.32;animation:drift 12s ease-in-out infinite alternate}
 body[data-theme="m"] .fl-f{display:none}
@@ -74,6 +76,7 @@ body[data-theme="m"] .knob{transform:translateX(28px)}
 .chipst:nth-child(2){animation-delay:1s}.chipst:nth-child(3){animation-delay:2s}
 @keyframes pulseSoft{50%{transform:translateY(-4px)}}
 
+/* полароиды */
 .polas{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .pola{background:var(--card);border:2px solid var(--line);border-radius:8px;padding:10px 10px 12px;box-shadow:var(--shadow);position:relative;transition:transform .4s cubic-bezier(.34,1.4,.64,1),background-color .5s,border-color .5s}
 .pola::before{content:"";position:absolute;top:-11px;left:50%;transform:translateX(-50%) rotate(-4deg);width:66px;height:20px;background:color-mix(in srgb,var(--accent2) 40%,transparent);border-radius:2px}
@@ -98,6 +101,21 @@ section{position:relative;z-index:1;padding:58px 0}
 .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
 .reveal.in{opacity:1;transform:none}
 
+/* ============ КОМАНДА ============ */
+.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.member{position:relative;background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:24px 20px 20px;text-align:center;box-shadow:var(--shadow);transition:transform .35s,background-color .5s,border-color .5s,box-shadow .5s}
+.member:hover{transform:translateY(-6px) rotate(-1deg)}
+.member .sticker{position:absolute;top:-13px;right:14px;font-size:24px;transform:rotate(12deg)}
+.mav{width:84px;height:84px;border-radius:50%;margin:0 auto 12px;background-size:cover;background-position:center;box-shadow:0 0 0 4px var(--soft),0 0 0 6px var(--accent)}
+.member h3{font-family:var(--font-d);font-size:22px}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--muted);margin:6px 0 10px}
+.status i{width:9px;height:9px;border-radius:50%;background:#3ecf7a}
+.status.dnd i{background:#ff6b6b}
+.chip{display:inline-block;font-size:12.5px;font-weight:900;padding:5px 12px;border-radius:999px;background:color-mix(in srgb,var(--rc) 16%,transparent);color:var(--rc);margin-bottom:12px}
+body[data-theme="f"] .chip{--rc:var(--rf)}
+body[data-theme="m"] .chip{--rc:var(--rm)}
+.member q{display:block;font-size:13.5px;color:var(--muted);font-style:italic}
+
 /* ============ ИГРОВАЯ ============ */
 .play{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
 .panel{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
@@ -112,6 +130,18 @@ section{position:relative;z-index:1;padding:58px 0}
 .bubble{position:relative;background:var(--soft);border:2px dashed var(--accent);border-radius:16px 16px 16px 3px;padding:16px;margin-top:16px;font-weight:700;min-height:70px;display:flex;align-items:center;font-size:15px}
 .bubble.pop{animation:bpop .4s cubic-bezier(.34,1.6,.64,1)}
 @keyframes bpop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.trk{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;border:2px solid transparent}
+.trk:hover{background:var(--soft)}
+.trk.playing{background:var(--soft);border-color:var(--accent)}
+.trk .num{color:var(--muted);width:16px;font-size:12px}
+.trk .dur{margin-left:auto;color:var(--muted);font-size:12.5px}
+.eq{display:flex;gap:2.5px;align-items:flex-end;height:15px;width:18px;visibility:hidden}
+.trk.playing .eq{visibility:visible}
+.eq i{width:3.5px;background:var(--accent);border-radius:2px;height:4px;animation:eqb .7s ease-in-out infinite alternate}
+.eq i:nth-child(2){animation-delay:.15s}.eq i:nth-child(3){animation-delay:.3s}.eq i:nth-child(4){animation-delay:.45s}
+@keyframes eqb{from{height:4px}to{height:15px}}
+.nowplay{margin-top:14px;font-size:13px;font-weight:800;color:var(--muted);text-align:center}
+.nowplay b{color:var(--accent)}
 
 /* ============ ИВЕНТЫ ============ */
 .notes{display:flex;flex-wrap:wrap;gap:24px;justify-content:center}
@@ -126,6 +156,39 @@ section{position:relative;z-index:1;padding:58px 0}
 .note p{font-size:13.5px;color:var(--muted)}
 .note .emo{position:absolute;bottom:10px;right:12px;font-size:22px}
 
+/* ============ СТЕНА ============ */
+.wall{display:flex;flex-wrap:wrap;gap:26px;justify-content:center;padding:14px 0}
+body[data-theme="f"] .pnote{--pc:var(--pf)}
+body[data-theme="m"] .pnote{--pc:var(--pm)}
+.pnote{width:225px;background:var(--pc);border-radius:12px;padding:20px 16px 16px;font-size:14px;font-weight:700;box-shadow:var(--shadow);transition:transform .4s cubic-bezier(.34,1.4,.64,1),background-color .5s;position:relative}
+.pnote small{display:block;margin-top:12px;color:var(--muted);font-weight:900;font-size:11.5px;letter-spacing:1px;text-transform:uppercase}
+.pnote::after{content:attr(data-pin);position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:20px}
+.pnote:nth-child(1){transform:rotate(-4deg)}
+.pnote:nth-child(2){transform:rotate(3deg) translateY(16px)}
+.pnote:nth-child(3){transform:rotate(-2deg) translateY(-6px)}
+.pnote:nth-child(4){transform:rotate(4deg) translateY(10px)}
+.pnote:nth-child(5){transform:rotate(-3deg)}
+.pnote:nth-child(6){transform:rotate(2deg) translateY(18px)}
+.pnote:hover{transform:rotate(0) scale(1.07);z-index:2}
+
+/* ============ ОПРОС ============ */
+.poll{max-width:620px;margin:0 auto;background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
+.opt{position:relative;display:block;width:100%;text-align:left;border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;font-weight:800;font-size:15px;overflow:hidden;background:var(--bg2)}
+.opt .fill{position:absolute;inset:0;width:0;background:color-mix(in srgb,var(--accent) 20%,transparent);transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.opt span{position:relative;z-index:1}
+.opt .pct{float:right;color:var(--accent);font-weight:900}
+.opt.mine{border-color:var(--accent)}
+.poll-foot{text-align:center;color:var(--muted);font-size:13px;font-weight:800;margin-top:16px}
+
+/* ============ ГАЛЕРЕЯ ============ */
+.gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.gitem{position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:3/2;border:2px solid var(--line);box-shadow:var(--shadow)}
+.gitem img{width:100%;height:100%;object-fit:cover;animation:kb 16s ease-in-out infinite alternate}
+.gitem:nth-child(2) img{animation-delay:-3s}.gitem:nth-child(3) img{animation-delay:-6s}
+.gitem:nth-child(4) img{animation-delay:-9s}.gitem:nth-child(5) img{animation-delay:-12s}.gitem:nth-child(6) img{animation-delay:-15s}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.12) translate(-2%,2%)}}
+.gitem figcaption{position:absolute;inset:auto 0 0;padding:34px 14px 12px;font-weight:900;font-size:14px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.55))}
+
 /* ============ ФУТЕР ============ */
 footer{border-top:2px dashed var(--line);padding:60px 0 40px;text-align:center;position:relative;z-index:1}
 footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-width:660px;margin:0 auto 26px}
@@ -137,6 +200,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 @keyframes rise{to{transform:translate(var(--dx),-110px) rotate(20deg);opacity:0}}
 .foot-small{margin-top:26px;font-size:12.5px;color:var(--muted);font-weight:700}
 
+/* служебное */
 #wipe{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;clip-path:circle(0px at 50% 50%)}
 #toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 24px;border-radius:999px;font-weight:900;font-size:14px;opacity:0;pointer-events:none;transition:all .35s;z-index:300}
 #toast.show{opacity:1;transform:translate(-50%,0)}
@@ -173,7 +237,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     <div class="server-icon"><span id="logoEmoji" data-f="🌸" data-m="⚡">🌸</span></div>
     <div class="server-name" data-f="Девичник" data-m="Братство">Девичник</div>
     <nav class="nav">
-      <a href="#play">игровая</a><a href="#events">ивенты</a>
+      <a href="#team">команда</a><a href="#play">игровая</a><a href="#events">ивенты</a><a href="#wall">стена</a><a href="#gallery">моменты</a>
     </nav>
     <button class="switch" id="themeBtn" aria-label="Переключить тему">
       <span class="lbl on" id="lblF">🌸 девичий</span>
@@ -189,10 +253,11 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     <div>
       <div class="hero-kick" data-f="✦ сайт нашего сервера ✦" data-m="✦ сайт нашего сервера ✦">✦ сайт нашего сервера ✦</div>
       <h1 class="scr" id="heroTitle" data-f="Привет, красавицы!" data-m="Привет, легенды!">Привет, красавицы!</h1>
-      <p class="lead" data-f="Это самый уютный уголок интернета: наш сервер, тёплые слова без лимита и место, где всегда рады."
-         data-m="Это база нашего сервера: наша команда, общие катки и респекты без лимита.">Это самый уютный уголок интернета: наш сервер, тёплые слова без лимита и место, где всегда рады.</p>
+      <p class="lead" data-f="Это самый уютный уголок интернета: наш сервер, наши девочки, караоке по субботам и тёплые слова без лимита."
+         data-m="Это база нашего сервера: наша команда, турниры по средам и респекты без лимита.">Это самый уютный уголок интернета: наш сервер, наши девочки, караоке по субботам и тёплые слова без лимита.</p>
       <div class="hero-btns">
-        <a href="https://discord.gg/GMyqZraKr5" target="_blank" rel="noopener" class="btn solid" id="inviteBtn" data-f="залетай в Discord 💌" data-m="выдвигайся в Discord ⚡">залетай в Discord 💌</a>
+        <a href="#" class="btn solid" id="inviteBtn" data-f="залетай в Discord 💌" data-m="выдвигайся в Discord ⚡">залетай в Discord 💌</a>
+        <a href="#team" class="btn ghost" data-f="познакомиться с девочками" data-m="смотреть состав">познакомиться с девочками</a>
       </div>
       <div class="chips">
         <span class="chipst" data-f="💗 уют: включён" data-m="⚡ боеготовность: 100%">💗 уют: включён</span>
@@ -212,6 +277,66 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 <!-- ===== ЛЕНТА ===== -->
 <div class="ribbon themable" aria-hidden="true"><div class="mtrack" id="marquee"></div></div>
 
+<!-- ===== КОМАНДА ===== -->
+<section id="team">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-kick" data-f="наш цветник" data-m="наш отряд">наш цветник</div>
+      <h2 class="sec-title scr" data-f="Наши звёздочки" data-m="Боевой состав">Наши звёздочки</h2>
+    </div>
+    <div class="team">
+      <div class="member themable reveal" style="--rf:#e85d9e;--rm:#37e6ff">
+        <span class="sticker" data-f="🎀" data-m="🎖️">🎀</span>
+        <div class="mav" style="background-image:url('https://picsum.photos/seed/queen-anya/160/160')"></div>
+        <h3>Аня</h3>
+        <div class="status"><i></i><span data-f="в сети" data-m="на посту">в сети</span></div>
+        <div class="chip" data-f="👑 Королева сервера" data-m="⚔️ Командир отряда">👑 Королева сервера</div>
+        <q data-f="«Главное правило — уют для всех»" data-m="«Главное правило — своих не бросаем»">«Главное правило — уют для всех»</q>
+      </div>
+      <div class="member themable reveal" style="--rf:#b78cff;--rm:#ff9f45;transition-delay:.06s">
+        <span class="sticker" data-f="🖌️" data-m="🎯">🖌️</span>
+        <div class="mav" style="background-image:url('https://picsum.photos/seed/lera-pixel-art/160/160')"></div>
+        <h3>Лера</h3>
+        <div class="status"><i></i><span data-f="рисует" data-m="в мастерской">рисует</span></div>
+        <div class="chip" data-f="🎨 Пиксель-фея" data-m="🎯 Снайпер пикселей">🎨 Пиксель-фея</div>
+        <q data-f="«Дорисую глазки — и спать»" data-m="«Арт почти готов. Почти.»">«Дорисую глазки — и спать»</q>
+      </div>
+      <div class="member themable reveal" style="--rf:#5ed3ac;--rm:#c6ff4a;transition-delay:.12s">
+        <span class="sticker" data-f="🌙" data-m="🦉">🌙</span>
+        <div class="mav" style="background-image:url('https://picsum.photos/seed/sonya-night-owl/160/160')"></div>
+        <h3>Соня</h3>
+        <div class="status dnd"><i></i><span data-f="не беспокоить" data-m="ночной дозор">не беспокоить</span></div>
+        <div class="chip" data-f="🌙 Ночная сова" data-m="🦉 Ночной дозор">🌙 Ночная сова</div>
+        <q data-f="«Ну ещё одну каточку…»" data-m="«Ещё один раунд — и отбой»">«Ну ещё одну каточку…»</q>
+      </div>
+      <div class="member themable reveal" style="--rf:#ff7b54;--rm:#4dd8ff">
+        <span class="sticker" data-f="⚖️" data-m="🛡️">⚖️</span>
+        <div class="mav" style="background-image:url('https://picsum.photos/seed/mila-moderator/160/160')"></div>
+        <h3>Мила</h3>
+        <div class="status"><i></i><span data-f="следит за порядком" data-m="на страже">следит за порядком</span></div>
+        <div class="chip" data-f="🧚 Фея модерации" data-m="🛡️ Страж порядка">🧚 Фея модерации</div>
+        <q data-f="«Банхаммером, но с любовью»" data-m="«Порядок превыше всего»">«Банхаммером, но с любовью»</q>
+      </div>
+      <div class="member themable reveal" style="--rf:#ff5fa2;--rm:#ff5f5f;transition-delay:.06s">
+        <span class="sticker" data-f="🎶" data-m="🎙️">🎶</span>
+        <div class="mav" style="background-image:url('https://picsum.photos/seed/katya-karaoke-star/160/160')"></div>
+        <h3>Катя</h3>
+        <div class="status"><i></i><span data-f="поёт" data-m="в эфире">поёт</span></div>
+        <div class="chip" data-f="🎤 Звезда караоке" data-m="🎙️ Голос базы">🎤 Звезда караоке</div>
+        <q data-f="«Щас спою!»" data-m="«Микрофон мой»">«Щас спою!»</q>
+      </div>
+      <div class="member themable reveal" style="--rf:#f2a0c4;--rm:#9b8cff;transition-delay:.12s">
+        <span class="sticker" data-f="🤗" data-m="🤝">🤗</span>
+        <div class="mav" style="background-image:url('https://picsum.photos/seed/alisa-hugs/160/160')"></div>
+        <h3>Алиса</h3>
+        <div class="status"><i></i><span data-f="обнимает" data-m="на связи">обнимает</span></div>
+        <div class="chip" data-f="💖 Хранительница обнимашек" data-m="🤝 Капитан рукопожатий">💖 Хранительница обнимашек</div>
+        <q data-f="«Обнимаю по IP»" data-m="«Жму руку по IP»">«Обнимаю по IP»</q>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ===== ИГРОВАЯ ===== -->
 <section id="play">
   <div class="wrap">
@@ -230,6 +355,16 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
         <button class="bigbtn" id="compBtn" data-f="Осыпать комплиментами ✨" data-m="Выдать респект 👊">Осыпать комплиментами ✨</button>
         <div class="bubble" id="compOut" data-f="тут появится что-то очень приятное…" data-m="тут появится заслуженная похвала…">тут появится что-то очень приятное…</div>
       </div>
+      <div class="panel themable reveal" style="transition-delay:.16s">
+        <h3 data-f="🎧 Плейлист сервера" data-m="🎧 Саундтрек базы">🎧 Плейлист сервера</h3>
+        <div id="playlist">
+          <div class="trk" data-i="0"><span class="num">01</span><span class="eq"><i></i><i></i><i></i><i></i></span><span data-f="Лофай для рисования" data-m="Марш отряда">Лофай для рисования</span><span class="dur">2:47</span></div>
+          <div class="trk" data-i="1"><span class="num">02</span><span class="eq"><i></i><i></i><i></i><i></i></span><span data-f="Караоке-хиты Кати" data-m="Тренировочный бит">Караоке-хиты Кати</span><span class="dur">3:12</span></div>
+          <div class="trk" data-i="2"><span class="num">03</span><span class="eq"><i></i><i></i><i></i><i></i></span><span data-f="Песни под какао" data-m="Ночной эфир">Песни под какао</span><span class="dur">4:05</span></div>
+          <div class="trk" data-i="3"><span class="num">04</span><span class="eq"><i></i><i></i><i></i><i></i></span><span data-f="Саундтрек киновечера" data-m="Тема победы">Саундтрек киновечера</span><span class="dur">3:38</span></div>
+        </div>
+        <div class="nowplay" id="nowPlay" data-f="сейчас играет: <b>выбери трек ♡</b>" data-m="сейчас играет: <b>выбери трек ⚡</b>">сейчас играет: <b>выбери трек ♡</b></div>
+      </div>
     </div>
   </div>
 </section>
@@ -244,9 +379,56 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
     <div class="notes">
       <div class="note themable reveal"><div class="day" data-f="пятница • 20:00" data-m="пятница • 20:00">пятница • 20:00</div><h4 data-f="Киновечер" data-m="Кинооперация">Киновечер</h4><p data-f="ромком, пледы и какао. кто уснул — смотрит титры" data-m="фильм выбирает отряд. уснувшие смотрят титры">ромком, пледы и какао. кто уснул — смотрит титры</p><span class="emo">🍿</span></div>
       <div class="note themable reveal" style="transition-delay:.07s"><div class="day" data-f="суббота • 19:00" data-m="суббота • 19:00">суббота • 19:00</div><h4 data-f="Караоке" data-m="Голос базы">Караоке</h4><p data-f="поём громко, стыдно никому. закажи песню заранее!" data-m="микрофон по кругу. закажи трек заранее">поём громко, стыдно никому. закажи песню заранее!</p><span class="emo">🎤</span></div>
-      <div class="note themable reveal" style="transition-delay:.14s"><div class="day" data-f="воскресенье • 15:00" data-m="воскресенье • 15:00">воскресенье • 15:00</div><h4 data-f="Арт-стрим" data-m="Мастерская">Арт-стрим</h4><p data-f="рисуем вместе под лофай. учимся рисовать котиков" data-m="совместный крафт. показываем класс">рисуем вместе под лофай. учимся рисовать котиков</p><span class="emo">🎨</span></div>
+      <div class="note themable reveal" style="transition-delay:.14s"><div class="day" data-f="воскресенье • 15:00" data-m="воскресенье • 15:00">воскресенье • 15:00</div><h4 data-f="Арт-стрим" data-m="Мастерская">Арт-стрим</h4><p data-f="рисуем вместе под лофай. Лера учит рисовать котиков" data-m="совместный крафт. Лера показывает класс">рисуем вместе под лофай. Лера учит рисовать котиков</p><span class="emo">🎨</span></div>
       <div class="note themable reveal"><div class="day" data-f="среда • 21:00" data-m="среда • 21:00">среда • 21:00</div><h4 data-f="Игронарь" data-m="Тактические катки">Игронарь</h4><p data-f="мафия, гача и очень смешные поражения" data-m="турнир отряда. реванш обязателен">мафия, гача и очень смешные поражения</p><span class="emo">🎮</span></div>
       <div class="note themable reveal" style="transition-delay:.07s"><div class="day" data-f="каждый вечер • 22:00" data-m="каждый вечер • 22:00">каждый вечер • 22:00</div><h4 data-f="Ночная болталка" data-m="Вечерний эфир">Ночная болталка</h4><p data-f="чай, истории дня и самые тёплые пожелания" data-m="отчёты, мемы и пожелания спокойной ночи">чай, истории дня и самые тёплые пожелания</p><span class="emo">🌙</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== СТЕНА ===== -->
+<section id="wall">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-kick" data-f="прикреплено с любовью" data-m="прикреплено с уважением">прикреплено с любовью</div>
+      <h2 class="sec-title scr" data-f="Стена тёплых слов" data-m="Доска почёта">Стена тёплых слов</h2>
+    </div>
+    <div class="wall">
+      <div class="pnote themable reveal" data-pin="📌" style="--pf:#fff0f6;--pm:#1b2440"><span data-f="Аня, твой плейлист спас мне сессию 💗" data-m="Аня, твой плейлист вытащил катку 🔥">Аня, твой плейлист спас мне сессию 💗</span><small>— Соня</small></div>
+      <div class="pnote themable reveal" data-pin="📌" style="--pf:#f3ecff;--pm:#182036;transition-delay:.06s"><span data-f="Лера нарисовала мне эмочку, я плачу 😭💖" data-m="Лера, твой арт — щит всего отряда 🛡️">Лера нарисовала мне эмочку, я плачу 😭💖</span><small>— Катя</small></div>
+      <div class="pnote themable reveal" data-pin="📌" style="--pf:#e9fbf3;--pm:#16202e;transition-delay:.12s"><span data-f="Лучшие девчонки во всех измерениях ✨" data-m="Лучшая команда на этом сервере ⚡">Лучшие девчонки во всех измерениях ✨</span><small>— Мила</small></div>
+      <div class="pnote themable reveal" data-pin="💌" style="--pf:#fff6e5;--pm:#22203a"><span data-f="Кто-то оставил тут сердечко… забираю!" data-m="Кто-то оставил тут респект. Забираю 🫡">Кто-то оставил тут сердечко… забираю!</span><small>— Алиса</small></div>
+      <div class="pnote themable reveal" data-pin="🌸" style="--pf:#ffeaf0;--pm:#1c1a30;transition-delay:.06s"><span data-f="Пятница без вас — вообще не пятница" data-m="Без отряда и пятница не в радость 👊">Пятница без вас — вообще не пятница</span><small>— Аня</small></div>
+      <div class="pnote themable reveal" data-pin="☕" style="--pf:#f0f7ff;--pm:#15213a;transition-delay:.12s"><span data-f="Наш войс уютнее любой кофейни" data-m="Наш войс — штаб, которому веришь 📻">Наш войс уютнее любой кофейни</span><small>— Лера</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ОПРОС ===== -->
+<section id="vote">
+  <div class="wrap">
+    <div class="sec-head reveal" style="text-align:center">
+      <div class="sec-kick" data-f="решаем вместе" data-m="голосование отряда">решаем вместе</div>
+      <h2 class="sec-title scr" data-f="Что смотрим в пятницу?" data-m="Какая операция в пятницу?">Что смотрим в пятницу?</h2>
+    </div>
+    <div class="poll themable reveal" id="poll"></div>
+  </div>
+</section>
+
+<!-- ===== ГАЛЕРЕЯ ===== -->
+<section id="gallery">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-kick" data-f="наш фотоальбом" data-m="архив записей">наш фотоальбом</div>
+      <h2 class="sec-title scr" data-f="Моменты сервера" data-m="Хроника отряда">Моменты сервера</h2>
+    </div>
+    <div class="gal">
+      <figure class="gitem themable reveal"><img src="https://picsum.photos/seed/cozy-movie-night/640/440" alt="киновечер"><figcaption data-f="киновечер №12 🍿" data-m="операция «кино» 🍿">киновечер №12 🍿</figcaption></figure>
+      <figure class="gitem themable reveal" style="transition-delay:.06s"><img src="https://picsum.photos/seed/karaoke-stage-lights/640/440" alt="караоке"><figcaption data-f="Катя берёт высокую ноту 🎤" data-m="голос базы в эфире 🎙️">Катя берёт высокую ноту 🎤</figcaption></figure>
+      <figure class="gitem themable reveal" style="transition-delay:.12s"><img src="https://picsum.photos/seed/art-desk-stream/640/440" alt="арт-стрим"><figcaption data-f="арт-стрим с Лерой 🎨" data-m="мастерская открыта 🛠️">арт-стрим с Лерой 🎨</figcaption></figure>
+      <figure class="gitem themable reveal"><img src="https://picsum.photos/seed/game-night-neon-room/640/440" alt="игронарь"><figcaption data-f="игронарь: мафия засыпает 🎮" data-m="тактические катки 🎯">игронарь: мафия засыпает 🎮</figcaption></figure>
+      <figure class="gitem themable reveal" style="transition-delay:.06s"><img src="https://picsum.photos/seed/cocoa-marshmallow-mug/640/440" alt="какао"><figcaption data-f="официальный какао-бар ☕" data-m="топливо для отряда ☕">официальный какао-бар ☕</figcaption></figure>
+      <figure class="gitem themable reveal" style="transition-delay:.12s"><img src="https://picsum.photos/seed/picnic-friends-sunset/640/440" alt="встреча"><figcaption data-f="первая встреча вживую 💗" data-m="первый сбор вне базы 🫡">первая встреча вживую 💗</figcaption></figure>
     </div>
   </div>
 </section>
@@ -254,12 +436,12 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 <!-- ===== ФУТЕР ===== -->
 <footer class="themable">
   <div class="wrap">
-    <p class="thanks" data-f="сделано с 💗 для наших девчонок" data-m="сделано с 🫡 для нашего отряда">сделано с 💗 для наших девчонок</p>
+    <p class="thanks" data-f="сделано с 💗 для самых лучших девчонок этого сервера" data-m="сделано с 🫡 для самых лучших девчонок этого сервера">сделано с 💗 для самых лучших девчонок этого сервера</p>
     <div class="love" id="loveZone">
       <button class="heartbtn themable" id="heartBtn" data-f="💖" data-m="🫡" aria-label="Отправить любовь">💖</button>
       <span class="cnt"><span id="heartCnt">0</span> <span data-f="сердечек отправлено" data-m="респектов отдано">сердечек отправлено</span></span>
     </div>
-    <div><a class="btn solid" href="https://discord.gg/GMyqZraKr5" target="_blank" rel="noopener" id="inviteBtn2" data-f="залетай в Discord 💌" data-m="выдвигайся в Discord ⚡">залетай в Discord 💌</a></div>
+    <div><a class="btn solid" href="#" id="inviteBtn2" data-f="залетай в Discord 💌" data-m="выдвигайся в Discord ⚡">залетай в Discord 💌</a></div>
     <p class="foot-small" data-f="✦ сервер «Девичник» • онлайн 24/7 • вход только с хорошим настроением ✦" data-m="✦ база «Братство» • онлайн 24/7 • вход только с хорошим настроением ✦">✦ сервер «Девичник» • онлайн 24/7 • вход только с хорошим настроением ✦</p>
   </div>
 </footer>
@@ -278,9 +460,15 @@ const COMP={
 const PRED={
  f:['Сегодня кто-то поставит 💖 на твоё сообщение… и это судьба','Вечером жди сюрприз в личке 👀','Звёзды шепчут: пора сменить аватарку 🌙','Кто-то тайно слушает твой любимый плейлист 🎧','Скоро позовут в кино… то есть в голосовой 🎬','День идеален для тёплых слов — не экономь их 💌'],
  m:['Впереди день больших побед — держи строй ⚔️','Сегодня твой ход будет решающим 🎯','Команда ждёт именно твоего сигнала 📡','Баги отступают — путь свободен 🕹️','Скоро апгрейд: уровень удачи +10 🚀','Держи курс на победу — ветер попутный 🌬️']};
+const POLL_OPTS=[
+ {f:'🍿 Ромком и пледы',m:'🍿 Операция «Ромком»'},
+ {f:'🌀 Аниме-марафон',m:'🌀 Марафон сериалов'},
+ {f:'😱 Ужастики до мурашек',m:'😱 Хоррор для смелых'},
+ {f:'🎬 Кино по заявкам',m:'🎬 Выбор отряда'}];
 const MARQ={f:['нежность','дружба','мемы','караоке','какао','обнимашки','плейлисты','уют'],
             m:['братва','честь','мемы','катки','кофе','респект','плейлисты','строй']};
 
+/* ---------- смена текстов ---------- */
 function scrambleTo(el,txt){
   if(reduced){el.textContent=txt;return;}
   const chars='✦*#%&!?@'; let i=0; clearInterval(el._si);
@@ -293,6 +481,7 @@ function swapTexts(t,animate){
   $$('[data-f]').forEach(el=>{
     const v=t==='f'?el.dataset.f:el.dataset.m;
     if(v==null)return;
+    if(el.id==='nowPlay'){ if(!el.dataset.playing) el.innerHTML = t==='f'?'сейчас играет: <b>выбери трек ♡</b>':'сейчас играет: <b>выбери трек ⚡</b>'; return; }
     if(animate && el.classList.contains('scr')) scrambleTo(el,v);
     else el.textContent=v;
   });
@@ -300,9 +489,10 @@ function swapTexts(t,animate){
   $('#lblM').classList.toggle('on',t==='m');
 }
 
+/* ---------- шторка-переход ---------- */
 function applyTheme(t,origin){
   const commit=()=>{ theme=t; document.body.dataset.theme=t; localStorage.setItem('theme',t);
-    swapTexts(t,true); renderMarquee(t); };
+    swapTexts(t,true); renderMarquee(t); renderPoll(); };
   if(reduced||!origin){commit();return;}
   const w=$('#wipe');
   w.style.background=t==='f'?'#fff6f9':'#0d1220';
@@ -320,11 +510,13 @@ $('#themeBtn').addEventListener('click',e=>{
   applyTheme(theme==='f'?'m':'f',{x:b.left+b.width/2,y:b.top+b.height/2});
 });
 
+/* ---------- лента ---------- */
 function renderMarquee(t){
   const items=MARQ[t].map(w=>`<span>${w} ✦</span>`).join('');
   $('#marquee').innerHTML=items+items;
 }
 
+/* ---------- взрывы эмодзи ---------- */
 function burst(host,emojis){
   if(reduced)return;
   for(let k=0;k<10;k++){
@@ -339,6 +531,7 @@ function burst(host,emojis){
   }
 }
 
+/* ---------- комплименты ---------- */
 $('#compBtn').addEventListener('click',()=>{
   const out=$('#compOut');
   out.textContent=COMP[theme][Math.random()*COMP[theme].length|0];
@@ -346,6 +539,7 @@ $('#compBtn').addEventListener('click',()=>{
   burst(out.parentElement,theme==='f'?['💖','✨','🌸','💗']:['⚡','🔥','🏆','💪']);
 });
 
+/* ---------- шар судьбы ---------- */
 $('#orbBtn').addEventListener('click',()=>{
   const orb=$('#orbBtn'), p=$('#predText');
   orb.textContent=theme==='f'?'🔮':'🧭';
@@ -354,6 +548,41 @@ $('#orbBtn').addEventListener('click',()=>{
     burst(orb.parentElement,theme==='f'?['✨','🌙','💫']:['⚡','🚀','💥']); },reduced?0:480);
 });
 
+/* ---------- плейлист ---------- */
+$$('#playlist .trk').forEach(tr=>{
+  tr.addEventListener('click',()=>{
+    $$('#playlist .trk').forEach(x=>x.classList.remove('playing'));
+    tr.classList.add('playing');
+    const np=$('#nowPlay'), name=tr.querySelector('[data-f]');
+    np.dataset.playing='1';
+    np.innerHTML=(theme==='f'?'сейчас играет: <b>':'трек отряда: <b>')+(theme==='f'?name.dataset.f:name.dataset.m)+'</b> ♪';
+    burst(tr,theme==='f'?['🎵','💗','✨']:['🎵','⚡','🔥']);
+  });
+});
+
+/* ---------- опрос ---------- */
+function getPoll(){ try{return JSON.parse(localStorage.getItem('poll'))||{c:[0,0,0,0],v:null};}catch(e){return{c:[0,0,0,0],v:null};} }
+function renderPoll(){
+  const st=getPoll(), box=$('#poll'); box.innerHTML='';
+  const total=st.c.reduce((a,b)=>a+b,0);
+  POLL_OPTS.forEach((o,i)=>{
+    const b=document.createElement('button'); b.className='opt'+(st.v===i?' mine':'');
+    const pct=total?Math.round(st.c[i]/total*100):0;
+    b.innerHTML=`<span class="fill"></span><span>${o[theme]} <span class="pct">${st.v!=null?pct+'%':''}</span>${st.v===i?' ✓':''}</span>`;
+    b.addEventListener('click',()=>{
+      if(st.v!=null){toast(theme==='f'?'Голос уже отдан! 💗':'Голос уже принят 🫡');return;}
+      st.c[i]++; st.v=i; localStorage.setItem('poll',JSON.stringify(st)); renderPoll();
+      burst($('#poll'),theme==='f'?['💗','✨']:['⚡','🔥']);
+    });
+    box.appendChild(b);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{b.querySelector('.fill').style.width=(st.v!=null?pct:0)+'%';}));
+  });
+  const f=document.createElement('div'); f.className='poll-foot';
+  f.textContent=(theme==='f'?'всего голосов: ':'голосов отряда: ')+total+(st.v==null?(theme==='f'?' — выбери свой вариант!':' — сделай свой выбор!'):'');
+  box.appendChild(f);
+}
+
+/* ---------- сердечки ---------- */
 let hearts=parseInt(localStorage.getItem('hearts')||'0',10);
 $('#heartCnt').textContent=hearts;
 $('#heartBtn').addEventListener('click',()=>{
@@ -368,10 +597,24 @@ $('#heartBtn').addEventListener('click',()=>{
   }
 });
 
+/* ---------- приглашение ---------- */
+function invite(e){ e.preventDefault(); toast(theme==='f'?'Ссылка-приглашение уже летит к тебе! 💌':'Координаты базы переданы ⚡'); }
+$('#inviteBtn').addEventListener('click',invite);
+$('#inviteBtn2').addEventListener('click',invite);
 let toastT;
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show');
   clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200); }
 
+/* ---------- наклон карточек ---------- */
+if(!reduced)$$('.member').forEach(c=>{
+  c.addEventListener('mousemove',e=>{
+    const r=c.getBoundingClientRect();
+    c.style.transform=`translateY(-6px) rotateX(${(0.5-(e.clientY-r.top)/r.height)*7}deg) rotateY(${((e.clientX-r.left)/r.width-0.5)*7}deg)`;
+  });
+  c.addEventListener('mouseleave',()=>c.style.transform='');
+});
+
+/* ---------- шлейф за курсором ---------- */
 let lastTrail=0;
 addEventListener('pointermove',e=>{
   if(reduced||e.pointerType==='touch')return;
@@ -383,13 +626,16 @@ addEventListener('pointermove',e=>{
   document.body.appendChild(s); setTimeout(()=>s.remove(),820);
 });
 
+/* ---------- появление при скролле ---------- */
 const io=new IntersectionObserver(es=>es.forEach(en=>{
   if(en.isIntersecting){en.target.classList.add('in'); io.unobserve(en.target);}
 }),{threshold:.12});
 $$('.reveal').forEach(el=>io.observe(el));
 
+/* ---------- старт ---------- */
 swapTexts(theme,false);
 renderMarquee(theme);
+renderPoll();
 })();
 </script>
 </body>
