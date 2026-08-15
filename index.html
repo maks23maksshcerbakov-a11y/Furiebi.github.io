@@ -103,6 +103,23 @@ section{position:relative;z-index:1;padding:58px 0}
 .placeholder p{color:var(--muted);font-weight:700;font-size:14.5px;max-width:520px;margin:0 auto}
 .placeholder-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
 
+/* Креативная заглушка опроса */
+.poll-empty{
+  background:var(--card);border:2px dashed var(--line);border-radius:var(--radius);
+  padding:40px 24px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.poll-empty::before{
+  content:"";position:absolute;inset:0;opacity:.05;
+  background:radial-gradient(circle at 20% 30%,var(--accent),transparent 50%),
+             radial-gradient(circle at 80% 70%,var(--accent2),transparent 50%);
+  pointer-events:none;
+}
+.poll-empty .pe-emo{font-size:56px;display:block;margin-bottom:14px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-8px) rotate(5deg)}}
+.poll-empty h3{font-family:var(--font-d);font-size:24px;margin-bottom:10px;color:var(--ink)}
+.poll-empty p{color:var(--muted);font-weight:700;font-size:14.5px;max-width:420px;margin:0 auto;line-height:1.6}
+.poll-empty .pe-hint{display:inline-block;margin-top:16px;padding:6px 14px;border-radius:999px;background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent);font-size:12px;font-weight:900;letter-spacing:.5px}
+
 .note{position:relative;width:235px;background:var(--card);border:2px dashed var(--line);border-radius:6px;padding:26px 18px 20px;box-shadow:var(--shadow);transition:transform .35s}
 .note::before{content:"";position:absolute;top:-11px;left:50%;transform:translateX(-50%) rotate(-3deg);width:74px;height:22px;background:color-mix(in srgb,var(--accent) 35%,transparent);border-radius:3px}
 .notes{display:flex;flex-wrap:wrap;gap:24px;justify-content:center}
@@ -388,6 +405,22 @@ const DEFAULT_POLL={
   m:['🍿 Операция «Ромком»','🌀 Марафон сериалов','😱 Хоррор для смелых','🎬 Выбор отряда']
 };
 
+/* Креативные сообщения для пустого опроса */
+const EMPTY_POLL_MSG = {
+  f: {
+    emo: '🌙',
+    title: 'Опрос пока не создан',
+    text: 'Админ ещё не придумал, что будем решать вместе. Загляни позже — тут появится что-то интересное ✨',
+    hint: '✨ скоро тут что-то появится'
+  },
+  m: {
+    emo: '🎯',
+    title: 'Задач пока нет',
+    text: 'Штаб ещё не определил операцию. Ждём приказа, боец. Оперативная обстановка уточняется ⚡',
+    hint: '⚡ ожидание приказа'
+  }
+};
+
 const DEFAULT_DATA={
   f:{
     team:[{name:'Пример Ани', discord:'anya_star', avatar:'', status:'в сети', role:'👑 Королева сервера', quote:'«Главное правило — уют для всех»', sticker:'🎀', color:'#ff5fa2'}],
@@ -468,6 +501,7 @@ function dedupeAll(){
       const after=siteData[t][k].length;
       if(before!==after) dlog(`Удалено ${before-after} дублей в ${t}.${k}`,'warn');
     });
+    // Если poll отсутствует — ставим дефолт (для старых данных)
     if(!Array.isArray(siteData[t].poll))siteData[t].poll=DEFAULT_POLL[t].slice();
   });
 }
@@ -495,6 +529,7 @@ async function loadData(){
           siteData=newData;
           dedupeAll();
           renderAll();
+          renderPoll();
         }
         updateSyncDot('ok');
       },err=>{
@@ -544,7 +579,6 @@ async function saveData(){
 }
 
 function cur(){return siteData[theme];}
-function curPoll(){ return Array.isArray(cur().poll)&&cur().poll.length?cur().poll:DEFAULT_POLL[theme]; }
 
 function renderAll(){
   if(isRendering)return;
@@ -661,11 +695,30 @@ function renderMarquee(t){ $('#marquee').innerHTML=MARQ[t].map(w=>`<span>${w} �
 
 function pollKey(){return 'poll_'+theme;}
 function getPoll(){ try{return JSON.parse(localStorage.getItem(pollKey()))||{c:[],v:null};}catch(e){return{c:[],v:null};} }
+
+/* ===== РЕНДЕР ОПРОСА С ЗАГЛУШКОЙ ===== */
 function renderPoll(){
-  const opts=curPoll();
+  // Получаем варианты: если poll — пустой массив, значит админ его очистил
+  const opts = Array.isArray(cur().poll) ? cur().poll : DEFAULT_POLL[theme];
   const st=getPoll();
-  if(st.c.length!==opts.length)st.c=opts.map(()=>0);
   const box=$('#poll'); if(!box)return; box.innerHTML='';
+  
+  // Если опрос пустой — показываем креативную заглушку
+  if(!opts.length){
+    const msg = EMPTY_POLL_MSG[theme];
+    box.innerHTML = `
+      <div class="poll-empty themable reveal">
+        <span class="pe-emo">${msg.emo}</span>
+        <h3>${escapeHtml(msg.title)}</h3>
+        <p>${escapeHtml(msg.text)}</p>
+        <span class="pe-hint">${escapeHtml(msg.hint)}</span>
+      </div>
+    `;
+    return;
+  }
+  
+  // Иначе — обычный опрос
+  if(st.c.length!==opts.length)st.c=opts.map(()=>0);
   const total=st.c.reduce((a,b)=>a+b,0);
   opts.forEach((o,i)=>{
     const b=document.createElement('button'); b.className='opt'+(st.v===i?' mine':'');
@@ -781,18 +834,35 @@ function showTab(tab){
   renderListEditor(tab);
 }
 
+/* ===== РЕДАКТОР ОПРОСА С ЗАГЛУШКОЙ ===== */
 function renderPollEditor(){
   const box=$('#adminContent');
   const opts=cur().poll||[];
   let html=`<h3 style="font-size:16px;margin-bottom:8px">Варианты опроса (тема: ${theme==='f'?'🌸':'⚡'})</h3>`;
-  html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Изменяй, добавляй или удаляй варианты голосования</p>`;
-  html+=`<div class="admin-list">`;
-  opts.forEach((o,i)=>{
-    html+=`<div class="admin-list-item"><span>${i+1}. ${escapeHtml(o).slice(0,50)}</span><div class="acts"><button class="edit" onclick="editPollItem(${i})">✎</button><button class="del" onclick="delPollItem(${i})">✕</button></div></div>`;
-  });
-  html+=`</div>`;
-  html+=`<button class="btn solid" onclick="addPollItem()" style="width:100%">➕ Добавить вариант</button>`;
-  html+=`<div class="btns" style="margin-top:10px"><button class="btn ghost" onclick="resetPoll()" style="border-color:#ff6b6b;color:#ff6b6b">↻ Вернуть стандартные</button></div>`;
+  
+  if(!opts.length){
+    // Креативная заглушка в админке
+    const msg = theme==='f' 
+      ? {emo:'🌸', title:'Опрос пуст', text:'Добавь первый вариант для девочек ↓'}
+      : {emo:'⚡', title:'Опрос пуст', text:'Добавь первый вариант для пацанов ↓'};
+    html += `
+      <div class="poll-empty themable" style="margin-bottom:14px;padding:24px 18px">
+        <span class="pe-emo" style="font-size:40px">${msg.emo}</span>
+        <h3 style="font-size:20px">${msg.title}</h3>
+        <p style="font-size:13.5px">${msg.text}</p>
+      </div>
+    `;
+  } else {
+    html += `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Изменяй, добавляй или удаляй варианты голосования</p>`;
+    html += `<div class="admin-list">`;
+    opts.forEach((o,i)=>{
+      html += `<div class="admin-list-item"><span>${i+1}. ${escapeHtml(o).slice(0,50)}</span><div class="acts"><button class="edit" onclick="editPollItem(${i})">✎</button><button class="del" onclick="delPollItem(${i})">✕</button></div></div>`;
+    });
+    html += `</div>`;
+  }
+  
+  html += `<button class="btn solid" onclick="addPollItem()" style="width:100%">➕ Добавить вариант</button>`;
+  html += `<div class="btns" style="margin-top:10px"><button class="btn ghost" onclick="resetPoll()" style="border-color:#ff6b6b;color:#ff6b6b">↻ Вернуть стандартные</button><button class="btn ghost" onclick="clearPoll()" style="border-color:#ffcc00;color:#ffcc00">🗑 Очистить всё</button></div>`;
   box.innerHTML=html;
 }
 
@@ -805,6 +875,16 @@ window.delPollItem=async function(i){
   renderPollEditor();
   renderPoll();
   toast('Вариант удалён ✓');
+};
+
+window.clearPoll=async function(){
+  if(!confirm('Удалить ВСЕ варианты опроса? Будет показана заглушка.'))return;
+  cur().poll=[];
+  localStorage.removeItem(pollKey());
+  await saveData();
+  renderPollEditor();
+  renderPoll();
+  toast('Опрос очищен 🗑');
 };
 
 window.editPollItem=function(i){
@@ -908,19 +988,19 @@ window.importData=async function(e){
       const data=JSON.parse(ev.target.result);
       if(!data.f||!data.m)throw new Error('bad format');
       siteData=data; dedupeAll();
-      await saveData(); renderAll(); showTab(currentTab);
+      await saveData(); renderAll(); renderPoll(); showTab(currentTab);
       toast('Импортировано ✓');
     }catch(err){ toast('Ошибка: '+err.message); }
   };
   r.readAsText(file); e.target.value='';
 };
 
-window.clearDuplicates=async function(){ dedupeAll(); await saveData(); renderAll(); showTab(currentTab); toast('Дубли удалены 🧹'); };
+window.clearDuplicates=async function(){ dedupeAll(); await saveData(); renderAll(); renderPoll(); showTab(currentTab); toast('Дубли удалены 🧹'); };
 
 window.resetData=async function(){
   if(!confirm('Сбросить ЛОКАЛЬНЫЕ данные?'))return;
   siteData=JSON.parse(JSON.stringify(DEFAULT_DATA)); dedupeAll();
-  await saveData(); renderAll(); showTab(currentTab);
+  await saveData(); renderAll(); renderPoll(); showTab(currentTab);
   toast('Сброшено');
 };
 
@@ -931,7 +1011,7 @@ window.resetFirebase=async function(){
     await db.collection('site').doc('main').set({data:JSON.parse(JSON.stringify(DEFAULT_DATA)),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
     localStorage.setItem(STORAGE_KEY,JSON.stringify(siteData));
-    renderAll(); showTab(currentTab);
+    renderAll(); renderPoll(); showTab(currentTab);
     toast('Firebase очищен 🔥');
   }catch(e){ toast('Ошибка: '+e.message); }
 };
