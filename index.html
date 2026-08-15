@@ -88,7 +88,8 @@ section{position:relative;z-index:1;padding:58px 0}
 .member{position:relative;background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:24px 20px 20px;text-align:center;box-shadow:var(--shadow);transition:transform .35s}
 .member:hover{transform:translateY(-6px) rotate(-1deg)}
 .member .sticker{position:absolute;top:-13px;right:14px;font-size:24px;transform:rotate(12deg)}
-.mav{width:84px;height:84px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,var(--accent),var(--accent2)) center/cover;display:grid;place-items:center;color:#fff;font-weight:900;font-size:28px;box-shadow:0 0 0 4px var(--soft),0 0 0 6px var(--accent)}
+.mav{width:84px;height:84px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:900;font-size:28px;box-shadow:0 0 0 4px var(--soft),0 0 0 6px var(--accent);overflow:hidden;position:relative}
+.mav-img{width:100%;height:100%;background-size:cover;background-position:center;transition:none}
 .member h3{font-family:var(--font-d);font-size:22px}
 .discord-nick{display:block;font-size:13px;font-weight:800;color:var(--muted);margin-top:2px}
 .status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--muted);margin:6px 0 10px}
@@ -190,7 +191,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
 .modal.open{display:flex}
-.modal-box{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:28px;max-width:680px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-box{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:28px;max-width:720px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow)}
 .modal-box h2{font-family:var(--font-d);font-size:26px;margin-bottom:16px}
 .modal-box .form-row{margin-bottom:14px}
 .modal-box label{display:block;font-size:13px;font-weight:800;color:var(--muted);margin-bottom:4px}
@@ -216,7 +217,6 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .debug-box{background:var(--bg2);border:2px solid var(--line);border-radius:10px;padding:12px;margin-top:12px;font-family:monospace;font-size:11px;max-height:140px;overflow-y:auto;color:var(--muted);white-space:pre-wrap}
 .debug-box .ok{color:#3ecf7a}.debug-box .err{color:#ff6b6b}.debug-box .warn{color:#ffcc00}
 
-/* ===== Блок загрузки фото (для команды и галереи) ===== */
 .upload-block{
   border:2px dashed var(--line);border-radius:14px;padding:18px;
   background:var(--bg2);margin-bottom:14px;text-align:center;position:relative;
@@ -226,7 +226,12 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
   background:linear-gradient(135deg,var(--accent),var(--accent2));
   background-size:cover;background-position:center;
   display:grid;place-items:center;color:#fff;font-weight:900;font-size:44px;
-  box-shadow:var(--shadow);
+  box-shadow:var(--shadow);overflow:hidden;cursor:grab;
+}
+.upload-block .up-preview:active{cursor:grabbing}
+.upload-block .up-preview .up-inner{
+  width:100%;height:100%;background-size:cover;background-position:center;
+  transition:none;
 }
 .upload-block .up-preview.has-img{color:transparent}
 .upload-block .up-preview.gal{border-radius:12px;width:100%;max-width:300px;height:auto;aspect-ratio:3/2;font-size:32px}
@@ -240,12 +245,23 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 }
 .upload-block .up-loading.show{display:flex}
 
-/* ===== Импорт участников ===== */
+/* Zoom controls for avatar cropper */
+.crop-controls{
+  display:flex;gap:6px;justify-content:center;margin-bottom:10px;align-items:center;flex-wrap:wrap;
+}
+.crop-controls .btn{padding:5px 10px;font-size:12px}
+.crop-controls .zoom-info{font-size:11px;color:var(--muted);font-weight:800;font-family:monospace;min-width:60px;text-align:center}
+.crop-hint{
+  font-size:11px;color:var(--muted);font-weight:700;
+  background:color-mix(in srgb,var(--accent) 10%,transparent);
+  padding:6px 10px;border-radius:8px;margin-top:6px;line-height:1.5
+}
+
 .import-header{
   display:flex;gap:10px;align-items:center;margin-bottom:12px;padding:14px;
-  background:var(--bg2);border:2px solid var(--line);border-radius:12px;
+  background:var(--bg2);border:2px solid var(--line);border-radius:12px;flex-wrap:wrap;
 }
-.import-header input{flex:1;font-family:monospace;letter-spacing:.5px}
+.import-header input{flex:1;font-family:monospace;letter-spacing:.5px;min-width:200px}
 .import-header .btn{padding:8px 16px;font-size:13px}
 .import-info{
   font-size:12.5px;color:var(--muted);font-weight:700;padding:10px 14px;
@@ -254,6 +270,20 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 }
 .import-info b{color:var(--accent)}
 .import-info code{background:var(--soft);padding:2px 6px;border-radius:4px;font-size:11.5px;color:var(--accent)}
+.bot-token-block{
+  background:color-mix(in srgb,#ff9f45 10%,transparent);
+  border:2px solid color-mix(in srgb,#ff9f45 30%,transparent);
+  border-radius:12px;padding:14px;margin-bottom:14px;
+}
+.bot-token-block h4{font-size:14px;margin-bottom:8px;color:#ff9f45}
+.bot-token-block p{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px;line-height:1.5}
+.bot-token-block .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bot-token-block input{flex:1;font-family:monospace;font-size:12px;min-width:200px;padding:8px 12px;border-radius:8px;border:2px solid var(--line);background:var(--bg2);color:var(--ink)}
+.bot-token-block .btn{padding:8px 14px;font-size:13px}
+.bot-token-block .status{font-size:11px;color:var(--muted);font-weight:800;margin-top:6px}
+.bot-token-block .status.ok{color:#3ecf7a}
+.bot-token-block .status.err{color:#ff6b6b}
+
 .member-grid{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;
   max-height:420px;overflow-y:auto;padding:6px;
@@ -273,6 +303,8 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .mem-info{flex:1;min-width:0}
 .mem-name{font-weight:900;font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mem-username{font-size:11.5px;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mem-roles{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+.mem-roles span{font-size:10px;font-weight:800;padding:2px 6px;border-radius:999px;background:color-mix(in srgb,var(--accent2) 20%,transparent);color:var(--accent2)}
 .mem-status{
   display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;
   padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--muted);margin-top:2px;
@@ -290,8 +322,16 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .mem-filter{
   display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap;
 }
-.mem-filter input{flex:1;min-width:140px;padding:8px 12px;font-size:13px}
+.mem-filter input{flex:1;min-width:140px;padding:8px 12px;font-size:13px;border:2px solid var(--line);background:var(--bg2);color:var(--ink);border-radius:8px}
 .mem-filter .cnt{font-size:12px;color:var(--muted);font-weight:800}
+
+.warning-box{
+  background:color-mix(in srgb,#ff6b6b 15%,transparent);
+  border:2px solid color-mix(in srgb,#ff6b6b 40%,transparent);
+  border-radius:10px;padding:12px 14px;font-size:12px;color:#ff6b6b;
+  font-weight:700;margin-bottom:12px;line-height:1.5;
+}
+.warning-box b{color:#ff3333}
 
 @media (max-width:860px){
   .hero{padding-top:40px}
@@ -481,9 +521,10 @@ const FIREBASE_CONFIG = {
   appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
 
-const STORAGE_KEY='siteData_v6';
+const STORAGE_KEY='siteData_v7';
 const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
+const BOT_TOKEN_KEY='botToken_v1';
 
 const DEFAULT_POLL={
   f:['🍿 Ромком и пледы','🌀 Аниме-марафон','😱 Ужастики до мурашек','🎬 Кино по заявкам'],
@@ -491,27 +532,27 @@ const DEFAULT_POLL={
 };
 
 const EMPTY_POLL_MSG = {
-  f: { emo:'🌙', title:'Опрос пока не создан', text:'Админ ещё не придумал, что будем решать вместе. Загляни позже ✨', hint:'✨ скоро тут что-то появится' },
-  m: { emo:'🎯', title:'Задач пока нет', text:'Штаб ещё не определил операцию. Ждём приказа, боец ⚡', hint:'⚡ ожидание приказа' }
+  f: { emo:'🌙', title:'Опрос пока не создан', text:'Админ ещё не придумал, что будем решать вместе. Открой админку → вкладка Опрос → добавь первый вариант ✨', hint:'✨ настрой опрос в админке' },
+  m: { emo:'🎯', title:'Задач пока нет', text:'Штаб ещё не определил операцию. Открой админку → вкладка Опрос → добавь первый вариант ⚡', hint:'⚡ настрой опрос в админке' }
 };
 
 const DEFAULT_DATA={
   serverId:'',
   f:{
-    team:[{name:'Пример Ани', discord:'anya_star', avatar:'', status:'в сети', role:'👑 Королева сервера', quote:'«Главное правило — уют для всех»', sticker:'🎀', color:'#ff5fa2'}],
+    team:[],
     play:[{emo:'🔮', title:'Шар судьбы', desc:'скоро тут появится предсказание на день'},{emo:'💌', title:'Генератор комплиментов', desc:'скоро тут можно будет получить порцию тёплых слов'},{emo:'🎧', title:'Плейлист сервера', desc:'скоро тут зазвучит наша любимая музыка'}],
     events:[{day:'пятница • 20:00', title:'Киновечер', desc:'ромком, пледы и какао. кто уснул — смотрит титры', emo:'🍿'},{day:'суббота • 19:00', title:'Караоке', desc:'поём громко, стыдно никому. закажи песню заранее!', emo:'🎤'}],
-    wall:[{text:'Пример: Аня, твой плейлист спас мне сессию 💗', author:'Соня', pin:'📌'},{text:'Лучшие девчонки во всех измерениях ✨', author:'Мила', pin:'📌'}],
+    wall:[],
     gal:[],
-    poll:DEFAULT_POLL.f.slice()
+    poll:[]
   },
   m:{
-    team:[{name:'Пример бойца', discord:'warrior_01', avatar:'', status:'на посту', role:'⚔️ Командир отряда', quote:'«Главное правило — своих не бросаем»', sticker:'🎖️', color:'#37e6ff'}],
+    team:[],
     play:[{emo:'🧭', title:'Оракул отряда', desc:'скоро тут появится боевой прогноз'},{emo:'🏆', title:'Генератор похвалы', desc:'скоро тут можно будет получить заслуженный респект'},{emo:'🎧', title:'Саундтрек базы', desc:'скоро тут зазвучит саундтрек отряда'}],
     events:[{day:'пятница • 20:00', title:'Кинооперация', desc:'фильм выбирает отряд. уснувшие смотрят титры', emo:'🎬'},{day:'среда • 21:00', title:'Тактические катки', desc:'турнир отряда. реванш обязателен', emo:'🎯'}],
-    wall:[{text:'Без отряда и пятница не в радость 👊', author:'Боец', pin:'📌'}],
+    wall:[],
     gal:[],
-    poll:DEFAULT_POLL.m.slice()
+    poll:[]
   }
 };
 
@@ -522,16 +563,21 @@ let unsubData=null;
 let isRendering=false;
 let debugLog=[];
 
-// Кэш загруженных участников с Discord
 let importedMembers=[];
 let importFilter='';
+let currentAvatarTransform={x:0,y:0,scale:1};
 
 function dlog(msg,type='info'){
   const time=new Date().toLocaleTimeString();
   debugLog.push({time,msg,type});
-  if(debugLog.length>30)debugLog.shift();
+  if(debugLog.length>50)debugLog.shift();
   console.log(`[${type}] ${time}: ${msg}`);
 }
+
+// Глобальный обработчик ошибок
+window.addEventListener('error', e=>{
+  dlog('JS error: '+e.message,'err');
+});
 
 function initFirebase(){
   try{
@@ -580,7 +626,7 @@ function dedupeAll(){
       const after=siteData[t][k].length;
       if(before!==after) dlog(`Удалено ${before-after} дублей в ${t}.${k}`,'warn');
     });
-    if(!Array.isArray(siteData[t].poll))siteData[t].poll=DEFAULT_POLL[t].slice();
+    if(!Array.isArray(siteData[t].poll))siteData[t].poll=[];
   });
 }
 
@@ -668,11 +714,15 @@ function renderAll(){
 function renderTeam(){
   const box=$('#teamGrid'); if(!box)return; box.innerHTML='';
   const items=cur().team;
-  if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">✨</span><h3>Команда пока пуста</h3><p>админ добавит участников через админ-панель</p></div>`; return; }
+  if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">✨</span><h3>Команда пока пуста</h3><p>админ добавит участников через админ-панель (вкладка «👥 Импорт»)</p></div>`; return; }
   items.forEach(it=>{
     const el=document.createElement('div');
     el.className='member themable reveal';
-    const av=it.avatar?`<div class="mav" style="background-image:url('${escapeHtml(it.avatar)}')"></div>`:`<div class="mav" style="background:linear-gradient(135deg,${it.color||'var(--accent)'},${it.color||'var(--accent2)'})">${(it.name||'?')[0].toUpperCase()}</div>`;
+    const t = it.avatarTransform || {x:0,y:0,scale:1};
+    const transformStyle = `transform: translate(${t.x}px, ${t.y}px) scale(${t.scale})`;
+    const av = it.avatar
+      ? `<div class="mav"><div class="mav-img" style="background-image:url('${escapeHtml(it.avatar)}');${transformStyle}"></div></div>`
+      : `<div class="mav" style="background:linear-gradient(135deg,${it.color||'var(--accent)'},${it.color||'var(--accent2)'})">${(it.name||'?')[0].toUpperCase()}</div>`;
     el.innerHTML=`<span class="sticker">${escapeHtml(it.sticker||'✨')}</span>${av}<h3>${escapeHtml(it.name||'')}</h3><span class="discord-nick">${it.discord?'@'+escapeHtml(it.discord):''}</span><div class="status${it.status&&it.status.toLowerCase().includes('не')?' dnd':''}"><i></i><span>${escapeHtml(it.status||'в сети')}</span></div><div class="chip" style="background:color-mix(in srgb,${it.color||'var(--accent)'} 20%,transparent);color:${it.color||'var(--accent)'}">${escapeHtml(it.role||'')}</div><q>${escapeHtml(it.quote||'')}</q>`;
     box.appendChild(el);
   });
@@ -776,7 +826,7 @@ function pollKey(){return 'poll_'+theme;}
 function getPoll(){ try{return JSON.parse(localStorage.getItem(pollKey()))||{c:[],v:null};}catch(e){return{c:[],v:null};} }
 
 function renderPoll(){
-  const opts = Array.isArray(cur().poll) ? cur().poll : DEFAULT_POLL[theme];
+  const opts = Array.isArray(cur().poll) ? cur().poll : [];
   const st=getPoll();
   const box=$('#poll'); if(!box)return; box.innerHTML='';
   if(!opts.length){
@@ -848,11 +898,23 @@ function observeReveal(){
 let isAdmin=false;
 let currentTab='import';
 
-function openModal(id){$('#'+id).classList.add('open');}
-function closeModal(id){$('#'+id).classList.remove('open');}
+function openModal(id){
+  const m=$('#'+id);
+  if(m)m.classList.add('open');
+}
+function closeModal(id){
+  const m=$('#'+id);
+  if(m)m.classList.remove('open');
+}
 window.closeModal=closeModal;
 
-$('#adminLink').addEventListener('click',()=>{ if(isAdmin)openAdmin(); else{ openModal('loginModal'); $('#loginUser').focus(); } });
+// Делегированный обработчик для adminLink - всегда работает
+document.addEventListener('click', e=>{
+  if(e.target && e.target.id === 'adminLink'){
+    if(isAdmin) openAdmin();
+    else{ openModal('loginModal'); setTimeout(()=>{const i=$('#loginUser');if(i)i.focus();},100); }
+  }
+});
 
 $('#loginOk').addEventListener('click',tryLogin);
 $('#loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin();});
@@ -865,15 +927,34 @@ function tryLogin(){
 function logout(){ isAdmin=false; closeModal('adminModal'); toast('Вы вышли из админки'); }
 window.logout=logout;
 
-function openAdmin(){ updateThemeNote(); updateSetupNote(); showTab(currentTab); openModal('adminModal'); }
+function openAdmin(){ 
+  try{
+    updateThemeNote(); 
+    updateSetupNote(); 
+    showTab(currentTab); 
+    openModal('adminModal');
+  }catch(e){
+    dlog('openAdmin error: '+e.message,'err');
+    toast('Ошибка при открытии: '+e.message);
+  }
+}
 
-function updateThemeNote(){ $('#themeNote').innerHTML=`<b>Редактируешь тему:</b> ${theme==='f'?'🌸 Девичья':'⚡ Мужская'}. Переключи тему сверху, чтобы редактировать другую.`; }
+function updateThemeNote(){ 
+  const n=$('#themeNote');
+  if(n) n.innerHTML=`<b>Редактируешь тему:</b> ${theme==='f'?'🌸 Девичья':'⚡ Мужская'}. Переключи тему сверху, чтобы редактировать другую.`; 
+}
 
 function updateSetupNote(){
   const note=$('#setupNote');
-  note.innerHTML=useFirebase
+  if(!note)return;
+  const token = localStorage.getItem(BOT_TOKEN_KEY);
+  let extra = '';
+  if(token){
+    extra = ' 🤖 <b>Bot Token активен</b> — доступна полная загрузка участников.';
+  }
+  note.innerHTML = (useFirebase
     ? '☁️ <b>Firebase подключён</b> — все изменения увидят все посетители.'
-    : '⚠️ <b>Firebase не настроен</b> — проверь консоль (F12).';
+    : '⚠️ <b>Firebase не настроен</b> — проверь консоль (F12).') + extra;
 }
 
 $$('.admin-tabs button').forEach(b=>{
@@ -885,7 +966,6 @@ $$('.admin-tabs button').forEach(b=>{
   });
 });
 
-/* ===== СЖАТИЕ ИЗОБРАЖЕНИЙ ===== */
 function compressImage(file, maxWidth=1200, quality=0.85, square=false){
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
@@ -923,40 +1003,26 @@ function compressImage(file, maxWidth=1200, quality=0.85, square=false){
   });
 }
 
-/* ===== ОБНОВЛЕНИЕ ПРЕВЬЮ АВАТАРКИ ===== */
-function updateAvatarPreview(){
-  const preview = $('#avatarPreview');
-  const urlInput = $('#adminContent [data-field="avatar"]');
-  const nameInput = $('#adminContent [data-field="name"]');
-  const colorInput = $('#adminContent [data-field="color"]');
-  if(!preview) return;
-  const url = (urlInput.value || '').trim();
-  if(url){
-    preview.style.backgroundImage = `url('${url}')`;
-    preview.classList.add('has-img');
-    preview.textContent = '';
-  }else{
-    preview.style.backgroundImage = '';
-    preview.classList.remove('has-img');
-    const letter = ((nameInput.value || '?')[0] || '?').toUpperCase();
-    const c1 = colorInput.value || '#ff6faf';
-    const c2 = c1;
-    preview.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
-    preview.textContent = letter;
-  }
-}
-
 function updateGalPreview(){
   const preview = $('#galPreview');
   const urlInput = $('#adminContent [data-field="url"]');
-  if(!preview) return;
+  if(!preview || !urlInput) return;
   const url = (urlInput.value || '').trim();
+  const inner = preview.querySelector('.up-inner');
   if(url){
-    preview.style.backgroundImage = `url('${url}')`;
+    if(inner){
+      inner.style.backgroundImage = `url('${url}')`;
+    }else{
+      preview.style.backgroundImage = `url('${url}')`;
+    }
     preview.classList.add('has-img');
     preview.textContent = '';
   }else{
-    preview.style.backgroundImage = '';
+    if(inner){
+      inner.style.backgroundImage = '';
+    }else{
+      preview.style.backgroundImage = '';
+    }
     preview.classList.remove('has-img');
     preview.textContent = '📸';
     preview.style.background = `linear-gradient(135deg, var(--accent), var(--accent2))`;
@@ -965,6 +1031,7 @@ function updateGalPreview(){
 
 function showTab(tab){
   const box=$('#adminContent');
+  if(!box) return;
   if(tab==='data'){
     box.innerHTML=`
       <p style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:700">${useFirebase?'🟢 Firebase активен.':'🟡 Firebase не настроен.'}</p>
@@ -1042,19 +1109,22 @@ window.editPollItem=function(i){
   html+=`<div class="form-row"><label>Текст варианта (можно с эмодзи)</label><input type="text" id="pollInput" value="${escapeHtml(val)}" placeholder="🍿 Ромком и пледы"></div>`;
   html+=`<div class="btns"><button class="btn solid" id="savePollItem">💾 Сохранить</button><button class="btn ghost" onclick="showTab('poll')">Отмена</button></div>`;
   $('#adminContent').innerHTML=html;
-  const input=$('#pollInput'); input.focus(); input.select();
-  $('#savePollItem').addEventListener('click',async ()=>{
-    const v=input.value.trim();
-    if(!v){toast('Введите текст');return;}
-    if(!Array.isArray(cur().poll))cur().poll=[];
-    if(i<0)cur().poll.push(v);
-    else cur().poll[i]=v;
-    localStorage.removeItem(pollKey());
-    await saveData();
-    renderPollEditor();
-    renderPoll();
-    toast('Сохранено ✓');
-  });
+  const input=$('#pollInput'); if(input){input.focus();input.select();}
+  const saveBtn=$('#savePollItem');
+  if(saveBtn){
+    saveBtn.addEventListener('click',async ()=>{
+      const v=input.value.trim();
+      if(!v){toast('Введите текст');return;}
+      if(!Array.isArray(cur().poll))cur().poll=[];
+      if(i<0)cur().poll.push(v);
+      else cur().poll[i]=v;
+      localStorage.removeItem(pollKey());
+      await saveData();
+      renderPollEditor();
+      renderPoll();
+      toast('Сохранено ✓');
+    });
+  }
 };
 
 window.resetPoll=async function(){
@@ -1071,7 +1141,6 @@ const FIELD_DEFS={
   team:[
     {k:'name',label:'Имя / Ник',type:'text'},
     {k:'discord',label:'Discord username (без @)',type:'text'},
-    {k:'avatar',label:'🔗 URL аватарки (или загрузи файл ниже)',type:'text',placeholder:'https://...'},
     {k:'sticker',label:'Стикер сверху (эмодзи)',type:'text',placeholder:'🎀'},
     {k:'status',label:'Статус',type:'text',placeholder:'в сети'},
     {k:'role',label:'Роль',type:'text',placeholder:'👑 Королева сервера'},
@@ -1091,7 +1160,7 @@ function renderListEditor(tab){
   let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}</h3>`;
   
   if(tab==='gal') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Загружай фото файлом или вставляй URL</p>`;
-  if(tab==='team') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">👤 Аватарку можно загрузить файлом или вставить URL. Или импортируй из Discord во вкладке <b>👥 Импорт</b></p>`;
+  if(tab==='team') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">👤 Аватарку можно загрузить файлом, вставить URL или импортировать из Discord во вкладке <b>👥 Импорт</b>. В редакторе можно двигать и увеличивать картинку мышкой.</p>`;
   
   html+=`<div class="admin-list">`;
   if(!items.length) html+=`<div class="admin-list-empty">Список пуст ↓</div>`;
@@ -1123,178 +1192,373 @@ window.delItem=async function(tab,i){
   toast('Удалено ✓');
 };
 
-/* ===== ГЛАВНАЯ ФОРМА РЕДАКТИРОВАНИЯ ===== */
+/* ============================== */
+/* AVATAR CROPPER (PAN + ZOOM)   */
+/* ============================== */
+function setupAvatarCropper(previewEl, innerEl, initialTransform){
+  let state = {x: initialTransform.x||0, y: initialTransform.y||0, scale: initialTransform.scale||1};
+  let isDragging=false, startX=0, startY=0, startTx=0, startTy=0;
+  
+  function applyTransform(){
+    innerEl.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+    const zoomInfo = previewEl.parentElement.querySelector('.zoom-info');
+    if(zoomInfo) zoomInfo.textContent = Math.round(state.scale*100)+'%';
+  }
+  
+  previewEl.addEventListener('pointerdown', e=>{
+    if(e.button!==0)return;
+    isDragging=true;
+    startX=e.clientX; startY=e.clientY;
+    startTx=state.x; startTy=state.y;
+    previewEl.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  
+  previewEl.addEventListener('pointermove', e=>{
+    if(!isDragging)return;
+    state.x = startTx + (e.clientX-startX);
+    state.y = startTy + (e.clientY-startY);
+    applyTransform();
+  });
+  
+  const stopDrag = e=>{ isDragging=false; };
+  previewEl.addEventListener('pointerup', stopDrag);
+  previewEl.addEventListener('pointercancel', stopDrag);
+  previewEl.addEventListener('lostpointercapture', stopDrag);
+  
+  previewEl.addEventListener('wheel', e=>{
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    state.scale = Math.min(4, Math.max(0.3, state.scale * delta));
+    applyTransform();
+  }, {passive:false});
+  
+  applyTransform();
+  
+  return {
+    getState: ()=>({...state}),
+    setState: (s)=>{state={...s};applyTransform();},
+    zoom: (mult)=>{state.scale=Math.min(4,Math.max(0.3,state.scale*mult));applyTransform();},
+    reset: ()=>{state={x:0,y:0,scale:1};applyTransform();}
+  };
+}
+
 window.editItem=function(tab,i){
-  const fields=FIELD_DEFS[tab];
-  const item=i<0?{}:(cur()[tab][i]||{});
-  let html=`<h3 style="font-size:16px;margin-bottom:12px">${i<0?'Добавить':'Редактировать'}</h3>`;
-  
-  // ===== БЛОК ЗАГРУЗКИ АВАТАРКИ (для команды) =====
-  if(tab==='team'){
-    const curUrl = item.avatar || '';
-    const letter = ((item.name || '?')[0] || '?').toUpperCase();
-    const color = item.color || '#ff6faf';
-    const hasImg = !!curUrl;
-    html += `
-      <div class="upload-block">
-        <div class="up-loading" id="avatarLoading">⏳ Сжимаю фото...</div>
-        <div class="up-preview ${hasImg?'has-img':''}" id="avatarPreview" 
-             style="${hasImg?`background-image:url('${escapeHtml(curUrl)}')`:`background:linear-gradient(135deg,${color},${color})`}">${hasImg?'':escapeHtml(letter)}</div>
-        <div class="up-hint" id="avatarHint">${hasImg?'✓ Аватарка загружена':'Аватарки нет — будет градиент с буквой'}</div>
-        <div class="up-btns">
-          <label class="btn solid" for="avatarFile" style="display:inline-block">📁 Загрузить файл</label>
-          <input type="file" id="avatarFile" accept="image/*">
-          <button class="btn ghost" type="button" id="clearAvatarBtn">✕ Убрать</button>
+  try{
+    const fields=FIELD_DEFS[tab];
+    const item=i<0?{}:(cur()[tab][i]||{});
+    let html=`<h3 style="font-size:16px;margin-bottom:12px">${i<0?'Добавить':'Редактировать'}</h3>`;
+    
+    if(tab==='team'){
+      const curUrl = item.avatar || '';
+      const letter = ((item.name || '?')[0] || '?').toUpperCase();
+      const color = item.color || '#ff6faf';
+      const hasImg = !!curUrl;
+      const t = item.avatarTransform || {x:0,y:0,scale:1};
+      currentAvatarTransform = {...t};
+      html += `
+        <div class="upload-block">
+          <div class="up-loading" id="avatarLoading">⏳ Сжимаю фото...</div>
+          ${hasImg?`
+            <div class="crop-controls">
+              <button class="btn ghost" id="zoomOutBtn" type="button">➖</button>
+              <span class="zoom-info">${Math.round(t.scale*100)}%</span>
+              <button class="btn ghost" id="zoomInBtn" type="button">➕</button>
+              <button class="btn ghost" id="resetCropBtn" type="button">↻ Сброс</button>
+            </div>
+          `:''}
+          <div class="up-preview ${hasImg?'has-img':''}" id="avatarPreview" 
+               style="${hasImg?'':`background:linear-gradient(135deg,${color},${color})`}">
+            ${hasImg?`<div class="up-inner" style="background-image:url('${escapeHtml(curUrl)}');transform:translate(${t.x}px,${t.y}px) scale(${t.scale})"></div>`:escapeHtml(letter)}
+          </div>
+          <div class="up-hint" id="avatarHint">${hasImg?'🖱 Двигай мышкой • 🎚 Колесо для зума':'Аватарки нет — будет градиент с буквой'}</div>
+          ${hasImg?`<div class="crop-hint">💡 Перетаскивай картинку мышкой чтобы выбрать нужную область. Крути колесо мыши для увеличения. Позиция сохранится.</div>`:''}
+          <div class="up-btns">
+            <label class="btn solid" for="avatarFile" style="display:inline-block">📁 Загрузить файл</label>
+            <input type="file" id="avatarFile" accept="image/*">
+            <label class="btn solid" style="display:inline-block">
+              🔗 URL
+              <input type="text" id="avatarUrlInput" value="${escapeHtml(curUrl)}" placeholder="https://..." style="display:none">
+            </label>
+            <button class="btn ghost" type="button" id="clearAvatarBtn">✕ Убрать</button>
+          </div>
         </div>
-      </div>
-    `;
-  }
-  
-  // ===== БЛОК ЗАГРУЗКИ ФОТО (для галереи) =====
-  if(tab==='gal'){
-    const curUrl = item.url || '';
-    const hasImg = !!curUrl;
-    html += `
-      <div class="upload-block">
-        <div class="up-loading" id="galLoading">⏳ Сжимаю фото...</div>
-        <div class="up-preview gal ${hasImg?'has-img':''}" id="galPreview" 
-             style="${hasImg?`background-image:url('${escapeHtml(curUrl)}')`:'background:linear-gradient(135deg,var(--accent),var(--accent2))'}">${hasImg?'':'📸'}</div>
-        <div class="up-hint" id="galHint">${hasImg?'✓ Фото загружено':'Фото не загружено'}</div>
-        <div class="up-btns">
-          <label class="btn solid" for="galFile" style="display:inline-block">📁 Загрузить файл</label>
-          <input type="file" id="galFile" accept="image/*">
-          <button class="btn ghost" type="button" id="clearGalBtn">✕ Убрать</button>
-        </div>
-      </div>
-    `;
-  }
-  
-  // ===== ОБЫЧНЫЕ ПОЛЯ ФОРМЫ =====
-  fields.forEach(f=>{
-    const val=item[f.k]||'';
-    const ph=f.placeholder?`placeholder="${escapeHtml(f.placeholder)}"`:'';
-    if(f.type==='textarea'){
-      html+=`<div class="form-row"><label>${f.label}</label><textarea data-field="${f.k}" ${ph}>${escapeHtml(val)}</textarea></div>`;
-    }else{
-      html+=`<div class="form-row"><label>${f.label}</label><input type="text" data-field="${f.k}" value="${escapeHtml(val)}" ${ph}></div>`;
-    }
-  });
-  
-  html+=`<div class="btns"><button class="btn solid" id="saveItem">💾 Сохранить</button><button class="btn ghost" onclick="showTab('${tab}')">Отмена</button></div>`;
-  $('#adminContent').innerHTML=html;
-  
-  // ===== ПРИВЯЗЫВАЕМ ОБРАБОТЧИКИ =====
-  
-  if(tab==='team'){
-    const fileInput = $('#avatarFile');
-    const preview = $('#avatarPreview');
-    const urlInput = $('#adminContent [data-field="avatar"]');
-    const nameInput = $('#adminContent [data-field="name"]');
-    const colorInput = $('#adminContent [data-field="color"]');
-    const loading = $('#avatarLoading');
-    const hint = $('#avatarHint');
-    const clearBtn = $('#clearAvatarBtn');
-    
-    nameInput.addEventListener('input', updateAvatarPreview);
-    colorInput.addEventListener('input', updateAvatarPreview);
-    urlInput.addEventListener('input', ()=>{
-      updateAvatarPreview();
-      const v = (urlInput.value || '').trim();
-      hint.textContent = v ? '✓ URL введён. Превью обновилось' : 'Поле пустое — будет градиент с буквой';
-    });
-    
-    fileInput.addEventListener('change', async e=>{
-      const file = e.target.files[0];
-      if(!file) return;
-      if(!file.type.startsWith('image/')){
-        toast('Выбери файл-картинку');
-        return;
-      }
-      loading.classList.add('show');
-      hint.textContent = '⏳ Обрабатываю...';
-      try{
-        const compressed = await compressImage(file, 400, 0.85, true);
-        urlInput.value = compressed;
-        updateAvatarPreview();
-        const sizeKB = Math.round((compressed.length * 0.75) / 1024);
-        hint.textContent = `✓ Аватарка готова (${sizeKB} KB)`;
-        toast(`Аватарка готова (${sizeKB} KB)`);
-      }catch(err){
-        toast('Ошибка: '+err.message);
-        hint.textContent = '❌ Не удалось обработать';
-      }finally{
-        loading.classList.remove('show');
-      }
-    });
-    
-    clearBtn.addEventListener('click', ()=>{
-      urlInput.value = '';
-      fileInput.value = '';
-      updateAvatarPreview();
-      hint.textContent = 'Аватарка убрана — будет градиент с буквой';
-    });
-  }
-  
-  if(tab==='gal'){
-    const fileInput = $('#galFile');
-    const urlInput = $('#adminContent [data-field="url"]');
-    const loading = $('#galLoading');
-    const hint = $('#galHint');
-    const clearBtn = $('#clearGalBtn');
-    
-    urlInput.addEventListener('input', ()=>{
-      updateGalPreview();
-      const v = (urlInput.value || '').trim();
-      hint.textContent = v ? '✓ URL введён' : 'Фото не загружено';
-    });
-    
-    fileInput.addEventListener('change', async e=>{
-      const file = e.target.files[0];
-      if(!file) return;
-      if(!file.type.startsWith('image/')){
-        toast('Выбери файл-картинку');
-        return;
-      }
-      loading.classList.add('show');
-      hint.textContent = '⏳ Обрабатываю...';
-      try{
-        const compressed = await compressImage(file, 1200, 0.82, false);
-        urlInput.value = compressed;
-        updateGalPreview();
-        const sizeKB = Math.round((compressed.length * 0.75) / 1024);
-        hint.textContent = `✓ Фото готово (${sizeKB} KB)`;
-        toast(`Фото готово (${sizeKB} KB)`);
-      }catch(err){
-        toast('Ошибка: '+err.message);
-        hint.textContent = '❌ Не удалось обработать';
-      }finally{
-        loading.classList.remove('show');
-      }
-    });
-    
-    clearBtn.addEventListener('click', ()=>{
-      urlInput.value = '';
-      fileInput.value = '';
-      updateGalPreview();
-      hint.textContent = 'Фото убрано';
-    });
-  }
-  
-  // Сохранение
-  $('#saveItem').addEventListener('click',async ()=>{
-    const newObj={};
-    fields.forEach(f=>{ newObj[f.k]=$('#adminContent [data-field="'+f.k+'"]').value; });
-    
-    if(tab==='gal' && !newObj.url && !newObj.caption){
-      toast('Добавь хотя бы фото или подпись');
-      return;
+      `;
     }
     
-    if(i<0)cur()[tab].push(newObj); else cur()[tab][i]=newObj;
-    dedupeAll();
-    await saveData(); renderListEditor(tab); renderAll();
-    toast(useFirebase?'Сохранено в облаке ✓':'Сохранено локально ✓');
-  });
+    if(tab==='gal'){
+      const curUrl = item.url || '';
+      const hasImg = !!curUrl;
+      html += `
+        <div class="upload-block">
+          <div class="up-loading" id="galLoading">⏳ Сжимаю фото...</div>
+          <div class="up-preview gal ${hasImg?'has-img':''}" id="galPreview" 
+               style="${hasImg?'':`background:linear-gradient(135deg,var(--accent),var(--accent2))`}">
+            ${hasImg?`<div class="up-inner" style="background-image:url('${escapeHtml(curUrl)}')"></div>`:'📸'}
+          </div>
+          <div class="up-hint" id="galHint">${hasImg?'✓ Фото загружено':'Фото не загружено'}</div>
+          <div class="up-btns">
+            <label class="btn solid" for="galFile" style="display:inline-block">📁 Загрузить файл</label>
+            <input type="file" id="galFile" accept="image/*">
+            <button class="btn ghost" type="button" id="clearGalBtn">✕ Убрать</button>
+          </div>
+        </div>
+      `;
+    }
+    
+    fields.forEach(f=>{
+      const val=item[f.k]||'';
+      const ph=f.placeholder?`placeholder="${escapeHtml(f.placeholder)}"`:'';
+      if(f.type==='textarea'){
+        html+=`<div class="form-row"><label>${f.label}</label><textarea data-field="${f.k}" ${ph}>${escapeHtml(val)}</textarea></div>`;
+      }else{
+        html+=`<div class="form-row"><label>${f.label}</label><input type="text" data-field="${f.k}" value="${escapeHtml(val)}" ${ph}></div>`;
+      }
+    });
+    
+    html+=`<div class="btns"><button class="btn solid" id="saveItem">💾 Сохранить</button><button class="btn ghost" onclick="showTab('${tab}')">Отмена</button></div>`;
+    $('#adminContent').innerHTML=html;
+    
+    let cropper=null;
+    
+    if(tab==='team'){
+      const fileInput = $('#avatarFile');
+      const preview = $('#avatarPreview');
+      const inner = preview ? preview.querySelector('.up-inner') : null;
+      const hint = $('#avatarHint');
+      const clearBtn = $('#clearAvatarBtn');
+      const nameInput = $('#adminContent [data-field="name"]');
+      const colorInput = $('#adminContent [data-field="color"]');
+      const loading = $('#avatarLoading');
+      
+      if(inner){
+        cropper = setupAvatarCropper(preview, inner, currentAvatarTransform);
+      }
+      
+      const zoomIn = $('#zoomInBtn');
+      const zoomOut = $('#zoomOutBtn');
+      const resetCrop = $('#resetCropBtn');
+      if(zoomIn) zoomIn.addEventListener('click',()=>cropper && cropper.zoom(1.2));
+      if(zoomOut) zoomOut.addEventListener('click',()=>cropper && cropper.zoom(0.8));
+      if(resetCrop) resetCrop.addEventListener('click',()=>cropper && cropper.reset());
+      
+      function setAvatarUrl(url){
+        if(!preview)return;
+        if(url){
+          preview.innerHTML=`<div class="up-inner" style="background-image:url('${url}');transform:translate(0,0) scale(1)"></div>`;
+          preview.classList.add('has-img');
+          preview.style.background='';
+          const newInner = preview.querySelector('.up-inner');
+          cropper = setupAvatarCropper(preview, newInner, {x:0,y:0,scale:1});
+          currentAvatarTransform = {x:0,y:0,scale:1};
+          
+          // Пересоздать кнопки crop controls
+          const existingControls = preview.parentElement.querySelector('.crop-controls');
+          if(!existingControls){
+            const controls = document.createElement('div');
+            controls.className='crop-controls';
+            controls.innerHTML=`
+              <button class="btn ghost" id="zoomOutBtn" type="button">➖</button>
+              <span class="zoom-info">100%</span>
+              <button class="btn ghost" id="zoomInBtn" type="button">➕</button>
+              <button class="btn ghost" id="resetCropBtn" type="button">↻ Сброс</button>
+            `;
+            preview.parentElement.insertBefore(controls, preview);
+            controls.querySelector('#zoomInBtn').addEventListener('click',()=>cropper.zoom(1.2));
+            controls.querySelector('#zoomOutBtn').addEventListener('click',()=>cropper.zoom(0.8));
+            controls.querySelector('#resetCropBtn').addEventListener('click',()=>cropper.reset());
+          }
+          
+          if(hint) hint.textContent='🖱 Двигай мышкой • 🎚 Колесо для зума';
+        }else{
+          preview.innerHTML = escapeHtml(((nameInput?.value||'?')[0]||'?').toUpperCase());
+          preview.classList.remove('has-img');
+          const c = colorInput?.value || '#ff6faf';
+          preview.style.background=`linear-gradient(135deg,${c},${c})`;
+          cropper = null;
+          currentAvatarTransform = {x:0,y:0,scale:1};
+          const existingControls = preview.parentElement.querySelector('.crop-controls');
+          if(existingControls) existingControls.remove();
+          const existingHint = preview.parentElement.querySelector('.crop-hint');
+          if(existingHint) existingHint.remove();
+          if(hint) hint.textContent='Аватарки нет — будет градиент с буквой';
+        }
+      }
+      
+      if(nameInput) nameInput.addEventListener('input', ()=>{
+        if(preview && !preview.classList.contains('has-img')){
+          const letter = ((nameInput.value||'?')[0]||'?').toUpperCase();
+          preview.textContent = letter;
+        }
+      });
+      if(colorInput) colorInput.addEventListener('input', ()=>{
+        if(preview && !preview.classList.contains('has-img')){
+          const c = colorInput.value || '#ff6faf';
+          preview.style.background=`linear-gradient(135deg,${c},${c})`;
+        }
+      });
+      
+      if(fileInput){
+        fileInput.addEventListener('change', async e=>{
+          const file = e.target.files[0];
+          if(!file) return;
+          if(!file.type.startsWith('image/')){
+            toast('Выбери файл-картинку');
+            return;
+          }
+          if(loading)loading.classList.add('show');
+          if(hint)hint.textContent = '⏳ Обрабатываю...';
+          try{
+            const compressed = await compressImage(file, 800, 0.85, true);
+            setAvatarUrl(compressed);
+            const sizeKB = Math.round((compressed.length * 0.75) / 1024);
+            toast(`Аватарка готова (${sizeKB} KB)`);
+          }catch(err){
+            toast('Ошибка: '+err.message);
+            if(hint)hint.textContent = '❌ Не удалось обработать';
+          }finally{
+            if(loading)loading.classList.remove('show');
+          }
+        });
+      }
+      
+      // Скрытое URL input - для ручного ввода
+      const urlInputHidden = $('#avatarUrlInput');
+      const urlLabel = urlInputHidden?.closest('label');
+      if(urlLabel && urlInputHidden){
+        urlLabel.addEventListener('click', e=>{
+          if(e.target.tagName==='INPUT')return;
+          const url = prompt('Вставь URL аватарки:', urlInputHidden.value);
+          if(url!==null){
+            const v = url.trim();
+            urlInputHidden.value = v;
+            setAvatarUrl(v);
+          }
+        });
+      }
+      
+      if(clearBtn){
+        clearBtn.addEventListener('click', ()=>{
+          if(fileInput) fileInput.value = '';
+          setAvatarUrl('');
+        });
+      }
+    }
+    
+    if(tab==='gal'){
+      const fileInput = $('#galFile');
+      const preview = $('#galPreview');
+      const loading = $('#galLoading');
+      const hint = $('#galHint');
+      const clearBtn = $('#clearGalBtn');
+      
+      function setGalUrl(url){
+        if(!preview)return;
+        if(url){
+          preview.innerHTML=`<div class="up-inner" style="background-image:url('${url}')"></div>`;
+          preview.classList.add('has-img');
+          preview.style.background='';
+          if(hint) hint.textContent='✓ Фото загружено';
+        }else{
+          preview.innerHTML='📸';
+          preview.classList.remove('has-img');
+          preview.style.background=`linear-gradient(135deg,var(--accent),var(--accent2))`;
+          if(hint) hint.textContent='Фото не загружено';
+        }
+      }
+      
+      if(fileInput){
+        fileInput.addEventListener('change', async e=>{
+          const file = e.target.files[0];
+          if(!file) return;
+          if(!file.type.startsWith('image/')){
+            toast('Выбери файл-картинку');
+            return;
+          }
+          if(loading)loading.classList.add('show');
+          if(hint)hint.textContent = '⏳ Обрабатываю...';
+          try{
+            const compressed = await compressImage(file, 1200, 0.82, false);
+            setGalUrl(compressed);
+            const sizeKB = Math.round((compressed.length * 0.75) / 1024);
+            toast(`Фото готово (${sizeKB} KB)`);
+          }catch(err){
+            toast('Ошибка: '+err.message);
+            if(hint)hint.textContent = '❌ Не удалось обработать';
+          }finally{
+            if(loading)loading.classList.remove('show');
+          }
+        });
+      }
+      
+      if(clearBtn){
+        clearBtn.addEventListener('click', ()=>{
+          if(fileInput) fileInput.value = '';
+          setGalUrl('');
+        });
+      }
+    }
+    
+    const saveBtn=$('#saveItem');
+    if(saveBtn){
+      saveBtn.addEventListener('click',async ()=>{
+        try{
+          const newObj={};
+          fields.forEach(f=>{ 
+            const el=$('#adminContent [data-field="'+f.k+'"]');
+            newObj[f.k]=el?el.value:'';
+          });
+          
+          if(tab==='gal' && !newObj.url && !newObj.caption){
+            toast('Добавь хотя бы фото или подпись');
+            return;
+          }
+          
+          // Сохранить transform для аватарки
+          if(tab==='team'){
+            const preview = $('#avatarPreview');
+            if(preview && preview.classList.contains('has-img') && cropper){
+              newObj.avatarTransform = cropper.getState();
+            } else {
+              delete newObj.avatarTransform;
+            }
+            // Получить avatar из up-inner
+            const inner = preview?.querySelector('.up-inner');
+            if(inner){
+              const bg = inner.style.backgroundImage;
+              if(bg){
+                const match = bg.match(/url\(['"]?(.+?)['"]?\)/);
+                if(match) newObj.avatar = match[1];
+              }
+            }
+          }
+          
+          if(tab==='gal'){
+            const preview = $('#galPreview');
+            const inner = preview?.querySelector('.up-inner');
+            if(inner){
+              const bg = inner.style.backgroundImage;
+              if(bg){
+                const match = bg.match(/url\(['"]?(.+?)['"]?\)/);
+                if(match) newObj.url = match[1];
+              }
+            }
+          }
+          
+          if(i<0)cur()[tab].push(newObj); else cur()[tab][i]=newObj;
+          dedupeAll();
+          await saveData(); renderListEditor(tab); renderAll();
+          toast(useFirebase?'Сохранено в облаке ✓':'Сохранено локально ✓');
+        }catch(err){
+          dlog('Save error: '+err.message,'err');
+          toast('Ошибка сохранения: '+err.message);
+        }
+      });
+    }
+  }catch(err){
+    dlog('editItem error: '+err.message,'err');
+    toast('Ошибка: '+err.message);
+  }
 };
 
 window.showTab=showTab;
@@ -1304,32 +1568,56 @@ window.showTab=showTab;
 /* ======================================================================== */
 
 function avatarUrl(member){
-  // Если у участника нет своей аватарки — генерируем дефолтную
   if(member.avatar){
-    return `https://cdn.discordapp.com/avatars/${member.id}/${member.avatar}.${member.avatar.startsWith('a_')?'gif':'png'}?size=128`;
+    return `https://cdn.discordapp.com/avatars/${member.id}/${member.avatar}.${member.avatar.startsWith('a_')?'gif':'png'}?size=256`;
   }
-  // Дефолтные аватарки Discord
   const defIdx = member.discriminator && member.discriminator!=='0'
     ? parseInt(member.discriminator)%5
     : (BigInt(member.id)>>22)%6n;
   return `https://cdn.discordapp.com/embed/avatars/${defIdx}.png`;
 }
 
+function getBotToken(){
+  return localStorage.getItem(BOT_TOKEN_KEY) || '';
+}
+function setBotToken(t){
+  if(t) localStorage.setItem(BOT_TOKEN_KEY, t);
+  else localStorage.removeItem(BOT_TOKEN_KEY);
+}
+
 function renderImportTab(){
   const box=$('#adminContent');
   const serverId = siteData.serverId || '';
+  const token = getBotToken();
+  
   let html = `
     <div class="import-info">
       📖 <b>Как это работает:</b><br>
       1. В настройках Discord-сервера включи <b>«Виджет сервера»</b> (Server Settings → Widget → Enable Server Widget)<br>
       2. Скопируй <b>Server ID</b> (если не видно — включи Developer Mode в настройках Discord, ПКМ на иконке сервера → Copy Server ID)<br>
-      3. Вставь ID ниже и жми <b>«📡 Загрузить участников»</b> — сайт подтянет онлайн-участников с аватарками
+      3. Вставь ID ниже и жми <b>«📡 Загрузить участников»</b><br><br>
+      💡 <b>Без токена:</b> только онлайн-участники, без ролей (через Widget API)<br>
+      🤖 <b>С Bot Token:</b> ВСЕ участники (включая офлайн) + серверные роли
     </div>
     
     <div class="import-header">
       <input type="text" id="serverIdInput" value="${escapeHtml(serverId)}" placeholder="Server ID (например: 123456789012345678)" style="font-size:14px">
       <button class="btn solid" id="loadMembersBtn" type="button">📡 Загрузить участников</button>
       <button class="btn ghost" id="saveServerIdBtn" type="button" title="Сохранить ID">💾</button>
+    </div>
+    
+    <div class="bot-token-block">
+      <h4>🤖 Bot Token (опционально)</h4>
+      <p>Нужен для загрузки <b>всех участников</b> и <b>серверных ролей</b>. Создай бота на <a href="https://discord.com/developers/applications" target="_blank" style="color:var(--accent)">discord.com/developers</a>, скопируй токен и пригласи бота на сервер с правом <code>View Channels</code>.</p>
+      <div class="warning-box">
+        ⚠️ <b>Никому не показывай токен!</b> Он хранится только у тебя в браузере и НЕ синхронизируется через Firebase.
+      </div>
+      <div class="row">
+        <input type="password" id="botTokenInput" value="${escapeHtml(token)}" placeholder="Вставь Bot Token или оставь пустым">
+        <button class="btn solid" id="saveBotTokenBtn" type="button">💾 Сохранить</button>
+        <button class="btn ghost" id="clearBotTokenBtn" type="button">✕ Очистить</button>
+      </div>
+      <div class="status" id="botTokenStatus">${token?'✓ Токен сохранён локально':'⚪ Токен не задан — будет использован Widget API'}</div>
     </div>
     
     <div id="importStatus"></div>
@@ -1350,8 +1638,46 @@ function renderImportTab(){
     if(e.key==='Enter')loadMembersFromDiscord();
   });
   
-  // Если есть ранее загруженные участники — показываем
+  $('#saveBotTokenBtn').addEventListener('click',()=>{
+    const val=$('#botTokenInput').value.trim();
+    setBotToken(val);
+    const status=$('#botTokenStatus');
+    if(val){
+      status.textContent='✓ Токен сохранён локально';
+      status.className='status ok';
+      toast('Bot Token сохранён (только у тебя) ✓');
+    }else{
+      status.textContent='⚪ Токен не задан — будет использован Widget API';
+      status.className='status';
+      toast('Токен очищен');
+    }
+    updateSetupNote();
+  });
+  
+  $('#clearBotTokenBtn').addEventListener('click',()=>{
+    setBotToken('');
+    $('#botTokenInput').value='';
+    const status=$('#botTokenStatus');
+    status.textContent='⚪ Токен не задан — будет использован Widget API';
+    status.className='status';
+    updateSetupNote();
+    toast('Bot Token очищен');
+  });
+  
   if(importedMembers.length) renderImportedMembersList();
+}
+
+async function fetchWithBotToken(serverId, token, endpoint){
+  const res = await fetch(`https://discord.com/api/v10${endpoint}`, {
+    headers: { 'Authorization': `Bot ${token}` }
+  });
+  if(!res.ok){
+    if(res.status===401) throw new Error('Неверный Bot Token');
+    if(res.status===403) throw new Error('У бота нет прав. Пригласи его на сервер с правом View Channels');
+    if(res.status===404) throw new Error('Сервер не найден или бот не на сервере');
+    throw new Error(`Discord API error: ${res.status}`);
+  }
+  return res.json();
 }
 
 async function loadMembersFromDiscord(){
@@ -1362,61 +1688,102 @@ async function loadMembersFromDiscord(){
   siteData.serverId=id;
   await saveData();
   
+  const token = getBotToken();
   const statusEl=$('#importStatus');
-  statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px">⏳ Загружаю участников с сервера <code>${escapeHtml(id)}</code>...</div>`;
+  
+  statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px">⏳ Загружаю участников с сервера <code>${escapeHtml(id)}</code> ${token?'🤖 (через Bot Token)':'📡 (через Widget API)'}...</div>`;
   
   try{
-    const url=`https://discord.com/api/v10/guilds/${id}/widget.json`;
-    const res=await fetch(url);
-    if(!res.ok){
-      if(res.status===404){
-        throw new Error('Виджет не включён или Server ID неверный. Включи Widget в настройках сервера Discord.');
+    if(token){
+      // Полная загрузка через Bot API
+      const [membersRaw, rolesRaw] = await Promise.all([
+        fetchWithBotToken(id, token, `/guilds/${id}/members?limit=1000`),
+        fetchWithBotToken(id, token, `/guilds/${id}/roles`)
+      ]);
+      
+      const rolesMap = {};
+      rolesRaw.forEach(r=>{ rolesMap[r.id]=r; });
+      
+      importedMembers = membersRaw.map(m=>{
+        const u = m.user;
+        const memberRoles = (m.roles||[])
+          .map(rid=>rolesMap[rid])
+          .filter(Boolean)
+          .filter(r=>r.name!=='@everyone')
+          .sort((a,b)=>b.position-a.position);
+        
+        return {
+          id: u.id,
+          username: u.username,
+          globalName: u.global_name || u.username,
+          discriminator: u.discriminator || '0',
+          avatar: u.avatar || null,
+          avatarUrl: avatarUrl(u),
+          status: 'offline',
+          nick: m.nick || null,
+          roles: memberRoles.map(r=>({name:r.name, color:r.color?('#'+r.color.toString(16).padStart(6,'0')):null}))
+        };
+      });
+      
+      dlog(`Загружено ${importedMembers.length} участников через Bot API`,'ok');
+    } else {
+      // Widget API — только онлайн участники
+      const url=`https://discord.com/api/v10/guilds/${id}/widget.json`;
+      const res=await fetch(url);
+      if(!res.ok){
+        if(res.status===404){
+          throw new Error('Виджет не включён или Server ID неверный. Включи Widget в настройках сервера Discord или используй Bot Token.');
+        }
+        if(res.status===403){
+          throw new Error('Виджет отключён. Включи его в Server Settings → Widget');
+        }
+        throw new Error(`Ошибка Discord: ${res.status}`);
       }
-      throw new Error(`Ошибка Discord: ${res.status}`);
+      const data=await res.json();
+      
+      if(!data.members || !data.members.length){
+        statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px;background:color-mix(in srgb,#ffcc00 15%,transparent);color:#ffcc00">⚠️ Виджет работает, но сейчас никто не онлайн. Для загрузки ВСЕХ участников добавь Bot Token выше ⬆️</div>`;
+        importedMembers=[];
+        $('#importList').innerHTML='';
+        return;
+      }
+      
+      importedMembers=data.members.map(m=>({
+        id:m.id,
+        username:m.username || `user_${m.id}`,
+        globalName: m.username,
+        discriminator:m.discriminator || '0',
+        avatar:m.avatar || null,
+        avatarUrl:avatarUrl(m),
+        status:m.status || 'online',
+        nick:null,
+        roles:[]
+      }));
+      
+      dlog(`Загружено ${importedMembers.length} участников через Widget API`,'ok');
     }
-    const data=await res.json();
     
-    if(!data.members || !data.members.length){
-      statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px;background:color-mix(in srgb,#ffcc00 15%,transparent);color:#ffcc00">⚠️ Виджет работает, но сейчас никто не онлайн на сервере. Зайди позже.</div>`;
-      importedMembers=[];
-      $('#importList').innerHTML='';
-      return;
-    }
-    
-    importedMembers=data.members.map(m=>({
-      id:m.id,
-      username:m.username || `user_${m.id}`,
-      discriminator:m.discriminator || '0',
-      avatar:m.avatar || null,
-      avatarUrl:avatarUrl(m),
-      status:m.status || 'online'
-    }));
-    
-    dlog(`Загружено ${importedMembers.length} участников с Discord`,'ok');
     renderImportedMemberList();
     toast(`Загружено ${importedMembers.length} участников ✓`);
   }catch(err){
-    dlog('Discord widget error: '+err.message,'err');
+    dlog('Discord fetch error: '+err.message,'err');
     statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px;background:color-mix(in srgb,#ff6b6b 15%,transparent);color:#ff6b6b">❌ ${escapeHtml(err.message)}</div>`;
     $('#importList').innerHTML='';
   }
 }
 
-function isMemberAdded(memberId,targetTheme){
-  return cur().team.some(t=>t._discordId===memberId);
-}
 function isMemberAddedInTheme(memberId,targetTheme){
   return (siteData[targetTheme].team||[]).some(t=>t._discordId===memberId);
 }
 
 function renderImportedMemberList(){
   const statusEl=$('#importStatus');
-  const listEl=$('#importList');
+  const token = getBotToken();
   
   statusEl.innerHTML=`
     <div class="mem-filter">
       <input type="text" id="memFilter" placeholder="🔍 Поиск по нику..." value="${escapeHtml(importFilter)}">
-      <span class="cnt">Найдено: <b id="memCount">${importedMembers.length}</b></span>
+      <span class="cnt">Найдено: <b id="memCount">${importedMembers.length}</b> ${token?'🤖':'📡'}</span>
     </div>
   `;
   
@@ -1432,10 +1799,11 @@ function renderImportCards(){
   const listEl=$('#importList');
   const filter=importFilter;
   const filtered = filter 
-    ? importedMembers.filter(m=>m.username.toLowerCase().includes(filter))
+    ? importedMembers.filter(m=>m.username.toLowerCase().includes(filter) || (m.globalName||'').toLowerCase().includes(filter) || (m.nick||'').toLowerCase().includes(filter))
     : importedMembers;
   
-  $('#memCount').textContent=filtered.length;
+  const cntEl=$('#memCount');
+  if(cntEl) cntEl.textContent=filtered.length;
   
   if(!filtered.length){
     listEl.innerHTML=`<div class="admin-list-empty">Ничего не найдено</div>`;
@@ -1447,14 +1815,18 @@ function renderImportCards(){
     const inF = isMemberAddedInTheme(m.id,'f');
     const inM = isMemberAddedInTheme(m.id,'m');
     const addedClass = (inF||inM) ? 'added' : '';
+    const displayName = m.nick || m.globalName || m.username;
+    const rolesHtml = (m.roles||[]).slice(0,3).map(r=>`<span style="${r.color?`background:color-mix(in srgb,${r.color} 25%,transparent);color:${r.color}`:''}">${escapeHtml(r.name)}</span>`).join('');
+    const moreRoles = (m.roles||[]).length > 3 ? `<span>+${m.roles.length-3}</span>` : '';
     
     html+=`
       <div class="mem-card ${addedClass}" data-id="${m.id}">
         <div class="mem-top">
           <div class="mem-avatar" style="background-image:url('${escapeHtml(m.avatarUrl)}')"></div>
           <div class="mem-info">
-            <div class="mem-name">${escapeHtml(m.username)}</div>
-            <div class="mem-username">${m.discriminator&&m.discriminator!=='0'?'#'+m.discriminator:'@'+m.username}</div>
+            <div class="mem-name">${escapeHtml(displayName)}</div>
+            <div class="mem-username">${m.nick?'@'+escapeHtml(m.username):m.discriminator&&m.discriminator!=='0'?'#'+m.discriminator:'@'+m.username}</div>
+            ${(m.roles||[]).length?`<div class="mem-roles">${rolesHtml}${moreRoles}</div>`:''}
             <span class="mem-status ${m.status}"><i></i>${escapeHtml(m.status)}</span>
           </div>
         </div>
@@ -1470,61 +1842,69 @@ function renderImportCards(){
 }
 
 window.addImportedToTeam=async function(memberId,targetTheme){
-  const m = importedMembers.find(x=>x.id===memberId);
-  if(!m){toast('Участник не найден');return;}
-  
-  // Проверяем, не добавлен ли уже
-  if(isMemberAddedInTheme(memberId,targetTheme)){
-    toast('Уже добавлен в эту команду');
-    return;
-  }
-  
-  // Определяем цвет по теме
-  const colors = targetTheme==='f' 
-    ? ['#ff5fa2','#c49cff','#ff8fc8','#b685f0','#ff6faf']
-    : ['#37e6ff','#ff9f45','#c6ff4a','#ffcc00','#6fdab8'];
-  const randColor = colors[Math.floor(Math.random()*colors.length)];
-  
-  const sticker = targetTheme==='f' 
-    ? ['🌸','💗','🎀','✨','🦋'][Math.floor(Math.random()*5)]
-    : ['⚡','🔥','🎖️','🛡️','⚔️'][Math.floor(Math.random()*5)];
-  
-  const role = targetTheme==='f' 
-    ? '🌸 Участница сервера'
-    : '⚡ Боец отряда';
-  
-  const newItem = {
-    _discordId: memberId,
-    name: m.username,
-    discord: m.discriminator&&m.discriminator!=='0' ? m.username+'#'+m.discriminator : m.username,
-    avatar: m.avatarUrl,
-    status: 'в сети',
-    role: role,
-    quote: targetTheme==='f' 
-      ? '«Оставь цитату через кнопку редактирования»' 
-      : '«Оставь цитату через кнопку редактирования»',
-    sticker: sticker,
-    color: randColor
-  };
-  
-  siteData[targetTheme].team.push(newItem);
-  dedupeAll();
-  await saveData();
-  renderAll();
-  renderImportCards();
-  
-  toast(`${m.username} добавлен в ${targetTheme==='f'?'женскую':'мужскую'} команду ✓`);
-  
-  // Автоматически открываем редактирование
-  const idx = siteData[targetTheme].team.findIndex(t=>t._discordId===memberId);
-  if(idx>=0){
-    const prevTheme = theme;
-    theme = targetTheme;
-    document.body.dataset.theme = targetTheme;
-    localStorage.setItem('theme',targetTheme);
-    swapTexts(targetTheme,false);
-    editItem('team',idx);
-    // Восстанавливаем тему обратно после сохранения/отмены не делаем — пусть останется
+  try{
+    const m = importedMembers.find(x=>x.id===memberId);
+    if(!m){toast('Участник не найден');return;}
+    
+    if(isMemberAddedInTheme(memberId,targetTheme)){
+      toast('Уже добавлен в эту команду');
+      return;
+    }
+    
+    const colors = targetTheme==='f' 
+      ? ['#ff5fa2','#c49cff','#ff8fc8','#b685f0','#ff6faf']
+      : ['#37e6ff','#ff9f45','#c6ff4a','#ffcc00','#6fdab8'];
+    const randColor = colors[Math.floor(Math.random()*colors.length)];
+    
+    const sticker = targetTheme==='f' 
+      ? ['🌸','💗','🎀','✨','🦋'][Math.floor(Math.random()*5)]
+      : ['⚡','🔥','🎖️','🛡️','⚔️'][Math.floor(Math.random()*5)];
+    
+    // Берём топ-роль как основу для роли, или дефолт
+    let role = '';
+    if(m.roles && m.roles.length){
+      const topRole = m.roles[0];
+      role = (targetTheme==='f'?'👑 ':'⚔️ ') + topRole.name;
+    } else {
+      role = targetTheme==='f' ? '🌸 Furiebi' : '⚡ Furiebi';
+    }
+    
+    const displayName = m.nick || m.globalName || m.username;
+    
+    const newItem = {
+      _discordId: memberId,
+      name: displayName,
+      discord: m.discriminator&&m.discriminator!=='0' ? m.username+'#'+m.discriminator : m.username,
+      avatar: m.avatarUrl,
+      avatarTransform: {x:0,y:0,scale:1},
+      status: m.status==='online'?'в сети':m.status==='idle'?'не активен':m.status==='dnd'?'не беспокоить':'офлайн',
+      role: role,
+      quote: targetTheme==='f' 
+        ? '«Напиши цитату через кнопку редактирования»' 
+        : '«Напиши цитату через кнопку редактирования»',
+      sticker: sticker,
+      color: (m.roles && m.roles[0] && m.roles[0].color) || randColor
+    };
+    
+    siteData[targetTheme].team.push(newItem);
+    dedupeAll();
+    await saveData();
+    renderAll();
+    renderImportCards();
+    
+    toast(`${displayName} добавлен в ${targetTheme==='f'?'женскую':'мужскую'} команду ✓`);
+    
+    const idx = siteData[targetTheme].team.findIndex(t=>t._discordId===memberId);
+    if(idx>=0){
+      theme = targetTheme;
+      document.body.dataset.theme = targetTheme;
+      localStorage.setItem('theme',targetTheme);
+      swapTexts(targetTheme,false);
+      editItem('team',idx);
+    }
+  }catch(err){
+    dlog('addImportedToTeam error: '+err.message,'err');
+    toast('Ошибка: '+err.message);
   }
 };
 
@@ -1532,7 +1912,7 @@ window.exportData=function(){
   const blob=new Blob([JSON.stringify(siteData,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='site-data-'+Date.now()+'.json'; a.click();
-  URL.revokeObjectURL(url); toast('Эспортировано 📥');
+  URL.revokeObjectURL(url); toast('Экспортировано 📥');
 };
 
 window.importData=async function(e){
