@@ -21,7 +21,6 @@ body[data-theme="m"]{
   --soft:#1a2440; --radius:10px; --font-d:'Russo One',sans-serif; --font-b:'Manrope',sans-serif;
   --shadow:0 14px 34px rgba(0,0,0,.45);
 }
-
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:16.5px;line-height:1.55;overflow-x:hidden;min-height:100vh}
@@ -30,16 +29,13 @@ body,.themable,.themable *{transition:background-color .5s ease,border-color .5s
 img{display:block;max-width:100%}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
-
 body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:120;opacity:.05;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")}
-
 .floaters{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
 .floaters span{position:absolute;font-size:26px;opacity:.28;animation:drift 12s ease-in-out infinite alternate}
 body[data-theme="m"] .fl-f{display:none}
 body[data-theme="f"] .fl-m{display:none}
 @keyframes drift{from{transform:translateY(0) rotate(-8deg)}to{transform:translateY(-34px) rotate(10deg)}}
-
 .topbar{position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(10px);border-bottom:2px dashed var(--line)}
 .topbar .wrap{display:flex;align-items:center;gap:14px;height:66px}
 .server-icon{width:42px;height:42px;border-radius:14px 14px 14px 4px;display:grid;place-items:center;font-size:22px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:var(--shadow);flex:none}
@@ -58,7 +54,6 @@ body[data-theme="f"] .fl-m{display:none}
 .track{width:54px;height:26px;border-radius:999px;background:var(--line);position:relative;flex:none}
 .knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--accent);transition:transform .45s cubic-bezier(.34,1.6,.64,1),background-color .5s}
 body[data-theme="m"] .knob{transform:translateX(28px)}
-
 .hero{display:grid;grid-template-columns:1fr;gap:44px;align-items:center;padding:64px 0 46px;position:relative;z-index:1;max-width:720px}
 .hero-kick{font-size:12.5px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--accent)}
 .hero h1{font-family:var(--font-d);font-size:clamp(38px,6.4vw,72px);line-height:1.12;margin:14px 0 18px}
@@ -73,18 +68,15 @@ body[data-theme="m"] .knob{transform:translateX(28px)}
 .chipst{background:var(--card);border:2px dashed var(--line);border-radius:999px;padding:8px 15px;font-weight:900;font-size:13px;animation:pulseSoft 3s ease-in-out infinite}
 .chipst:nth-child(2){animation-delay:1s}.chipst:nth-child(3){animation-delay:2s}
 @keyframes pulseSoft{50%{transform:translateY(-4px)}}
-
 .ribbon{border-block:2px dashed var(--line);padding:11px 0;overflow:hidden;background:var(--card);position:relative;z-index:1}
 .mtrack{display:flex;gap:34px;width:max-content;animation:mq 26s linear infinite;font-family:var(--font-d);font-size:17px;color:var(--accent)}
 @keyframes mq{to{transform:translateX(-50%)}}
-
 section{position:relative;z-index:1;padding:58px 0}
 .sec-head{margin-bottom:32px}
 .sec-kick{font-size:12px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--accent2)}
 .sec-title{font-family:var(--font-d);font-size:clamp(30px,4.5vw,46px);margin-top:6px}
 .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
 .reveal.in{opacity:1;transform:none}
-
 .member{position:relative;background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:24px 20px 20px;text-align:center;box-shadow:var(--shadow);transition:transform .35s}
 .member:hover{transform:translateY(-6px) rotate(-1deg)}
 .member .sticker{position:absolute;top:-13px;right:14px;font-size:24px;transform:rotate(12deg)}
@@ -98,30 +90,19 @@ section{position:relative;z-index:1;padding:58px 0}
 .status.dnd i{background:#ff6b6b}
 .chip{display:inline-block;font-size:12.5px;font-weight:900;padding:5px 12px;border-radius:999px;background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--accent);margin-bottom:12px}
 .member q{display:block;font-size:13.5px;color:var(--muted);font-style:italic}
-
 .placeholder{background:var(--card);border:2px dashed var(--line);border-radius:var(--radius);padding:46px 24px;text-align:center;box-shadow:var(--shadow);transition:transform .35s}
 .placeholder:hover{transform:translateY(-4px)}
 .placeholder .ph-emo{font-size:44px;display:block;margin-bottom:14px}
 .placeholder h3{font-family:var(--font-d);font-size:22px;margin-bottom:8px}
 .placeholder p{color:var(--muted);font-weight:700;font-size:14.5px;max-width:520px;margin:0 auto}
 .placeholder-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
-
-.poll-empty{
-  background:var(--card);border:2px dashed var(--line);border-radius:var(--radius);
-  padding:40px 24px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden;
-}
-.poll-empty::before{
-  content:"";position:absolute;inset:0;opacity:.05;
-  background:radial-gradient(circle at 20% 30%,var(--accent),transparent 50%),
-             radial-gradient(circle at 80% 70%,var(--accent2),transparent 50%);
-  pointer-events:none;
-}
+.poll-empty{background:var(--card);border:2px dashed var(--line);border-radius:var(--radius);padding:40px 24px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.poll-empty::before{content:"";position:absolute;inset:0;opacity:.05;background:radial-gradient(circle at 20% 30%,var(--accent),transparent 50%),radial-gradient(circle at 80% 70%,var(--accent2),transparent 50%);pointer-events:none}
 .poll-empty .pe-emo{font-size:56px;display:block;margin-bottom:14px;animation:float 3s ease-in-out infinite}
 @keyframes float{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-8px) rotate(5deg)}}
 .poll-empty h3{font-family:var(--font-d);font-size:24px;margin-bottom:10px;color:var(--ink)}
 .poll-empty p{color:var(--muted);font-weight:700;font-size:14.5px;max-width:420px;margin:0 auto;line-height:1.6}
 .poll-empty .pe-hint{display:inline-block;margin-top:16px;padding:6px 14px;border-radius:999px;background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent);font-size:12px;font-weight:900;letter-spacing:.5px}
-
 .note{position:relative;width:235px;background:var(--card);border:2px dashed var(--line);border-radius:6px;padding:26px 18px 20px;box-shadow:var(--shadow);transition:transform .35s}
 .note::before{content:"";position:absolute;top:-11px;left:50%;transform:translateX(-50%) rotate(-3deg);width:74px;height:22px;background:color-mix(in srgb,var(--accent) 35%,transparent);border-radius:3px}
 .notes{display:flex;flex-wrap:wrap;gap:24px;justify-content:center}
@@ -133,7 +114,6 @@ section{position:relative;z-index:1;padding:58px 0}
 .note h4{font-family:var(--font-d);font-size:19px;margin:7px 0}
 .note p{font-size:13.5px;color:var(--muted)}
 .note .emo{position:absolute;bottom:10px;right:12px;font-size:22px}
-
 .wall{display:flex;flex-wrap:wrap;gap:26px;justify-content:center;padding:14px 0}
 .pnote{width:225px;background:color-mix(in srgb,var(--accent) 18%,var(--card));border-radius:12px;padding:20px 16px 16px;font-size:14px;font-weight:700;box-shadow:var(--shadow);transition:transform .4s cubic-bezier(.34,1.4,.64,1);position:relative}
 .pnote small{display:block;margin-top:12px;color:var(--muted);font-weight:900;font-size:11.5px;letter-spacing:1px;text-transform:uppercase}
@@ -145,72 +125,31 @@ section{position:relative;z-index:1;padding:58px 0}
 .pnote:nth-child(5){transform:rotate(-3deg)}
 .pnote:nth-child(6){transform:rotate(2deg) translateY(18px)}
 .pnote:hover{transform:rotate(0) scale(1.07);z-index:2}
-
 .gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;align-items:start}
 .gitem{position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:3/2;border:2px solid var(--line);box-shadow:var(--shadow);background:rgba(0,0,0,.35);cursor:zoom-in;transition:transform .3s}
 .gitem:hover{transform:scale(1.03)}
 .gitem img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform-origin:center}
 .gitem figcaption{position:absolute;inset:auto 0 0;padding:34px 14px 12px;font-weight:900;font-size:14px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.55));pointer-events:none;z-index:2}
-
-.gal-strip{
-  position:relative;overflow:hidden;width:100%;
-  border-radius:var(--radius);padding:6px 0;
-  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%);
-  mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%);
-}
-.gal-strip-track{
-  display:flex;gap:18px;width:max-content;align-items:center;
-  animation:galScroll 40s linear infinite;
-}
+.gal-strip{position:relative;overflow:hidden;width:100%;border-radius:var(--radius);padding:6px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%)}
+.gal-strip-track{display:flex;gap:18px;width:max-content;align-items:center;animation:galScroll 40s linear infinite}
 .gal-strip:hover .gal-strip-track{animation-play-state:paused}
-.gal-strip .gitem{
-  flex:0 0 auto;margin:0;
-}
-@keyframes galScroll{
-  from{transform:translateX(0)}
-  to{transform:translateX(-50%)}
-}
-
+.gal-strip .gitem{flex:0 0 auto;margin:0}
+@keyframes galScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 #photoModal{background:rgba(0,0,0,.92);backdrop-filter:blur(18px)}
-#photoModal .modal-box{
-  background:transparent;border:none;padding:0;max-width:92vw;max-height:92vh;
-  display:flex;align-items:center;justify-content:center;position:relative;
-  animation:photoZoomIn .4s cubic-bezier(.2,.9,.3,1.2);
-}
-@keyframes photoZoomIn{
-  from{opacity:0;transform:scale(.85)}
-  to{opacity:1;transform:scale(1)}
-}
-#photoModal img{
-  max-width:90vw;max-height:85vh;object-fit:contain;border-radius:12px;
-  box-shadow:0 20px 60px rgba(0,0,0,.7);background:rgba(0,0,0,.5);
-}
-#photoModal .photo-cap{
-  position:absolute;bottom:-44px;left:50%;transform:translateX(-50%);
-  color:#fff;font-weight:800;font-size:14px;text-align:center;
-  max-width:80vw;opacity:.85;
-}
-#photoModal .photo-close{
-  position:fixed;top:20px;right:24px;background:rgba(255,255,255,.15);
-  color:#fff;width:46px;height:46px;border-radius:50%;font-size:22px;
-  border:2px solid rgba(255,255,255,.2);z-index:10;
-  backdrop-filter:blur(10px);
-}
+#photoModal .modal-box{background:transparent;border:none;padding:0;max-width:92vw;max-height:92vh;display:flex;align-items:center;justify-content:center;position:relative;animation:photoZoomIn .4s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes photoZoomIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+#photoModal img{max-width:90vw;max-height:85vh;object-fit:contain;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.7);background:rgba(0,0,0,.5)}
+#photoModal .photo-cap{position:absolute;bottom:-44px;left:50%;transform:translateX(-50%);color:#fff;font-weight:800;font-size:14px;text-align:center;max-width:80vw;opacity:.85}
+#photoModal .photo-close{position:fixed;top:20px;right:24px;background:rgba(255,255,255,.15);color:#fff;width:46px;height:46px;border-radius:50%;font-size:22px;border:2px solid rgba(255,255,255,.2);z-index:10;backdrop-filter:blur(10px)}
 #photoModal .photo-close:hover{background:rgba(255,255,255,.3)}
-
-.admin-list-item .thumb{
-  width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none;
-  background:var(--soft);border:1px solid var(--line);margin-right:8px;
-}
+.admin-list-item .thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none;background:var(--soft);border:1px solid var(--line);margin-right:8px}
 .admin-list-item .thumb-wrap{display:flex;align-items:center;flex:1;min-width:0}
 .admin-list-item .thumb-wrap span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
 .play{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
 .panel{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
 .panel h3{font-family:var(--font-d);font-size:21px;margin-bottom:12px;text-align:center}
 .panel .pdesc{color:var(--muted);font-weight:700;font-size:14px;text-align:center}
 .panel .pemo{font-size:56px;text-align:center;display:block;margin-bottom:14px}
-
 .poll{max-width:620px;margin:0 auto;background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
 .opt{position:relative;display:block;width:100%;text-align:left;border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;font-weight:800;font-size:15px;overflow:hidden;background:var(--bg2)}
 .opt .fill{position:absolute;inset:0;width:0;background:color-mix(in srgb,var(--accent) 20%,transparent);transition:width .9s cubic-bezier(.2,.8,.2,1)}
@@ -218,7 +157,6 @@ section{position:relative;z-index:1;padding:58px 0}
 .opt .pct{float:right;color:var(--accent);font-weight:900}
 .opt.mine{border-color:var(--accent)}
 .poll-foot{text-align:center;color:var(--muted);font-size:13px;font-weight:800;margin-top:16px}
-
 footer{border-top:2px dashed var(--line);padding:60px 0 40px;text-align:center;position:relative;z-index:1}
 footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-width:660px;margin:0 auto 26px}
 .love{display:inline-flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:28px;position:relative}
@@ -230,23 +168,18 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .foot-small{margin-top:26px;font-size:12.5px;color:var(--muted);font-weight:700}
 .admin-link{margin-top:16px;font-size:11px;color:var(--muted);opacity:.5;cursor:pointer}
 .admin-link:hover{opacity:1;color:var(--accent)}
-
 #wipe{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;clip-path:circle(0px at 50% 50%)}
 #toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 24px;border-radius:999px;font-weight:900;font-size:14px;opacity:0;pointer-events:none;transition:all .35s;z-index:300}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 .trail{position:fixed;z-index:150;pointer-events:none;font-size:16px;animation:trailUp .8s ease-out forwards}
 @keyframes trailUp{to{transform:translateY(-46px) scale(.4);opacity:0}}
-
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
 .modal.open{display:flex}
 .modal-box{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:28px;max-width:720px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow)}
 .modal-box h2{font-family:var(--font-d);font-size:26px;margin-bottom:16px}
 .modal-box .form-row{margin-bottom:14px}
 .modal-box label{display:block;font-size:13px;font-weight:800;color:var(--muted);margin-bottom:4px}
-.modal-box input,.modal-box textarea,.modal-box select{
-  width:100%;padding:10px 14px;border-radius:10px;border:2px solid var(--line);
-  background:var(--bg2);color:var(--ink);font-family:inherit;font-size:14px;font-weight:700
-}
+.modal-box input,.modal-box textarea,.modal-box select{width:100%;padding:10px 14px;border-radius:10px;border:2px solid var(--line);background:var(--bg2);color:var(--ink);font-family:inherit;font-size:14px;font-weight:700}
 .modal-box textarea{resize:vertical;min-height:60px}
 .modal-box input:focus,.modal-box textarea:focus,.modal-box select:focus{outline:none;border-color:var(--accent)}
 .modal-box .btns{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
@@ -264,91 +197,40 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .setup-note{background:color-mix(in srgb,#37e6ff 15%,transparent);padding:12px 16px;border-radius:10px;font-size:13px;font-weight:700;color:#37e6ff;margin-bottom:14px;line-height:1.5}
 .debug-box{background:var(--bg2);border:2px solid var(--line);border-radius:10px;padding:12px;margin-top:12px;font-family:monospace;font-size:11px;max-height:200px;overflow-y:auto;color:var(--muted);white-space:pre-wrap}
 .debug-box .ok{color:#3ecf7a}.debug-box .err{color:#ff6b6b}.debug-box .warn{color:#ffcc00}
-
-.upload-block{
-  border:2px dashed var(--line);border-radius:14px;padding:18px;
-  background:var(--bg2);margin-bottom:14px;text-align:center;position:relative;
-}
-.upload-block .up-preview{
-  width:140px;height:140px;border-radius:50%;margin:0 auto 12px;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  background-size:contain;background-position:center;background-repeat:no-repeat;
-  display:grid;place-items:center;color:#fff;font-weight:900;font-size:44px;
-  box-shadow:var(--shadow);overflow:hidden;cursor:grab;position:relative;
-}
+.upload-block{border:2px dashed var(--line);border-radius:14px;padding:18px;background:var(--bg2);margin-bottom:14px;text-align:center;position:relative}
+.upload-block .up-preview{width:140px;height:140px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,var(--accent),var(--accent2));background-size:contain;background-position:center;background-repeat:no-repeat;display:grid;place-items:center;color:#fff;font-weight:900;font-size:44px;box-shadow:var(--shadow);overflow:hidden;cursor:grab;position:relative}
 .upload-block .up-preview:active{cursor:grabbing}
-.upload-block .up-preview .up-inner{
-  width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat;
-  transition:none;
-}
+.upload-block .up-preview .up-inner{width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat;transition:none}
 .upload-block .up-preview.has-img{color:transparent;background:var(--soft)}
 .upload-block .up-preview.gal{border-radius:12px;width:100%;max-width:340px;height:auto;aspect-ratio:3/2;font-size:32px;margin:0 auto 12px}
 .upload-block .up-hint{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:10px;min-height:16px}
 .upload-block .up-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .upload-block .up-btns .btn{padding:8px 14px;font-size:13px}
 .upload-block input[type=file]{display:none}
-.upload-block .up-loading{
-  position:absolute;inset:0;background:rgba(0,0,0,.6);border-radius:14px;
-  display:none;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;z-index:2;
-}
+.upload-block .up-loading{position:absolute;inset:0;background:rgba(0,0,0,.6);border-radius:14px;display:none;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;z-index:2}
 .upload-block .up-loading.show{display:flex}
-
-.rotate-info{
-  display:inline-flex;align-items:center;gap:8px;
-  background:var(--card);border:2px solid var(--line);
-  padding:6px 14px;border-radius:999px;font-size:12px;font-weight:800;
-  color:var(--muted);margin:8px 6px;
-}
+.rotate-info{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:2px solid var(--line);padding:6px 14px;border-radius:999px;font-size:12px;font-weight:800;color:var(--muted);margin:8px 6px}
 .rotate-info b{color:var(--accent)}
-
-.crop-controls{
-  display:flex;gap:6px;justify-content:center;margin-bottom:10px;align-items:center;flex-wrap:wrap;
-}
+.crop-controls{display:flex;gap:6px;justify-content:center;margin-bottom:10px;align-items:center;flex-wrap:wrap}
 .crop-controls .btn{padding:5px 10px;font-size:12px}
 .crop-controls .zoom-info{font-size:11px;color:var(--muted);font-weight:800;font-family:monospace;min-width:60px;text-align:center}
-.crop-hint{
-  font-size:11px;color:var(--muted);font-weight:700;
-  background:color-mix(in srgb,var(--accent) 10%,transparent);
-  padding:6px 10px;border-radius:8px;margin-top:6px;line-height:1.5
-}
-
-.import-header{
-  display:flex;gap:10px;align-items:center;margin-bottom:12px;padding:14px;
-  background:var(--bg2);border:2px solid var(--line);border-radius:12px;flex-wrap:wrap;
-}
+.crop-hint{font-size:11px;color:var(--muted);font-weight:700;background:color-mix(in srgb,var(--accent) 10%,transparent);padding:6px 10px;border-radius:8px;margin-top:6px;line-height:1.5}
+.import-header{display:flex;gap:10px;align-items:center;margin-bottom:12px;padding:14px;background:var(--bg2);border:2px solid var(--line);border-radius:12px;flex-wrap:wrap}
 .import-header input{flex:1;font-family:monospace;letter-spacing:.5px;min-width:200px}
 .import-header .btn{padding:8px 16px;font-size:13px}
-.import-info{
-  font-size:12.5px;color:var(--muted);font-weight:700;padding:10px 14px;
-  background:color-mix(in srgb,var(--accent) 8%,transparent);
-  border-left:3px solid var(--accent);border-radius:4px;margin-bottom:14px;line-height:1.6
-}
+.import-info{font-size:12.5px;color:var(--muted);font-weight:700;padding:10px 14px;background:color-mix(in srgb,var(--accent) 8%,transparent);border-left:3px solid var(--accent);border-radius:4px;margin-bottom:14px;line-height:1.6}
 .import-info b{color:var(--accent)}
 .import-info code{background:var(--soft);padding:2px 6px;border-radius:4px;font-size:11.5px;color:var(--accent)}
-
-.member-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;
-  max-height:420px;overflow-y:auto;padding:6px;
-}
-.mem-card{
-  background:var(--card);border:2px solid var(--line);border-radius:12px;padding:14px;
-  display:flex;flex-direction:column;gap:10px;transition:border-color .2s,transform .2s;
-}
+.member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;max-height:420px;overflow-y:auto;padding:6px}
+.mem-card{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s,transform .2s}
 .mem-card:hover{border-color:var(--accent);transform:translateY(-2px)}
 .mem-card.added{opacity:.5;border-style:dashed}
 .mem-top{display:flex;align-items:center;gap:10px}
-.mem-avatar{
-  width:44px;height:44px;border-radius:50%;flex:none;background:var(--soft);
-  background-size:cover;background-position:center;display:grid;place-items:center;
-  color:#fff;font-weight:900;font-size:18px;
-}
+.mem-avatar{width:44px;height:44px;border-radius:50%;flex:none;background:var(--soft);background-size:cover;background-position:center;display:grid;place-items:center;color:#fff;font-weight:900;font-size:18px}
 .mem-info{flex:1;min-width:0}
 .mem-name{font-weight:900;font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mem-username{font-size:11.5px;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mem-status{
-  display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;
-  padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--muted);margin-top:2px;
-}
+.mem-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--muted);margin-top:2px}
 .mem-status i{width:7px;height:7px;border-radius:50%}
 .mem-status.online i{background:#3ecf7a}
 .mem-status.idle i{background:#ffcc00}
@@ -358,35 +240,15 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .mem-actions .btn{padding:6px 12px;font-size:12px;flex:1;min-width:0}
 .mem-actions .btn.f-btn{background:var(--accent);color:#fff}
 .mem-actions .btn.m-btn{background:var(--accent2);color:#fff}
-.mem-filter{
-  display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap;
-}
+.mem-filter{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
 .mem-filter input{flex:1;min-width:140px;padding:8px 12px;font-size:13px;border:2px solid var(--line);background:var(--bg2);color:var(--ink);border-radius:8px}
 .mem-filter .cnt{font-size:12px;color:var(--muted);font-weight:800}
-
-.status-banner{
-  position:fixed;top:0;left:0;right:0;z-index:1000;padding:8px 16px;text-align:center;
-  font-weight:800;font-size:12px;pointer-events:none;transition:opacity .3s;opacity:0;
-}
-.status-banner.show{opacity:1}
-.status-banner.ok{background:#3ecf7a;color:#000}
-.status-banner.err{background:#ff6b6b;color:#fff}
-.status-banner.warn{background:#ffcc00;color:#000}
-
-@media (max-width:860px){
-  .hero{padding-top:40px}
-  .nav{display:none}
-}
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation:none!important;transition:none!important}
-  html{scroll-behavior:auto}
-  .gal-strip-track{animation:none}
-}
+.storage-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:900;background:color-mix(in srgb,#6fdab8 20%,transparent);color:#6fdab8;margin-left:6px}
+@media (max-width:860px){.hero{padding-top:40px}.nav{display:none}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}.gal-strip-track{animation:none}}
 </style>
 </head>
 <body data-theme="f">
-
-<div class="status-banner" id="statusBanner"></div>
 
 <div class="floaters" aria-hidden="true">
   <span class="fl-f" style="left:6%;top:18%">🌸</span><span class="fl-f" style="left:88%;top:12%;animation-delay:-3s">✨</span>
@@ -555,6 +417,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
 <script>
 "use strict";
@@ -572,13 +435,13 @@ const FIREBASE_CONFIG = {
   appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
 
-const STORAGE_KEY='siteData_v15';
+const STORAGE_KEY='siteData_v17';
 const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
 const MAX_GAL=25;
 const STRIP_H=240;
 const MAX_DOC_SIZE = 900 * 1024;
-const SAVE_COOLDOWN = 20000; // 20 секунд защиты от onSnapshot
+const SAVE_COOLDOWN = 20000;
 
 const EMPTY_POLL_MSG = {
   f: { emo:'🌙', title:'Опрос пока не создан', text:'Админ ещё не придумал, что будем решать вместе. Открой админку → вкладка Опрос → добавь первый вариант ✨', hint:'✨ настрой опрос в админке' },
@@ -591,23 +454,21 @@ const DEFAULT_DATA={
     team:[],
     play:[{emo:'🔮', title:'Шар судьбы', desc:'скоро тут появится предсказание на день'},{emo:'💌', title:'Генератор комплиментов', desc:'скоро тут можно будет получить порцию тёплых слов'},{emo:'🎧', title:'Плейлист сервера', desc:'скоро тут зазвучит наша любимая музыка'}],
     events:[{day:'пятница • 20:00', title:'Киновечер', desc:'ромком, пледы и какао. кто уснул — смотрит титры', emo:'🍿'},{day:'суббота • 19:00', title:'Караоке', desc:'поём громко, стыдно никому. закажи песню заранее!', emo:'🎤'}],
-    wall:[],
-    gal:[],
-    poll:[]
+    wall:[], gal:[], poll:[]
   },
   m:{
     team:[],
     play:[{emo:'🧭', title:'Оракул отряда', desc:'скоро тут появится боевой прогноз'},{emo:'🏆', title:'Генератор похвалы', desc:'скоро тут можно будет получить заслуженный респект'},{emo:'🎧', title:'Саундтрек базы', desc:'скоро тут зазвучит саундтрек отряда'}],
     events:[{day:'пятница • 20:00', title:'Кинооперация', desc:'фильм выбирает отряд. уснувшие смотрят титры', emo:'🎬'},{day:'среда • 21:00', title:'Тактические катки', desc:'турнир отряда. реванш обязателен', emo:'🎯'}],
-    wall:[],
-    gal:[],
-    poll:[]
+    wall:[], gal:[], poll:[]
   }
 };
 
 let siteData;
 let db=null;
+let storage=null;
 let useFirebase=false;
+let useStorage=false;
 let unsubData=null;
 let isRendering=false;
 let debugLog=[];
@@ -653,21 +514,7 @@ function probe(url,cb){
   }catch(e){ cb(4,3); }
 }
 
-// === СТАТУС БАННЕР ===
-let statusBannerTimeout=null;
-function showStatus(msg,type='ok',duration=3000){
-  try{
-    const banner=$('#statusBanner');
-    if(!banner)return;
-    banner.textContent=msg;
-    banner.className='status-banner show '+type;
-    if(statusBannerTimeout) clearTimeout(statusBannerTimeout);
-    statusBannerTimeout=setTimeout(()=>{
-      banner.classList.remove('show');
-    },duration);
-  }catch(e){}
-}
-
+// === FIREBASE ИНИЦИАЛИЗАЦИЯ (с Storage) ===
 function initFirebase(){
   try{
     if(typeof firebase==='undefined'){ dlog('Firebase SDK не загружен','err'); useFirebase=false; return; }
@@ -676,18 +523,18 @@ function initFirebase(){
     if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     db=firebase.firestore();
     
-    // Включаем offline persistence для надёжности
     try{
-      db.enablePersistence({synchronizeTabs: true})
-        .then(()=>dlog('✓ Offline persistence включена','ok'))
-        .catch(err=>dlog('⚠ Persistence error: '+err.message,'warn'));
-    }catch(e){ dlog('⚠ Не удалось включить persistence: '+e.message,'warn'); }
+      storage=firebase.storage();
+      useStorage=true;
+      dlog('✓ Firebase Storage доступен','ok');
+    }catch(e){
+      dlog('⚠ Storage недоступен: '+e.message,'warn');
+      useStorage=false;
+    }
     
     useFirebase=true;
     dlog('Firebase инициализирован ✓','ok');
     updateSyncDot('loading');
-    
-    // Настраиваем onSnapshot ПОСЛЕ инициализации
     setupSnapshotListener();
   }catch(e){
     dlog('Firebase init failed: '+e.message,'err');
@@ -698,37 +545,25 @@ function initFirebase(){
 
 function setupSnapshotListener(){
   if(!useFirebase || !db) return;
-  
   if(unsubData){ try{ unsubData(); }catch(e){} }
   
   unsubData=db.collection('site').doc('main').onSnapshot(snap=>{
     try{
       if(!snap.exists) return;
-      
-      // Игнорируем кеш Firestore
       if(snap.metadata && snap.metadata.fromCache){
         dlog('Snapshot fromCache — пропускаю','warn');
         return;
       }
-      
-      // КРИТИЧЕСКАЯ ЗАЩИТА от race condition (20 секунд после сохранения)
       const now = Date.now();
       if(now < _savingUntil){
-        const remaining = Math.round((_savingUntil - now) / 1000);
-        dlog(`Snapshot во время saveData (${remaining}с осталось) — пропускаю`,'warn');
+        dlog('Snapshot во время saveData — пропускаю','warn');
         return;
       }
-      
-      // Защита от слишком раннего срабатывания
       if(now - lastSaveAttempt < 3000){
-        dlog('Snapshot слишком рано после сохранения — пропускаю','warn');
         return;
       }
-      
       const newData=snap.data()?.data;
       if(!newData) return;
-      
-      // Проверяем, действительно ли данные изменились
       if(!dataEqual(newData, siteData)){
         dlog('Snapshot: данные обновились из Firebase','ok');
         siteData=newData;
@@ -777,79 +612,43 @@ function dedupeAll(){
       if(!siteData[t])siteData[t]={};
       ['team','play','events','wall','gal'].forEach(k=>{
         if(!Array.isArray(siteData[t][k]))siteData[t][k]=[];
-        const before=siteData[t][k].length;
         siteData[t][k]=dedupe(siteData[t][k], i=>i._id);
-        const after=siteData[t][k].length;
-        if(before!==after) dlog(`Удалено ${before-after} дублей в ${t}.${k}`,'warn');
       });
       if(!Array.isArray(siteData[t].poll))siteData[t].poll=[];
     });
   }catch(e){ dlog('dedupeAll error: '+e.message,'err'); }
 }
 
-// === ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ С ПРИОРИТЕТОМ ===
 async function loadData(){
   initFirebase();
   
-  // Всегда читаем локальные данные
   const localRaw = localStorage.getItem(STORAGE_KEY);
   let localData = null;
   let localSize = 0;
-  
   if(localRaw){
     try{
       localData = JSON.parse(localRaw);
       localSize = JSON.stringify(localData).length;
-      dlog(`Локальные данные: ${Math.round(localSize*0.75/1024)} KB`,'info');
-    }catch(e){
-      dlog('Повреждены локальные данные','warn');
-    }
+    }catch(e){}
   }
   
   if(useFirebase && db){
     try{
       dlog('Чтение из Firestore...');
       const doc=await db.collection('site').doc('main').get();
-      
       if(doc.exists){
         const firebaseData = doc.data()?.data;
         const fbSize = firebaseData ? JSON.stringify(firebaseData).length : 0;
+        dlog(`Firebase: ${Math.round(fbSize*0.75/1024)} KB, Local: ${Math.round(localSize*0.75/1024)} KB`,'info');
         
-        dlog(`Firebase: ${Math.round(fbSize*0.75/1024)} KB`,'info');
-        
-        // ПРИОРИТЕТ: используем данные с БОЛЬШИМ размером (предполагаем, что новее)
         if(localData && localSize > fbSize){
-          dlog('⚠ Локальные данные больше — используем их','warn');
+          dlog('Локальные данные больше — используем их','warn');
           siteData = localData;
-          
-          // Пытаемся синхронизировать с Firebase
-          try{
-            _savingUntil = Date.now() + SAVE_COOLDOWN;
-            await db.collection('site').doc('main').set({
-              data: siteData,
-              updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-              version: Date.now()
-            });
-            dlog('✓ Локальные данные синхронизированы с Firebase','ok');
-            updateSyncDot('ok');
-          }catch(e){
-            dlog('✗ Не удалось синхронизировать: '+e.message,'err');
-          }
         }else{
-          dlog('✓ Используем данные из Firebase','ok');
           siteData = firebaseData || JSON.parse(JSON.stringify(DEFAULT_DATA));
         }
       }else{
-        dlog('Документ пуст в Firebase','warn');
-        
-        if(localData){
-          dlog('✓ Используем локальные данные','ok');
-          siteData = localData;
-        }else{
-          siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
-        }
-        
-        // Создаём документ в Firebase
+        siteData = localData || JSON.parse(JSON.stringify(DEFAULT_DATA));
         try{
           _savingUntil = Date.now() + SAVE_COOLDOWN;
           await db.collection('site').doc('main').set({
@@ -857,29 +656,15 @@ async function loadData(){
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             version: Date.now()
           });
-          dlog('✓ Документ создан в Firebase','ok');
-        }catch(e){
-          dlog('✗ Не удалось создать документ: '+e.message,'err');
-        }
+        }catch(e){ dlog('Не удалось создать документ: '+e.message,'err'); }
       }
-      
       migrateData();
       dedupeAll();
       updateSyncDot('ok');
-      
     }catch(e){
       dlog('Firebase load failed: '+e.message,'err');
       updateSyncDot('error');
-      
-      // Fallback на локальные данные
-      if(localData){
-        dlog('Используем локальные данные как fallback','warn');
-        siteData = localData;
-        migrateData();
-        dedupeAll();
-      }else{
-        loadLocal();
-      }
+      loadLocal();
     }
   }else{
     loadLocal();
@@ -895,9 +680,7 @@ function dataEqual(a,b){
         const arrB = (b[t]&&b[t][k]) || [];
         if(arrA.length !== arrB.length) return false;
         for(let i=0;i<arrA.length;i++){
-          const idA = arrA[i]?._id;
-          const idB = arrB[i]?._id;
-          if(idA !== idB) return false;
+          if(arrA[i]?._id !== arrB[i]?._id) return false;
         }
       }
     }
@@ -937,96 +720,191 @@ function loadLocal(){
   if(!siteData.f)siteData.f=JSON.parse(JSON.stringify(DEFAULT_DATA.f));
   if(!siteData.m)siteData.m=JSON.parse(JSON.stringify(DEFAULT_DATA.m));
   if(typeof siteData.serverId!=='string')siteData.serverId='';
-  ['team','play','events','wall','gal'].forEach(k=>{
-    if(!Array.isArray(siteData.f[k]))siteData.f[k]=[];
-    if(!Array.isArray(siteData.m[k]))siteData.m[k]=[];
-  });
   migrateData();
   dedupeAll();
 }
 
-// === ИСПРАВЛЕННАЯ ФУНКЦИЯ СОХРАНЕНИЯ ===
 async function saveData(){
-  // Защита от параллельных сохранений
-  if(isSaving){
-    dlog('Сохранение уже идёт — пропускаю','warn');
-    return;
-  }
-  
+  if(isSaving){ dlog('Сохранение уже идёт — пропускаю','warn'); return; }
   isSaving = true;
   lastSaveAttempt = Date.now();
-  _savingUntil = lastSaveAttempt + SAVE_COOLDOWN; // 20 секунд защиты
+  _savingUntil = lastSaveAttempt + SAVE_COOLDOWN;
   
   try{
     const json = JSON.stringify(siteData);
     const sizeBytes = json.length;
     const sizeKB = Math.round((sizeBytes * 0.75) / 1024);
     const sizeMB = (sizeKB / 1024).toFixed(2);
-    
     dlog(`📊 Сохранение: ${sizeMB} MB`,'info');
 
-    // 1. ВСЕГДА сохраняем в localStorage (самое надёжное)
     try{
       localStorage.setItem(STORAGE_KEY, json);
-      dlog('✓ localStorage сохранён','ok');
     }catch(e){
-      dlog('✗ Ошибка localStorage: '+e.message,'err');
-      showStatus('✗ Ошибка сохранения локально','err');
+      dlog('localStorage переполнен (не критично): '+e.message,'warn');
     }
 
-    // 2. Сохраняем в Firebase если активен
     if(useFirebase && db){
       if(sizeBytes * 0.75 > MAX_DOC_SIZE){
-        dlog(`⚠ Данные слишком большие: ${sizeMB} MB > 1 MB`,'err');
+        dlog(`⚠ Данные слишком большие: ${sizeMB} MB`,'err');
         updateSyncDot('error');
-        toast(`⚠ Слишком много данных: ${sizeMB} MB. Удалите несколько фото.`);
-        showStatus('⚠ Лимит размера превышен','err',5000);
+        toast(`⚠ Лимит Firestore: ${sizeMB} MB. Нажмите «Перенести фото в Storage» в админке!`);
       }else{
         try{
-          dlog('⏳ Сохраняю в Firestore...','info');
-          
           await db.collection('site').doc('main').set({
             data: siteData,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             version: Date.now()
           });
-          
           dlog('✓ Firestore сохранён','ok');
           updateSyncDot('ok');
-          showStatus('✓ Сохранено в облаке','ok');
+          toast('✓ Сохранено в облаке');
         }catch(e){
           dlog('✗ Ошибка Firestore: '+e.message,'err');
           updateSyncDot('error');
-          
-          if(e.code === 'permission-denied'){
-            toast('⚠ Нет прав для записи в Firebase');
-            showStatus('⚠ Нет прав в Firebase','err',5000);
-          }else if(e.message && e.message.includes('size')){
-            toast('⚠ Превышен лимит размера');
-            showStatus('⚠ Превышен лимит','err',5000);
-          }else if(e.message && (e.message.includes('offline') || e.message.includes('network'))){
-            toast('⚠ Нет интернета. Сохранено локально.');
-            showStatus('⚠ Офлайн режим','warn');
+          if(e.message && e.message.includes('size')){
+            toast('⚠ Превышен лимит. Перенесите фото в Storage!');
+          }else if(e.code === 'permission-denied'){
+            toast('⚠ Нет прав. Проверьте правила Firestore!');
           }else{
             toast('⚠ Ошибка Firebase: '+e.message);
-            showStatus('⚠ Ошибка Firebase','err',5000);
           }
         }
       }
     }else{
-      dlog('⚠ Firebase не активен','warn');
       updateSyncDot('off');
-      showStatus('📱 Сохранено локально','warn');
     }
-    
   }catch(e){
-    dlog('✗ Критическая ошибка saveData: '+e.message,'err');
-    toast('✗ Ошибка сохранения');
-    showStatus('✗ Критическая ошибка','err');
+    dlog('✗ saveData error: '+e.message,'err');
   }finally{
     isSaving = false;
   }
 }
+
+// === СЖАТИЕ ИЗОБРАЖЕНИЯ ===
+function compressImage(file, maxWidth=600, quality=0.6){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        try{
+          let w = img.width, h = img.height;
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const targetSize = maxWidth || 600;
+          if(w > targetSize){ h = Math.round(h * targetSize / w); w = targetSize; }
+          if(h > targetSize){ w = Math.round(w * targetSize / h); h = targetSize; }
+          canvas.width = w; canvas.height = h;
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(dataUrl);
+        }catch(err){ reject(err); }
+      };
+      img.onerror = () => reject(new Error('Не удалось загрузить изображение'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Ошибка чтения файла'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// === ЗАГРУЗКА В FIREBASE STORAGE ===
+async function uploadToStorage(dataUrl, folder){
+  if(!useStorage || !storage){
+    throw new Error('Storage не активен');
+  }
+  try{
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2,9)}.jpg`;
+    const ref = storage.ref(fileName);
+    dlog(`⏳ Загрузка в Storage: ${fileName} (${Math.round(blob.size/1024)} KB)`,'info');
+    await ref.put(blob, {contentType: 'image/jpeg'});
+    const url = await ref.getDownloadURL();
+    dlog('✓ Загружено в Storage','ok');
+    return url;
+  }catch(e){
+    dlog('✗ Storage error: '+e.message,'err');
+    throw e;
+  }
+}
+
+// === ЕДИНАЯ ФУНКЦИЯ: СЖАТЬ И ЗАГРУЗИТЬ ===
+async function compressAndUpload(file, folder, maxWidth, quality){
+  const compressed = await compressImage(file, maxWidth, quality);
+  const sizeKB = Math.round((compressed.length * 0.75) / 1024);
+  
+  if(useStorage){
+    try{
+      const url = await uploadToStorage(compressed, folder);
+      return {url, sizeKB, inStorage: true};
+    }catch(e){
+      dlog('Storage не сработал, пробую base64: '+e.message,'warn');
+      if(sizeKB > 80){
+        throw new Error('Storage недоступен, а фото слишком большое для Firestore. Проверьте правила Storage!');
+      }
+      return {url: compressed, sizeKB, inStorage: false};
+    }
+  }else{
+    if(sizeKB > 80){
+      throw new Error('Storage не настроен, а фото слишком большое. Настройте Firebase Storage!');
+    }
+    return {url: compressed, sizeKB, inStorage: false};
+  }
+}
+
+// === МИГРАЦИЯ СТАРЫХ BASE64 ФОТО В STORAGE ===
+window.migratePhotosToStorage=async function(){
+  try{
+    if(!useStorage){
+      toast('Storage не активен. Проверьте Firebase консоль!');
+      return;
+    }
+    if(!confirm('Перенести все фото из Firestore в Storage? Размер данных уменьшится.'))return;
+    
+    toast('Начинаю миграцию...');
+    let migrated = 0, failed = 0;
+    
+    for(const t of ['f','m']){
+      if(Array.isArray(siteData[t].gal)){
+        for(let i=0; i<siteData[t].gal.length; i++){
+          const g = siteData[t].gal[i];
+          if(g.url && g.url.startsWith('data:')){
+            try{
+              g.url = await uploadToStorage(g.url, 'gallery');
+              migrated++;
+              dlog(`✓ Мигрировано фото ${t}[${i}]`,'ok');
+            }catch(e){
+              failed++;
+              dlog(`✗ Не удалось мигрировать ${t}[${i}]`,'err');
+            }
+          }
+        }
+      }
+      if(Array.isArray(siteData[t].team)){
+        for(let i=0; i<siteData[t].team.length; i++){
+          const m = siteData[t].team[i];
+          if(m.avatar && m.avatar.startsWith('data:')){
+            try{
+              m.avatar = await uploadToStorage(m.avatar, 'avatars');
+              migrated++;
+              dlog(`✓ Мигрирована аватарка ${t}[${i}]`,'ok');
+            }catch(e){
+              failed++;
+            }
+          }
+        }
+      }
+    }
+    
+    await saveData();
+    renderAll();
+    showTab(currentTab);
+    toast(`Миграция завершена: ${migrated} ✓, ${failed} ✗`);
+  }catch(e){
+    toast('Ошибка миграции: '+e.message);
+  }
+};
 
 function cur(){
   try{ return siteData[theme] || siteData.f || DEFAULT_DATA.f; }
@@ -1132,25 +1010,19 @@ function buildGalItem(it, mode){
   const t = it.galTransform || {x:0,y:0,scale:1};
   const rotate = (it.rotate||0)%360;
   const swapped = rotate%180!==0;
-
   const img=document.createElement('img');
   img.alt=it.caption||'';
   img.src=it.url||'';
-
   const cap=document.createElement('figcaption');
   cap.textContent=it.caption||'';
-
   fig.appendChild(img);
   fig.appendChild(cap);
-
   const fit=()=>{
     try{
       const w=img.naturalWidth||4, h=img.naturalHeight||3;
       const r = swapped ? h/w : w/h;
       fig.style.aspectRatio=String(r);
-      if(mode==='strip'){
-        fig.style.width=Math.round(STRIP_H*r)+'px';
-      }
+      if(mode==='strip'){ fig.style.width=Math.round(STRIP_H*r)+'px'; }
       if(swapped){
         img.style.position='absolute';
         img.style.left='50%'; img.style.top='50%';
@@ -1167,7 +1039,6 @@ function buildGalItem(it, mode){
       }
     }catch(e){}
   };
-
   if(img.complete && img.naturalWidth) fit(); else img.onload=fit;
   img.onerror=()=>{
     try{
@@ -1178,7 +1049,6 @@ function buildGalItem(it, mode){
       fig.style.justifyContent='center';
     }catch(e){}
   };
-
   fig.addEventListener('click', ()=>{ if(it.url) openPhotoModal(it.url, it.caption, rotate); });
   return fig;
 }
@@ -1188,14 +1058,12 @@ function renderGal(){
     const box=$('#galGrid'); if(!box)return; box.innerHTML='';
     const items=cur().gal || [];
     if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📸</span><h3>Альбом пока пуст</h3><p>админ добавит фото через админ-панель (максимум ${MAX_GAL} фото)</p></div>`; return; }
-
     if(items.length>5){
       const strip=document.createElement('div');
       strip.className='gal-strip';
       const track=document.createElement('div');
       track.className='gal-strip-track';
-      const fullList=[...items,...items];
-      fullList.forEach((it)=>{ track.appendChild(buildGalItem(it,'strip')); });
+      [...items,...items].forEach((it)=>{ track.appendChild(buildGalItem(it,'strip')); });
       strip.appendChild(track);
       box.appendChild(strip);
     }else{
@@ -1247,8 +1115,7 @@ function applyTheme(t,origin){
     const w=$('#wipe');
     w.style.background=t==='f'?'#1a0f18':'#0d1220';
     const r=Math.hypot(Math.max(origin.x,innerWidth-origin.x),Math.max(origin.y,innerHeight-origin.y))+20;
-    w.animate([{clipPath:`circle(0px at ${origin.x}px ${origin.y}px)`,opacity:1},{clipPath:`circle(${r}px at ${origin.x}px ${origin.y}px)`,opacity:1}],
-              {duration:430,easing:'cubic-bezier(.4,0,.2,1)'}).onfinish=()=>{
+    w.animate([{clipPath:`circle(0px at ${origin.x}px ${origin.y}px)`,opacity:1},{clipPath:`circle(${r}px at ${origin.x}px ${origin.y}px)`,opacity:1}],{duration:430,easing:'cubic-bezier(.4,0,.2,1)'}).onfinish=()=>{
       commit();
       w.animate([{opacity:1},{opacity:0}],{duration:420,easing:'ease'}).onfinish=()=>{ w.style.clipPath='circle(0px at 50% 50%)'; };
     };
@@ -1282,8 +1149,7 @@ function renderPoll(){
           <h3>${escapeHtml(msg.title)}</h3>
           <p>${escapeHtml(msg.text)}</p>
           <span class="pe-hint">${escapeHtml(msg.hint)}</span>
-        </div>
-      `;
+        </div>`;
       observeReveal();
       return;
     }
@@ -1328,7 +1194,7 @@ function toast(msg){
   try{
     const t=$('#toast'); if(!t)return;
     t.textContent=msg; t.classList.add('show');
-    clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200);
+    clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),3000);
   }catch(e){}
 }
 
@@ -1357,18 +1223,8 @@ function observeReveal(){
 let isAdmin=false;
 let currentTab='import';
 
-function openModal(id){
-  try{
-    const m=$('#'+id);
-    if(m)m.classList.add('open');
-  }catch(e){ dlog('openModal error: '+e.message,'err'); }
-}
-function closeModal(id){
-  try{
-    const m=$('#'+id);
-    if(m)m.classList.remove('open');
-  }catch(e){ dlog('closeModal error: '+e.message,'err'); }
-}
+function openModal(id){ try{ const m=$('#'+id); if(m)m.classList.add('open'); }catch(e){} }
+function closeModal(id){ try{ const m=$('#'+id); if(m)m.classList.remove('open'); }catch(e){} }
 function safeCloseModal(id){ try{ closeModal(id); }catch(e){} }
 function safeLogout(){ try{ logout(); }catch(e){} }
 window.closeModal=closeModal;
@@ -1382,9 +1238,7 @@ document.addEventListener('click', e=>{
       if(isAdmin) openAdmin();
       else{ openModal('loginModal'); setTimeout(()=>{try{const i=$('#loginUser');if(i)i.focus();}catch(e){}},100); }
     }
-  }catch(err){
-    try{ toast('Ошибка: '+err.message); }catch(_){}
-  }
+  }catch(err){ try{ toast('Ошибка: '+err.message); }catch(_){} }
 });
 
 $('#loginOk').addEventListener('click',()=>{ try{ tryLogin(); }catch(e){} });
@@ -1423,9 +1277,12 @@ function updateSetupNote(){
   try{
     const note=$('#setupNote');
     if(!note)return;
-    note.innerHTML = useFirebase
-      ? '☁️ <b>Firebase подключён</b> — все изменения увидят все посетители.'
-      : '⚠️ <b>Firebase не настроен</b> — проверь консоль (F12).';
+    let txt='';
+    if(useFirebase) txt += '☁️ <b>Firebase подключён</b> ✓ ';
+    else txt += '⚠️ <b>Firebase не работает</b> — проверь правила Firestore! ';
+    if(useStorage) txt += '| 📦 <b>Storage активен</b> ✓ — фото хранятся в облаке';
+    else txt += '| ⚠️ <b>Storage не активен</b> — включи Storage в консоли Firebase';
+    note.innerHTML=txt;
   }catch(e){}
 }
 
@@ -1440,53 +1297,6 @@ $$('.admin-tabs button').forEach(b=>{
   });
 });
 
-// === ИСПРАВЛЕНИЕ: агрессивное сжатие фото ===
-function compressImage(file, maxWidth=600, quality=0.5){
-  return new Promise((resolve, reject)=>{
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        try{
-          let w = img.width, h = img.height;
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          const targetSize = maxWidth || 600;
-          if(w > targetSize){ h = Math.round(h * targetSize / w); w = targetSize; }
-          if(h > targetSize){ w = Math.round(w * targetSize / h); h = targetSize; }
-          
-          canvas.width = w; canvas.height = h;
-          ctx.drawImage(img, 0, 0, w, h);
-          
-          let dataUrl = canvas.toDataURL('image/jpeg', quality);
-          let sizeKB = (dataUrl.length * 0.75) / 1024;
-          
-          if(sizeKB > 150){
-            dataUrl = canvas.toDataURL('image/jpeg', Math.max(0.35, quality * 0.7));
-            sizeKB = (dataUrl.length * 0.75) / 1024;
-          }
-          
-          if(sizeKB > 200){
-            canvas.width = Math.round(w * 0.7);
-            canvas.height = Math.round(h * 0.7);
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            dataUrl = canvas.toDataURL('image/jpeg', 0.45);
-            sizeKB = (dataUrl.length * 0.75) / 1024;
-          }
-          
-          dlog(`Сжато: ${sizeKB.toFixed(1)} KB (${w}x${h})`,'info');
-          resolve(dataUrl);
-        }catch(err){ reject(err); }
-      };
-      img.onerror = () => reject(new Error('Не удалось загрузить изображение'));
-      img.src = e.target.result;
-    };
-    reader.onerror = () => reject(new Error('Ошибка чтения файла'));
-    reader.readAsDataURL(file);
-  });
-}
-
 function showTab(tab){
   try{
     const box=$('#adminContent');
@@ -1496,36 +1306,37 @@ function showTab(tab){
       const sizeMB = (sizeKB / 1024).toFixed(2);
       const pct = Math.min(100, Math.round((sizeKB / (MAX_DOC_SIZE/1024)) * 100));
       const color = pct > 80 ? '#ff6b6b' : pct > 60 ? '#ffcc00' : '#3ecf7a';
-      const diag = window.diagnoseSync ? window.diagnoseSync() : {};
+      
+      let base64Count = 0;
+      ['f','m'].forEach(t=>{
+        (siteData[t].gal||[]).forEach(g=>{ if(g.url && g.url.startsWith('data:')) base64Count++; });
+        (siteData[t].team||[]).forEach(m=>{ if(m.avatar && m.avatar.startsWith('data:')) base64Count++; });
+      });
+      
       box.innerHTML=`
-        <p style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:700">${useFirebase?'🟢 Firebase активен.':'🟡 Firebase не настроен.'}</p>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:700">
+          ${useFirebase?'🟢 Firebase активен':'🔴 Firebase не работает'} • 
+          ${useStorage?'🟢 Storage активен':'🔴 Storage не активен'}
+        </p>
+        ${base64Count>0?`<div style="background:color-mix(in srgb,#ffcc00 15%,transparent);border:2px solid #ffcc00;border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;font-weight:700;color:#ffcc00">
+          ⚠ Найдено <b>${base64Count}</b> фото/аватарок внутри Firestore. Нажмите «Перенести фото в Storage» чтобы освободить место!
+        </div>`:''}
         <div style="margin-bottom:14px;padding:12px;border-radius:10px;background:var(--bg2);border:2px solid var(--line)">
-          <div style="font-size:12px;color:var(--muted);font-weight:800;margin-bottom:6px">📊 Размер данных:</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:800;margin-bottom:6px">📊 Размер Firestore:</div>
           <div style="font-size:20px;font-weight:900;color:${color}">${sizeMB} MB <span style="font-size:13px;color:var(--muted)">/ 1 MB</span></div>
           <div style="height:8px;background:var(--soft);border-radius:4px;margin-top:6px;overflow:hidden">
             <div style="height:100%;width:${pct}%;background:${color};transition:width .3s"></div>
           </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:6px">${pct}% от лимита Firestore</div>
-        </div>
-        <div style="margin-bottom:14px;padding:12px;border-radius:10px;background:var(--bg2);border:2px solid var(--line);font-size:12px">
-          <div style="font-weight:800;margin-bottom:6px">🔍 Диагностика:</div>
-          <div style="font-family:monospace;font-size:11px;color:var(--muted);white-space:pre-wrap">Firebase: ${diag.firebaseActive?'✓':'✗'}
-DB: ${diag.dbExists?'✓':'✗'}
-Sync: ${diag.syncDotState}
-Секунд с сохранения: ${diag.timeSinceLastSave?Math.round(diag.timeSinceLastSave/1000):'-'}
-Локально: ${diag.localStorageSize} KB
-В памяти: ${diag.siteDataSize} KB</div>
         </div>
         <div class="btns">
+          <button class="btn solid" onclick="window.migratePhotosToStorage()" style="background:#6fdab8">📦 Перенести фото в Storage</button>
           <button class="btn solid" onclick="window.exportData()">📥 Экспорт</button>
           <button class="btn ghost" onclick="document.getElementById('importFile').click()">📤 Импорт</button>
           <input type="file" id="importFile" accept=".json" style="display:none" onchange="window.importData(event)">
-          <button class="btn ghost" onclick="window.forceSync()" style="border-color:#37e6ff;color:#37e6ff">🔄 Принудительная синхронизация</button>
-          <button class="btn ghost" onclick="window.clearDuplicates()" style="border-color:#ffcc00;color:#ffcc00">🧹 Удалить дубли</button>
           <button class="btn ghost" onclick="window.resetData()" style="border-color:#ff6b6b;color:#ff6b6b">🗑 Сброс</button>
           <button class="btn ghost" onclick="window.resetFirebase()" style="border-color:#ff3333;color:#ff3333">🔥 Очистить Firebase</button>
         </div>
-        <h4 style="font-size:13px;margin-top:14px;color:var(--muted)">📋 Диагностический лог:</h4>
+        <h4 style="font-size:13px;margin-top:14px;color:var(--muted)">📋 Лог:</h4>
         <div class="debug-box">${debugLog.map(e=>`<span class="${e.type}">[${e.time}] ${escapeHtml(e.msg)}</span>`).join('\n')}</div>
       `;
       return;
@@ -1542,30 +1353,19 @@ Sync: ${diag.syncDotState}
 function renderPollEditor(){
   try{
     const box=$('#adminContent');
-    const curData = cur();
-    const opts = Array.isArray(curData?.poll) ? curData.poll : [];
+    const opts = Array.isArray(cur()?.poll) ? cur().poll : [];
     let html=`<h3 style="font-size:16px;margin-bottom:8px">Варианты опроса (тема: ${theme==='f'?'🌸':'⚡'})</h3>`;
-    if(!opts.length){
-      const msg = theme==='f'
-        ? {emo:'🌸', title:'Опрос пуст', text:'Добавь первый вариант для девочек ↓'}
-        : {emo:'⚡', title:'Опрос пуст', text:'Добавь первый вариант для пацанов ↓'};
-      html += `
-        <div class="poll-empty themable" style="margin-bottom:14px;padding:24px 18px">
-          <span class="pe-emo" style="font-size:40px">${msg.emo}</span>
-          <h3 style="font-size:20px">${msg.title}</h3>
-          <p style="font-size:13.5px">${msg.text}</p>
-        </div>
-      `;
-    } else {
-      html += `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Изменяй, добавляй или удаляй варианты голосования</p>`;
+    if(opts.length){
       html += `<div class="admin-list">`;
       opts.forEach((o,i)=>{
         html += `<div class="admin-list-item"><span>${i+1}. ${escapeHtml(o).slice(0,50)}</span><div class="acts"><button class="edit" onclick="window.editPollItem(${i})">✎</button><button class="del" onclick="window.delPollItem(${i})">✕</button></div></div>`;
       });
       html += `</div>`;
+    }else{
+      html += `<div class="admin-list-empty">Опрос пуст</div>`;
     }
     html += `<button class="btn solid" onclick="window.addPollItem()" style="width:100%">➕ Добавить вариант</button>`;
-    html += `<div class="btns" style="margin-top:10px"><button class="btn ghost" onclick="window.resetPoll()" style="border-color:#ff6b6b;color:#ff6b6b">↻ Вернуть стандартные</button><button class="btn ghost" onclick="window.clearPoll()" style="border-color:#ffcc00;color:#ffcc00">🗑 Очистить всё</button></div>`;
+    html += `<div class="btns" style="margin-top:10px"><button class="btn ghost" onclick="window.clearPoll()" style="border-color:#ffcc00;color:#ffcc00">🗑 Очистить всё</button></div>`;
     box.innerHTML=html;
   }catch(e){ dlog('renderPollEditor error: '+e.message,'err'); }
 }
@@ -1582,10 +1382,9 @@ window.delPollItem=async function(i){
     toast('Вариант удалён ✓');
   }catch(e){ toast('Ошибка: '+e.message); }
 };
-
 window.clearPoll=async function(){
   try{
-    if(!confirm('Удалить ВСЕ варианты опроса? Будет показана заглушка.'))return;
+    if(!confirm('Удалить ВСЕ варианты опроса?'))return;
     cur().poll=[];
     localStorage.removeItem(pollKey());
     await saveData();
@@ -1594,13 +1393,12 @@ window.clearPoll=async function(){
     toast('Опрос очищен 🗑');
   }catch(e){ toast('Ошибка: '+e.message); }
 };
-
 window.editPollItem=function(i){
   try{
     const opts=cur().poll||[];
     const val=i<0?'':(opts[i]||'');
     let html=`<h3 style="font-size:16px;margin-bottom:12px">${i<0?'Добавить вариант':'Редактировать вариант'}</h3>`;
-    html+=`<div class="form-row"><label>Текст варианта (можно с эмодзи)</label><input type="text" id="pollInput" value="${escapeHtml(val)}" placeholder="🍿 Ромком и пледы"></div>`;
+    html+=`<div class="form-row"><label>Текст варианта</label><input type="text" id="pollInput" value="${escapeHtml(val)}" placeholder="🍿 Ромком и пледы"></div>`;
     html+=`<div class="btns"><button class="btn solid" id="savePollItem">💾 Сохранить</button><button class="btn ghost" onclick="window.showTab('poll')">Отмена</button></div>`;
     $('#adminContent').innerHTML=html;
     const input=$('#pollInput'); if(input){input.focus();input.select();}
@@ -1611,8 +1409,7 @@ window.editPollItem=function(i){
           const v=input.value.trim();
           if(!v){toast('Введите текст');return;}
           if(!Array.isArray(cur().poll))cur().poll=[];
-          if(i<0)cur().poll.push(v);
-          else cur().poll[i]=v;
+          if(i<0)cur().poll.push(v); else cur().poll[i]=v;
           localStorage.removeItem(pollKey());
           await saveData();
           renderPollEditor();
@@ -1621,18 +1418,6 @@ window.editPollItem=function(i){
         }catch(e){ toast('Ошибка: '+e.message); }
       });
     }
-  }catch(e){ toast('Ошибка: '+e.message); }
-};
-
-window.resetPoll=async function(){
-  try{
-    if(!confirm('Сбросить варианты опроса к стандартным?'))return;
-    cur().poll=['🍿 Вариант 1','🌀 Вариант 2','🎬 Вариант 3'];
-    localStorage.removeItem(pollKey());
-    await saveData();
-    renderPollEditor();
-    renderPoll();
-    toast('Варианты сброшены');
   }catch(e){ toast('Ошибка: '+e.message); }
 };
 
@@ -1661,25 +1446,11 @@ function renderListEditor(tab){
     const curData = cur();
     const items = Array.isArray(curData?.[tab]) ? curData[tab] : [];
     const titles={team:'Участники команды',play:'Активности',events:'Ивенты',wall:'Записи на стене',gal:`Фото в галерее (${items.length}/${MAX_GAL})`};
-    let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}</h3>`;
-
+    let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}${useStorage?'<span class="storage-badge">📦 Storage</span>':''}</h3>`;
+    
     if(tab==='gal'){
-      const sizeKB = Math.round((JSON.stringify(siteData).length * 0.75) / 1024);
-      const sizeMB = (sizeKB / 1024).toFixed(2);
-      const pct = Math.min(100, Math.round((sizeKB / (MAX_DOC_SIZE/1024)) * 100));
-      const color = pct > 80 ? '#ff6b6b' : pct > 60 ? '#ffcc00' : '#3ecf7a';
-      html += `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Максимум <b>${MAX_GAL}</b> фото. Рамка подстраивается под пропорции. При >5 фото — лента.</p>`;
-      html += `<div style="margin-bottom:12px;padding:10px;border-radius:8px;background:var(--bg2);border:2px solid var(--line)">
-        <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:var(--muted);margin-bottom:4px">
-          <span>📊 Размер данных</span>
-          <span style="color:${color}">${sizeMB} MB / 1 MB</span>
-        </div>
-        <div style="height:6px;background:var(--soft);border-radius:3px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:${color};transition:width .3s"></div>
-        </div>
-      </div>`;
+      html += `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Максимум <b>${MAX_GAL}</b> фото. ${useStorage?'Фото загружаются в Firebase Storage — лимит Firestore не тратится!':'⚠ Storage не активен — фото будут в base64 (лимит 1 MB)'}</p>`;
     }
-    if(tab==='team') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">👤 Аватарка загружается целиком без обрезки. В редакторе можно двигать и увеличивать картинку мышкой.</p>`;
 
     html+=`<div class="admin-list">`;
     if(!items.length) html+=`<div class="admin-list-empty">Список пуст ↓</div>`;
@@ -1687,7 +1458,8 @@ function renderListEditor(tab){
       if(tab==='gal'){
         const thumb = it.url ? `<img class="thumb" src="${escapeHtml(it.url)}" onerror="this.style.visibility='hidden'">` : '';
         const caption = (it.caption || 'без подписи') + (it.rotate?` ↻${it.rotate}°`:'');
-        html+=`<div class="admin-list-item"><div class="thumb-wrap">${thumb}<span>${i+1}. ${escapeHtml(caption).slice(0,40)}</span></div><div class="acts"><button class="edit" onclick="window.editItem('${tab}',${i})">✎</button><button class="del" onclick="window.delItem('${tab}',${i})">✕</button></div></div>`;
+        const isData = it.url && it.url.startsWith('data:') ? ' 📄' : ' ☁️';
+        html+=`<div class="admin-list-item"><div class="thumb-wrap">${thumb}<span>${i+1}. ${escapeHtml(caption).slice(0,40)}${isData}</span></div><div class="acts"><button class="edit" onclick="window.editItem('${tab}',${i})">✎</button><button class="del" onclick="window.delItem('${tab}',${i})">✕</button></div></div>`;
       }else if(tab==='team'){
         const thumb = it.avatar
           ? `<img class="thumb" style="border-radius:50%" src="${escapeHtml(it.avatar)}" onerror="this.style.visibility='hidden'">`
@@ -1713,10 +1485,7 @@ window.addItem=function(tab){
   try{
     if(tab==='gal'){
       const items=cur().gal || [];
-      if(items.length>=MAX_GAL){
-        toast(`Максимум ${MAX_GAL} фото в альбоме`);
-        return;
-      }
+      if(items.length>=MAX_GAL){ toast(`Максимум ${MAX_GAL} фото в альбоме`); return; }
     }
     editItem(tab,-1);
   }catch(e){toast('Ошибка: '+e.message);}
@@ -1743,7 +1512,6 @@ function setupAvatarCropper(previewEl, innerEl, initialTransform, basePrefix){
   let state = {x: initialTransform.x||0, y: initialTransform.y||0, scale: initialTransform.scale||1};
   const cfg = {inner: innerEl, base: basePrefix};
   let isDragging=false, startX=0, startY=0, startTx=0, startTy=0;
-
   function applyTransform(){
     try{
       const rot = previewEl.dataset.rotate || 0;
@@ -1752,7 +1520,6 @@ function setupAvatarCropper(previewEl, innerEl, initialTransform, basePrefix){
       if(zoomInfo) zoomInfo.textContent = Math.round(state.scale*100)+'%';
     }catch(e){}
   }
-
   previewEl.addEventListener('pointerdown', e=>{
     if(e.button!==0)return;
     isDragging=true;
@@ -1761,28 +1528,23 @@ function setupAvatarCropper(previewEl, innerEl, initialTransform, basePrefix){
     try{previewEl.setPointerCapture(e.pointerId);}catch(_){}
     e.preventDefault();
   });
-
   previewEl.addEventListener('pointermove', e=>{
     if(!isDragging)return;
     state.x = startTx + (e.clientX-startX);
     state.y = startTy + (e.clientY-startY);
     applyTransform();
   });
-
   const stopDrag = e=>{ isDragging=false; };
   previewEl.addEventListener('pointerup', stopDrag);
   previewEl.addEventListener('pointercancel', stopDrag);
   previewEl.addEventListener('lostpointercapture', stopDrag);
-
   previewEl.addEventListener('wheel', e=>{
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
     state.scale = Math.min(4, Math.max(0.3, state.scale * delta));
     applyTransform();
   }, {passive:false});
-
   applyTransform();
-
   const api = {
     _cfg: cfg,
     getState: ()=>({...state}),
@@ -1829,28 +1591,25 @@ window.editItem=function(tab,i){
       currentAvatarTransform = {...t};
       html += `
         <div class="upload-block">
-          <div class="up-loading" id="avatarLoading">⏳ Сжимаю фото...</div>
+          <div class="up-loading" id="avatarLoading">⏳ Сжимаю и загружаю...</div>
           ${hasImg?`
             <div class="crop-controls">
               <button class="btn ghost" id="zoomOutBtn" type="button">➖</button>
               <span class="zoom-info">${Math.round(t.scale*100)}%</span>
               <button class="btn ghost" id="zoomInBtn" type="button">➕</button>
               <button class="btn ghost" id="resetCropBtn" type="button">↻ Сброс</button>
-            </div>
-          `:''}
+            </div>`:''}
           <div class="up-preview ${hasImg?'has-img':''}" id="avatarPreview"
                style="${hasImg?'':`background:linear-gradient(135deg,${color},${color})`}">
             ${hasImg?`<div class="up-inner" style="background-image:url('${escapeHtml(curUrl)}');transform:translate(${t.x}px,${t.y}px) scale(${t.scale})"></div>`:escapeHtml(letter)}
           </div>
           <div class="up-hint" id="avatarHint">${hasImg?'🖱 Фото целиком • колесо — приблизить':'Аватарки нет — будет градиент с буквой'}</div>
-          ${hasImg?`<div class="crop-hint">💡 Фото показывается целиком, без обрезки. Колесом мыши можно приблизить, мышкой — сдвинуть. Позиция сохранится.</div>`:''}
           <div class="up-btns">
             <label class="btn solid" for="avatarFile" style="display:inline-block">📁 Загрузить файл</label>
             <input type="file" id="avatarFile" accept="image/*">
             <button class="btn ghost" type="button" id="clearAvatarBtn">✕ Убрать</button>
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
     let currentRotate = (item.rotate||0)%360;
@@ -1862,7 +1621,7 @@ window.editItem=function(tab,i){
       const t = item.galTransform || {x:0,y:0,scale:1};
       html += `
         <div class="upload-block">
-          <div class="up-loading" id="galLoading">⏳ Сжимаю фото...</div>
+          <div class="up-loading" id="galLoading">⏳ Сжимаю и загружаю...</div>
           ${hasImg?`
             <div class="crop-controls">
               <button class="btn ghost" id="galZoomOutBtn" type="button">➖</button>
@@ -1871,21 +1630,18 @@ window.editItem=function(tab,i){
               <button class="btn ghost" id="galResetCropBtn" type="button">↻ Сброс</button>
               <button class="btn solid" id="galRotateBtn" type="button" style="margin-left:6px">↻ Поворот</button>
             </div>
-            <div class="rotate-info">Поворот: <b id="rotateDeg">${currentRotate}°</b></div>
-          `:''}
+            <div class="rotate-info">Поворот: <b id="rotateDeg">${currentRotate}°</b></div>`:''}
           <div class="up-preview gal ${hasImg?'has-img':''}" id="galPreview" data-rotate="${currentRotate}"
                style="${hasImg?'':`background:linear-gradient(135deg,var(--accent),var(--accent2))`}">
             ${hasImg?`<div class="up-inner" style="background-image:url('${escapeHtml(curUrl)}');transform:translate(${t.x}px,${t.y}px) scale(${t.scale}) rotate(${currentRotate}deg)"></div>`:'📸'}
           </div>
           <div class="up-hint" id="galHint">${hasImg?'🖱 Рамка подстроится под фото • колесо — зум':'Фото не загружено'}</div>
-          ${hasImg?`<div class="crop-hint">💡 Рамка превью повторяет пропорции фото. Колесо — зум, мышка — сдвиг, ↻ — поворот на 90°. Всё сохраняется.</div>`:''}
           <div class="up-btns">
             <label class="btn solid" for="galFile" style="display:inline-block">📁 Загрузить файл</label>
             <input type="file" id="galFile" accept="image/*">
             <button class="btn ghost" type="button" id="clearGalBtn">✕ Убрать</button>
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
     fields.forEach(f=>{
@@ -1893,8 +1649,6 @@ window.editItem=function(tab,i){
       const ph=f.placeholder?`placeholder="${escapeHtml(f.placeholder)}"`:'';
       if(f.type==='textarea'){
         html+=`<div class="form-row"><label>${f.label}</label><textarea data-field="${f.k}" ${ph}>${escapeHtml(val)}</textarea></div>`;
-      }else if(f.type==='checkbox'){
-        html+=`<div class="form-row"><label><input type="checkbox" data-field="${f.k}" ${val?'checked':''}> ${f.label}</label></div>`;
       }else{
         html+=`<div class="form-row"><label>${f.label}</label><input type="text" data-field="${f.k}" value="${escapeHtml(val)}" ${ph}></div>`;
       }
@@ -1916,13 +1670,9 @@ window.editItem=function(tab,i){
       const colorInput = $('#adminContent [data-field="color"]');
       const loading = $('#avatarLoading');
 
-      if(inner){
-        cropper = setupAvatarCropper(preview, inner, currentAvatarTransform);
-      }
+      if(inner){ cropper = setupAvatarCropper(preview, inner, currentAvatarTransform); }
 
-      const zoomIn = $('#zoomInBtn');
-      const zoomOut = $('#zoomOutBtn');
-      const resetCrop = $('#resetCropBtn');
+      const zoomIn = $('#zoomInBtn'), zoomOut = $('#zoomOutBtn'), resetCrop = $('#resetCropBtn');
       if(zoomIn) zoomIn.addEventListener('click',()=>{try{cropper && cropper.zoom(1.2);}catch(e){}});
       if(zoomOut) zoomOut.addEventListener('click',()=>{try{cropper && cropper.zoom(0.8);}catch(e){}});
       if(resetCrop) resetCrop.addEventListener('click',()=>{try{cropper && cropper.reset();}catch(e){}});
@@ -1937,23 +1687,16 @@ window.editItem=function(tab,i){
             const newInner = preview.querySelector('.up-inner');
             cropper = setupAvatarCropper(preview, newInner, {x:0,y:0,scale:1});
             currentAvatarTransform = {x:0,y:0,scale:1};
-
             const existingControls = preview.parentElement.querySelector('.crop-controls');
             if(!existingControls){
               const controls = document.createElement('div');
               controls.className='crop-controls';
-              controls.innerHTML=`
-                <button class="btn ghost" id="zoomOutBtn" type="button">➖</button>
-                <span class="zoom-info">100%</span>
-                <button class="btn ghost" id="zoomInBtn" type="button">➕</button>
-                <button class="btn ghost" id="resetCropBtn" type="button">↻ Сброс</button>
-              `;
+              controls.innerHTML=`<button class="btn ghost" id="zoomOutBtn" type="button">➖</button><span class="zoom-info">100%</span><button class="btn ghost" id="zoomInBtn" type="button">➕</button><button class="btn ghost" id="resetCropBtn" type="button">↻ Сброс</button>`;
               preview.parentElement.insertBefore(controls, preview);
               controls.querySelector('#zoomInBtn').addEventListener('click',()=>{try{cropper.zoom(1.2);}catch(e){}});
               controls.querySelector('#zoomOutBtn').addEventListener('click',()=>{try{cropper.zoom(0.8);}catch(e){}});
               controls.querySelector('#resetCropBtn').addEventListener('click',()=>{try{cropper.reset();}catch(e){}});
             }
-
             if(hint) hint.textContent='🖱 Фото целиком • колесо — приблизить';
           }else{
             preview.innerHTML = escapeHtml(((nameInput?.value||'?')[0]||'?').toUpperCase());
@@ -1964,8 +1707,6 @@ window.editItem=function(tab,i){
             currentAvatarTransform = {x:0,y:0,scale:1};
             const existingControls = preview.parentElement.querySelector('.crop-controls');
             if(existingControls) existingControls.remove();
-            const existingHint = preview.parentElement.querySelector('.crop-hint');
-            if(existingHint) existingHint.remove();
             if(hint) hint.textContent='Аватарки нет — будет градиент с буквой';
           }
         }catch(e){}
@@ -1974,8 +1715,7 @@ window.editItem=function(tab,i){
       if(nameInput) nameInput.addEventListener('input', ()=>{
         try{
           if(preview && !preview.classList.contains('has-img')){
-            const letter = ((nameInput.value||'?')[0]||'?').toUpperCase();
-            preview.textContent = letter;
+            preview.textContent = ((nameInput.value||'?')[0]||'?').toUpperCase();
           }
         }catch(e){}
       });
@@ -1993,19 +1733,16 @@ window.editItem=function(tab,i){
           try{
             const file = e.target.files[0];
             if(!file) return;
-            if(!file.type.startsWith('image/')){
-              toast('Выбери файл-картинку');
-              return;
-            }
+            if(!file.type.startsWith('image/')){ toast('Выбери файл-картинку'); return; }
             if(loading)loading.classList.add('show');
-            if(hint)hint.textContent = '⏳ Обрабатываю...';
-            const compressed = await compressImage(file, 600, 0.5);
-            setAvatarUrl(compressed);
-            const sizeKB = Math.round((compressed.length * 0.75) / 1024);
-            toast(`Аватарка готова (${sizeKB} KB)`);
+            if(hint)hint.textContent = '⏳ Обрабатываю и загружаю в облако...';
+            const result = await compressAndUpload(file, 'avatars', 400, 0.6);
+            setAvatarUrl(result.url);
+            const where = result.inStorage ? '☁️ Storage' : 'локально';
+            toast(`Аватарка готова (${result.sizeKB} KB, ${where})`);
           }catch(err){
             toast('Ошибка: '+err.message);
-            if(hint)hint.textContent = '❌ Не удалось обработать';
+            if(hint)hint.textContent = '❌ '+err.message;
           }finally{
             if(loading)loading.classList.remove('show');
           }
@@ -2030,7 +1767,6 @@ window.editItem=function(tab,i){
       const clearBtn = $('#clearGalBtn');
       const urlField = $('#adminContent [data-field="url"]');
       const rotateBtn = $('#galRotateBtn');
-      const rotateDegEl = $('#rotateDeg');
 
       function refreshGalFit(){
         try{
@@ -2088,13 +1824,7 @@ window.editItem=function(tab,i){
           if(!existingControls){
             const controls = document.createElement('div');
             controls.className='crop-controls';
-            controls.innerHTML=`
-              <button class="btn ghost" id="galZoomOutBtn" type="button">➖</button>
-              <span class="zoom-info">100%</span>
-              <button class="btn ghost" id="galZoomInBtn" type="button">➕</button>
-              <button class="btn ghost" id="galResetCropBtn" type="button">↻ Сброс</button>
-              <button class="btn solid" id="galRotateBtn" type="button" style="margin-left:6px">↻ Поворот</button>
-            `;
+            controls.innerHTML=`<button class="btn ghost" id="galZoomOutBtn" type="button">➖</button><span class="zoom-info">100%</span><button class="btn ghost" id="galZoomInBtn" type="button">➕</button><button class="btn ghost" id="galResetCropBtn" type="button">↻ Сброс</button><button class="btn solid" id="galRotateBtn" type="button" style="margin-left:6px">↻ Поворот</button>`;
             preview.parentElement.insertBefore(controls, preview);
             controls.querySelector('#galZoomInBtn').addEventListener('click',()=>{try{galCropper&&galCropper.zoom(1.2);}catch(e){}});
             controls.querySelector('#galZoomOutBtn').addEventListener('click',()=>{try{galCropper&&galCropper.zoom(0.8);}catch(e){}});
@@ -2107,13 +1837,6 @@ window.editItem=function(tab,i){
             r.className='rotate-info';
             r.innerHTML=`Поворот: <b id="rotateDeg">${currentRotate}°</b>`;
             preview.parentElement.insertBefore(r, preview.parentElement.querySelector('.up-hint'));
-          }
-          const existingHint = preview.parentElement.querySelector('.crop-hint');
-          if(!existingHint){
-            const h=document.createElement('div');
-            h.className='crop-hint';
-            h.textContent='💡 Рамка повторяет пропорции фото. Колесо — зум, мышка — сдвиг, ↻ — поворот.';
-            preview.parentElement.insertBefore(h, preview.parentElement.querySelector('.up-btns'));
           }
         }catch(e){}
       }
@@ -2137,8 +1860,6 @@ window.editItem=function(tab,i){
             galCropper=null;
             const existingControls = preview.parentElement.querySelector('.crop-controls');
             if(existingControls) existingControls.remove();
-            const existingHint = preview.parentElement.querySelector('.crop-hint');
-            if(existingHint) existingHint.remove();
             const existingRot = preview.parentElement.querySelector('.rotate-info');
             if(existingRot) existingRot.remove();
             if(hint) hint.textContent='Фото не загружено';
@@ -2160,20 +1881,17 @@ window.editItem=function(tab,i){
           try{
             const file = e.target.files[0];
             if(!file) return;
-            if(!file.type.startsWith('image/')){
-              toast('Выбери файл-картинку');
-              return;
-            }
+            if(!file.type.startsWith('image/')){ toast('Выбери файл-картинку'); return; }
             if(loading)loading.classList.add('show');
-            if(hint)hint.textContent = '⏳ Обрабатываю...';
-            const compressed = await compressImage(file, 600, 0.5);
-            setGalUrl(compressed);
-            if(urlField) urlField.value = compressed;
-            const sizeKB = Math.round((compressed.length * 0.75) / 1024);
-            toast(`Фото готово (${sizeKB} KB)`);
+            if(hint)hint.textContent = '⏳ Обрабатываю и загружаю в облако...';
+            const result = await compressAndUpload(file, 'gallery', 800, 0.6);
+            setGalUrl(result.url);
+            if(urlField) urlField.value = result.url;
+            const where = result.inStorage ? '☁️ Storage' : 'локально';
+            toast(`Фото готово (${result.sizeKB} KB, ${where})`);
           }catch(err){
             toast('Ошибка: '+err.message);
-            if(hint)hint.textContent = '❌ Не удалось обработать';
+            if(hint)hint.textContent = '❌ '+err.message;
           }finally{
             if(loading)loading.classList.remove('show');
           }
@@ -2198,13 +1916,12 @@ window.editItem=function(tab,i){
           const newObj={};
           fields.forEach(f=>{
             const el=$('#adminContent [data-field="'+f.k+'"]');
-            if(!el){ newObj[f.k]=(f.type==='checkbox')?false:''; return; }
-            newObj[f.k] = (el.type==='checkbox') ? el.checked : el.value;
+            if(!el){ newObj[f.k]=''; return; }
+            newObj[f.k] = el.value;
           });
 
-          if(i<0){
-            newObj._id = newId();
-          }else{
+          if(i<0){ newObj._id = newId(); }
+          else{
             const existing = cur()[tab][i];
             newObj._id = existing?._id || newId();
           }
@@ -2242,15 +1959,11 @@ window.editItem=function(tab,i){
 
           if(tab==='gal' && i<0){
             const items = cur().gal || [];
-            if(items.length>=MAX_GAL){
-              toast(`Максимум ${MAX_GAL} фото в альбоме`);
-              return;
-            }
+            if(items.length>=MAX_GAL){ toast(`Максимум ${MAX_GAL} фото в альбоме`); return; }
           }
 
           if(i<0)cur()[tab].push(newObj); else cur()[tab][i]=newObj;
           await saveData(); renderListEditor(tab); renderAll();
-          toast(useFirebase?'Сохранено в облаке ✓':'Сохранено локально ✓');
         }catch(err){
           dlog('Save error: '+err.message,'err');
           toast('Ошибка сохранения: '+err.message);
@@ -2283,27 +1996,21 @@ function renderImportTab(){
   try{
     const box=$('#adminContent');
     const serverId = siteData?.serverId || '';
-
     let html = `
       <div class="import-info">
         📖 <b>Как это работает:</b><br>
-        1. В настройках Discord-сервера включи <b>«Виджет сервера»</b> (Server Settings → Widget → Enable Server Widget)<br>
-        2. Скопируй <b>Server ID</b> (если не видно — включи Developer Mode в настройках Discord, ПКМ на иконке сервера → Copy Server ID)<br>
-        3. Вставь ID ниже и жми <b>«📡 Загрузить участников»</b> — сайт подтянет онлайн-участников с аватарками<br><br>
-        💡 <b>Важно:</b> загружаются только <b>онлайн</b> участники (ограничение Discord). Офлайн-участников можно добавить вручную во вкладке «Команда».
+        1. В настройках Discord-сервера включи <b>«Виджет сервера»</b><br>
+        2. Скопируй <b>Server ID</b><br>
+        3. Вставь ID ниже и жми <b>«📡 Загрузить участников»</b>
       </div>
-
       <div class="import-header">
-        <input type="text" id="serverIdInput" value="${escapeHtml(serverId)}" placeholder="Server ID (например: 123456789012345678)" style="font-size:14px">
+        <input type="text" id="serverIdInput" value="${escapeHtml(serverId)}" placeholder="Server ID" style="font-size:14px">
         <button class="btn solid" id="loadMembersBtn" type="button">📡 Загрузить участников</button>
         <button class="btn ghost" id="saveServerIdBtn" type="button" title="Сохранить ID">💾</button>
       </div>
-
       <div id="importStatus"></div>
-      <div id="importList"></div>
-    `;
+      <div id="importList"></div>`;
     box.innerHTML=html;
-
     $('#saveServerIdBtn').addEventListener('click',async ()=>{
       try{
         const val=$('#serverIdInput').value.trim();
@@ -2312,17 +2019,13 @@ function renderImportTab(){
         toast('Server ID сохранён ✓');
       }catch(e){ toast('Ошибка: '+e.message); }
     });
-
     $('#loadMembersBtn').addEventListener('click',()=>{try{loadMembersFromDiscord();}catch(e){toast('Ошибка: '+e.message);}});
-
     $('#serverIdInput').addEventListener('keydown',e=>{
       if(e.key==='Enter'){try{loadMembersFromDiscord();}catch(err){}}
     });
-
     if(importedMembers.length) renderImportedMemberList();
   }catch(e){
     dlog('renderImportTab error: '+e.message,'err');
-    try{ $('#adminContent').innerHTML = `<div class="admin-list-empty">Ошибка загрузки вкладки: ${escapeHtml(e.message)}</div>`; }catch(_){}
   }
 }
 
@@ -2331,34 +2034,24 @@ async function loadMembersFromDiscord(){
     const id=$('#serverIdInput').value.trim();
     if(!id){toast('Введи Server ID');return;}
     if(!/^\d{15,25}$/.test(id)){toast('Server ID должен быть 15-25 цифр');return;}
-
     siteData.serverId=id;
     await saveData();
-
     const statusEl=$('#importStatus');
-
-    statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px">⏳ Загружаю онлайн-участников с сервера <code>${escapeHtml(id)}</code>...</div>`;
-
+    statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px">⏳ Загружаю участников с сервера <code>${escapeHtml(id)}</code>...</div>`;
     const url=`https://discord.com/api/v10/guilds/${id}/widget.json`;
     const res=await fetch(url);
     if(!res.ok){
-      if(res.status===404){
-        throw new Error('Виджет не включён или Server ID неверный. Включи Widget в настройках сервера Discord.');
-      }
-      if(res.status===403){
-        throw new Error('Виджет отключён. Включи его в Server Settings → Widget');
-      }
+      if(res.status===404) throw new Error('Виджет не включён или Server ID неверный.');
+      if(res.status===403) throw new Error('Виджет отключён.');
       throw new Error(`Ошибка Discord: ${res.status}`);
     }
     const data=await res.json();
-
     if(!data.members || !data.members.length){
-      statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px;background:color-mix(in srgb,#ffcc00 15%,transparent);color:#ffcc00">⚠️ Виджет работает, но сейчас никто не онлайн на сервере. Попробуй позже, когда участники будут активны.</div>`;
+      statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px;background:color-mix(in srgb,#ffcc00 15%,transparent);color:#ffcc00">⚠️ Сейчас никто не онлайн.</div>`;
       importedMembers=[];
       $('#importList').innerHTML='';
       return;
     }
-
     importedMembers=data.members.map(m=>({
       id:m.id,
       username:m.username || `user_${m.id}`,
@@ -2369,15 +2062,12 @@ async function loadMembersFromDiscord(){
       status:m.status || 'online',
       nick:null
     }));
-
-    dlog(`Загружено ${importedMembers.length} участников через Widget API`,'ok');
     renderImportedMemberList();
     toast(`Загружено ${importedMembers.length} участников ✓`);
   }catch(err){
     dlog('Discord fetch error: '+err.message,'err');
     try{
-      const statusEl=$('#importStatus');
-      statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px;background:color-mix(in srgb,#ff6b6b 15%,transparent);color:#ff6b6b">❌ ${escapeHtml(err.message)}</div>`;
+      $('#importStatus').innerHTML=`<div class="setup-note" style="margin-top:12px;background:color-mix(in srgb,#ff6b6b 15%,transparent);color:#ff6b6b">❌ ${escapeHtml(err.message)}</div>`;
       $('#importList').innerHTML='';
     }catch(_){}
   }
@@ -2392,19 +2082,15 @@ function isMemberAddedInTheme(memberId,targetTheme){
 function renderImportedMemberList(){
   try{
     const statusEl=$('#importStatus');
-
     statusEl.innerHTML=`
       <div class="mem-filter">
         <input type="text" id="memFilter" placeholder="🔍 Поиск по нику..." value="${escapeHtml(importFilter)}">
         <span class="cnt">Найдено: <b id="memCount">${importedMembers.length}</b> 📡</span>
-      </div>
-    `;
-
+      </div>`;
     $('#memFilter').addEventListener('input',e=>{
       importFilter=e.target.value.toLowerCase().trim();
       renderImportCards();
     });
-
     renderImportCards();
   }catch(e){ dlog('renderImportedMemberList error: '+e.message,'err'); }
 }
@@ -2416,22 +2102,15 @@ function renderImportCards(){
     const filtered = filter
       ? importedMembers.filter(m=>m.username.toLowerCase().includes(filter) || (m.globalName||'').toLowerCase().includes(filter))
       : importedMembers;
-
     const cntEl=$('#memCount');
     if(cntEl) cntEl.textContent=filtered.length;
-
-    if(!filtered.length){
-      listEl.innerHTML=`<div class="admin-list-empty">Ничего не найдено</div>`;
-      return;
-    }
-
+    if(!filtered.length){ listEl.innerHTML=`<div class="admin-list-empty">Ничего не найдено</div>`; return; }
     let html='<div class="member-grid">';
     filtered.forEach(m=>{
       const inF = isMemberAddedInTheme(m.id,'f');
       const inM = isMemberAddedInTheme(m.id,'m');
       const addedClass = (inF||inM) ? 'added' : '';
       const displayName = m.globalName || m.username;
-
       html+=`
         <div class="mem-card ${addedClass}" data-id="${m.id}">
           <div class="mem-top">
@@ -2446,8 +2125,7 @@ function renderImportCards(){
             <button class="btn f-btn" ${inF?'disabled':''} onclick="window.addImportedToTeam('${m.id}','f')">🌸 Женская ${inF?'✓':''}</button>
             <button class="btn m-btn" ${inM?'disabled':''} onclick="window.addImportedToTeam('${m.id}','m')">⚡ Мужская ${inM?'✓':''}</button>
           </div>
-        </div>
-      `;
+        </div>`;
     });
     html+='</div>';
     listEl.innerHTML=html;
@@ -2458,24 +2136,16 @@ window.addImportedToTeam=async function(memberId,targetTheme){
   try{
     const m = importedMembers.find(x=>x.id===memberId);
     if(!m){toast('Участник не найден');return;}
-
-    if(isMemberAddedInTheme(memberId,targetTheme)){
-      toast('Уже добавлен в эту команду');
-      return;
-    }
-
+    if(isMemberAddedInTheme(memberId,targetTheme)){ toast('Уже добавлен'); return; }
     const colors = targetTheme==='f'
       ? ['#ff5fa2','#c49cff','#ff8fc8','#b685f0','#ff6faf']
       : ['#37e6ff','#ff9f45','#c6ff4a','#ffcc00','#6fdab8'];
     const randColor = colors[Math.floor(Math.random()*colors.length)];
-
     const sticker = targetTheme==='f'
       ? ['🌸','💗','🎀','✨','🦋'][Math.floor(Math.random()*5)]
       : ['⚡','','🎖️','',''][Math.floor(Math.random()*5)];
-
     const role = targetTheme==='f' ? '🌸 Furiebi' : '⚡ Furiebi';
     const displayName = m.globalName || m.username;
-
     const newItem = {
       _id: newId(),
       _discordId: memberId,
@@ -2489,14 +2159,11 @@ window.addImportedToTeam=async function(memberId,targetTheme){
       sticker: sticker,
       color: randColor
     };
-
     siteData[targetTheme].team.push(newItem);
     await saveData();
     renderAll();
     renderImportCards();
-
-    toast(`${displayName} добавлен в ${targetTheme==='f'?'женскую':'мужскую'} команду ✓`);
-
+    toast(`${displayName} добавлен ✓`);
     const idx = siteData[targetTheme].team.findIndex(t=>t._discordId===memberId);
     if(idx>=0){
       theme = targetTheme;
@@ -2537,8 +2204,6 @@ window.importData=async function(e){
   }catch(err){ toast('Ошибка: '+err.message); }
 };
 
-window.clearDuplicates=async function(){ try{ dedupeAll(); await saveData(); renderAll(); renderPoll(); showTab(currentTab); toast('Дубли удалены 🧹'); }catch(e){toast('Ошибка: '+e.message);} };
-
 window.resetData=async function(){
   try{
     if(!confirm('Сбросить ЛОКАЛЬНЫЕ данные?'))return;
@@ -2562,72 +2227,6 @@ window.resetFirebase=async function(){
   }catch(e){ toast('Ошибка: '+e.message); }
 };
 
-// === ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ ===
-window.forceSync=async function(){
-  try{
-    if(!useFirebase || !db){
-      toast('Firebase не активен');
-      return;
-    }
-    dlog('Принудительная синхронизация...','info');
-    showStatus('🔄 Синхронизация...','ok');
-    
-    _savingUntil = Date.now() + SAVE_COOLDOWN;
-    await db.collection('site').doc('main').set({
-      data: siteData,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      version: Date.now()
-    });
-    
-    dlog('✓ Принудительная синхронизация завершена','ok');
-    updateSyncDot('ok');
-    showStatus('✓ Синхронизировано','ok');
-    toast('✓ Данные синхронизированы с Firebase');
-  }catch(e){
-    dlog('forceSync error: '+e.message,'err');
-    toast('Ошибка: '+e.message);
-    showStatus('✗ Ошибка синхронизации','err');
-  }
-};
-
-// === ДИАГНОСТИКА ===
-window.diagnoseSync=function(){
-  const diag = {
-    firebaseActive: useFirebase,
-    dbExists: !!db,
-    lastSaveAttempt: lastSaveAttempt,
-    savingUntil: _savingUntil,
-    timeSinceLastSave: lastSaveAttempt ? Date.now() - lastSaveAttempt : null,
-    theme: theme,
-    syncDotState: 'unknown',
-    localStorageSize: 0,
-    siteDataSize: 0,
-    isCurrentlySaving: isSaving
-  };
-  
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw) diag.localStorageSize = Math.round((raw.length * 0.75) / 1024);
-  }catch(e){}
-  
-  try{
-    if(siteData){
-      diag.siteDataSize = Math.round((JSON.stringify(siteData).length * 0.75) / 1024);
-    }
-  }catch(e){}
-  
-  try{
-    const dot = document.querySelector('#syncDot');
-    if(dot){
-      if(dot.classList.contains('on')) diag.syncDotState = 'ok (зелёный)';
-      else if(dot.classList.contains('off')) diag.syncDotState = 'error (красный)';
-      else if(dot.classList.contains('loading')) diag.syncDotState = 'loading (жёлтый)';
-    }
-  }catch(e){}
-  
-  return diag;
-};
-
 (async ()=>{
   try{
     dlog('Старт. theme='+theme);
@@ -2638,36 +2237,16 @@ window.diagnoseSync=function(){
     renderAll();
     renderPoll();
     dlog('Старт завершён','ok');
-    
-    // Показываем состояние при старте
-    if(useFirebase){
-      showStatus('✓ Синхронизировано с облаком','ok',2000);
-    }else{
-      showStatus('📱 Локальный режим','warn',2000);
-    }
   }catch(e){
     dlog('Init error: '+e.message,'err');
     try{ toast('Ошибка инициализации: '+e.message); }catch(_){}
   }
 })();
 
-// === СОХРАНЕНИЕ ПРИ УХОДЕ СО СТРАНИЦЫ ===
 window.addEventListener('beforeunload', ()=>{
   try{
-    if(siteData){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(siteData));
-    }
+    if(siteData) localStorage.setItem(STORAGE_KEY, JSON.stringify(siteData));
   }catch(e){}
-});
-
-// === АВТОСОХРАНЕНИЕ ПРИ ИЗМЕНЕНИИ ВИДИМОСТИ (например, при переключении вкладок) ===
-document.addEventListener('visibilitychange', ()=>{
-  if(document.hidden && siteData){
-    try{
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(siteData));
-      dlog('Автосохранение при уходе со страницы','info');
-    }catch(e){}
-  }
 });
 </script>
 </body>
