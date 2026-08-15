@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Девичник • сайт нашего сервера</title>
+<title>Furiebi</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800;900&family=Russo+One&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ============ ТЕМЫ ============ */
 body[data-theme="f"]{
   --bg:#1a0f18; --bg2:#261624; --card:#2d1a2a; --ink:#f5e3ec; --muted:#b98aa6;
   --accent:#ff6faf; --accent2:#c49cff; --accent3:#6fdab8; --line:#4a2844;
@@ -350,6 +349,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
       <button data-tab="events">Ивенты</button>
       <button data-tab="wall">Стена</button>
       <button data-tab="gal">Галерея</button>
+      <button data-tab="poll">Опрос</button>
       <button data-tab="data">Данные</button>
     </div>
     <div id="adminContent"></div>
@@ -370,7 +370,6 @@ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let theme=localStorage.getItem('theme')||'f';
 document.body.dataset.theme=theme;
 
-/* ================================================================== */
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyB1nhmTV5XgdvgPJxG6xYJ_GeEkohMaykA",
   authDomain: "furiebi-ac7b6.firebaseapp.com",
@@ -379,49 +378,32 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "144716304483",
   appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
-/* ================================================================== */
 
-const STORAGE_KEY='siteData_v3'; // v3 — новая версия
+const STORAGE_KEY='siteData_v4';
 const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
 
+const DEFAULT_POLL={
+  f:['🍿 Ромком и пледы','🌀 Аниме-марафон','😱 Ужастики до мурашек','🎬 Кино по заявкам'],
+  m:['🍿 Операция «Ромком»','🌀 Марафон сериалов','😱 Хоррор для смелых','🎬 Выбор отряда']
+};
+
 const DEFAULT_DATA={
   f:{
-    team:[
-      {name:'Пример Ани', discord:'anya_star', avatar:'', status:'в сети', role:'👑 Королева сервера', quote:'«Главное правило — уют для всех»', sticker:'🎀', color:'#ff5fa2'}
-    ],
-    play:[
-      {emo:'🔮', title:'Шар судьбы', desc:'скоро тут появится предсказание на день'},
-      {emo:'💌', title:'Генератор комплиментов', desc:'скоро тут можно будет получить порцию тёплых слов'},
-      {emo:'🎧', title:'Плейлист сервера', desc:'скоро тут зазвучит наша любимая музыка'}
-    ],
-    events:[
-      {day:'пятница • 20:00', title:'Киновечер', desc:'ромком, пледы и какао. кто уснул — смотрит титры', emo:'🍿'},
-      {day:'суббота • 19:00', title:'Караоке', desc:'поём громко, стыдно никому. закажи песню заранее!', emo:'🎤'}
-    ],
-    wall:[
-      {text:'Пример: Аня, твой плейлист спас мне сессию 💗', author:'Соня', pin:'📌'},
-      {text:'Лучшие девчонки во всех измерениях ✨', author:'Мила', pin:'📌'}
-    ],
-    gal:[]
+    team:[{name:'Пример Ани', discord:'anya_star', avatar:'', status:'в сети', role:'👑 Королева сервера', quote:'«Главное правило — уют для всех»', sticker:'🎀', color:'#ff5fa2'}],
+    play:[{emo:'🔮', title:'Шар судьбы', desc:'скоро тут появится предсказание на день'},{emo:'💌', title:'Генератор комплиментов', desc:'скоро тут можно будет получить порцию тёплых слов'},{emo:'🎧', title:'Плейлист сервера', desc:'скоро тут зазвучит наша любимая музыка'}],
+    events:[{day:'пятница • 20:00', title:'Киновечер', desc:'ромком, пледы и какао. кто уснул — смотрит титры', emo:'🍿'},{day:'суббота • 19:00', title:'Караоке', desc:'поём громко, стыдно никому. закажи песню заранее!', emo:'🎤'}],
+    wall:[{text:'Пример: Аня, твой плейлист спас мне сессию 💗', author:'Соня', pin:'📌'},{text:'Лучшие девчонки во всех измерениях ✨', author:'Мила', pin:'📌'}],
+    gal:[],
+    poll:DEFAULT_POLL.f.slice()
   },
   m:{
-    team:[
-      {name:'Пример бойца', discord:'warrior_01', avatar:'', status:'на посту', role:'⚔️ Командир отряда', quote:'«Главное правило — своих не бросаем»', sticker:'🎖️', color:'#37e6ff'}
-    ],
-    play:[
-      {emo:'🧭', title:'Оракул отряда', desc:'скоро тут появится боевой прогноз'},
-      {emo:'🏆', title:'Генератор похвалы', desc:'скоро тут можно будет получить заслуженный респект'},
-      {emo:'🎧', title:'Саундтрек базы', desc:'скоро тут зазвучит саундтрек отряда'}
-    ],
-    events:[
-      {day:'пятница • 20:00', title:'Кинооперация', desc:'фильм выбирает отряд. уснувшие смотрят титры', emo:'🎬'},
-      {day:'среда • 21:00', title:'Тактические катки', desc:'турнир отряда. реванш обязателен', emo:'🎯'}
-    ],
-    wall:[
-      {text:'Без отряда и пятница не в радость 👊', author:'Боец', pin:'📌'}
-    ],
-    gal:[]
+    team:[{name:'Пример бойца', discord:'warrior_01', avatar:'', status:'на посту', role:'⚔️ Командир отряда', quote:'«Главное правило — своих не бросаем»', sticker:'🎖️', color:'#37e6ff'}],
+    play:[{emo:'🧭', title:'Оракул отряда', desc:'скоро тут появится боевой прогноз'},{emo:'🏆', title:'Генератор похвалы', desc:'скоро тут можно будет получить заслуженный респект'},{emo:'🎧', title:'Саундтрек базы', desc:'скоро тут зазвучит саундтрек отряда'}],
+    events:[{day:'пятница • 20:00', title:'Кинооперация', desc:'фильм выбирает отряд. уснувшие смотрят титры', emo:'🎬'},{day:'среда • 21:00', title:'Тактические катки', desc:'турнир отряда. реванш обязателен', emo:'🎯'}],
+    wall:[{text:'Без отряда и пятница не в радость 👊', author:'Боец', pin:'📌'}],
+    gal:[],
+    poll:DEFAULT_POLL.m.slice()
   }
 };
 
@@ -439,17 +421,10 @@ function dlog(msg,type='info'){
   console.log(`[${type}] ${time}: ${msg}`);
 }
 
-/* ---------- Firebase init ---------- */
 function initFirebase(){
   try{
-    if(typeof firebase==='undefined'){
-      dlog('Firebase SDK не загружен','err');
-      useFirebase=false; return;
-    }
-    if(!FIREBASE_CONFIG.apiKey){
-      dlog('apiKey пустой — Firebase отключен','warn');
-      useFirebase=false; return;
-    }
+    if(typeof firebase==='undefined'){ dlog('Firebase SDK не загружен','err'); useFirebase=false; return; }
+    if(!FIREBASE_CONFIG.apiKey){ dlog('apiKey пустой','warn'); useFirebase=false; return; }
     dlog('Инициализация Firebase... projectId='+FIREBASE_CONFIG.projectId);
     if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     db=firebase.firestore();
@@ -466,13 +441,12 @@ function updateSyncDot(state){
   const dot=$('#syncDot');
   if(!dot)return;
   dot.classList.remove('on','off','loading');
-  if(!useFirebase){ dot.classList.add('off'); dot.title='Локальный режим (Firebase не настроен)'; return; }
+  if(!useFirebase){ dot.classList.add('off'); dot.title='Локальный режим'; return; }
   if(state==='loading'){ dot.classList.add('loading'); dot.title='Загрузка...'; }
-  else if(state==='ok'){ dot.classList.add('on'); dot.title='✓ Синхронизировано в облаке'; }
-  else if(state==='error'){ dot.classList.add('off'); dot.title='Ошибка синхронизации'; }
+  else if(state==='ok'){ dot.classList.add('on'); dot.title='✓ Синхронизировано'; }
+  else if(state==='error'){ dot.classList.add('off'); dot.title='Ошибка'; }
 }
 
-/* ---------- Удаление дублей ---------- */
 function dedupe(arr,keyFn){
   if(!Array.isArray(arr))return [];
   const seen=new Set(), out=[];
@@ -488,18 +462,13 @@ function dedupeAll(){
     if(!siteData[t])siteData[t]={};
     ['team','play','events','wall','gal'].forEach(k=>{
       if(!Array.isArray(siteData[t][k]))siteData[t][k]=[];
-      const keyFns={
-        team:i=>(i.name||'')+'::'+(i.discord||''),
-        play:i=>(i.title||'')+'::'+(i.emo||''),
-        events:i=>(i.title||'')+'::'+(i.day||''),
-        wall:i=>(i.text||'')+'::'+(i.author||''),
-        gal:i=>(i.url||'')+'::'+(i.caption||'')
-      };
+      const keyFns={team:i=>(i.name||'')+'::'+(i.discord||''),play:i=>(i.title||'')+'::'+(i.emo||''),events:i=>(i.title||'')+'::'+(i.day||''),wall:i=>(i.text||'')+'::'+(i.author||''),gal:i=>(i.url||'')+'::'+(i.caption||'')};
       const before=siteData[t][k].length;
       siteData[t][k]=dedupe(siteData[t][k],keyFns[k]);
       const after=siteData[t][k].length;
       if(before!==after) dlog(`Удалено ${before-after} дублей в ${t}.${k}`,'warn');
     });
+    if(!Array.isArray(siteData[t].poll))siteData[t].poll=DEFAULT_POLL[t].slice();
   });
 }
 
@@ -507,10 +476,10 @@ async function loadData(){
   initFirebase();
   if(useFirebase){
     try{
-      dlog('Чтение из Firestore collection=site doc=main');
+      dlog('Чтение из Firestore');
       const doc=await db.collection('site').doc('main').get();
       if(doc.exists){
-        dlog('Документ найден в Firestore','ok');
+        dlog('Документ найден ✓','ok');
         siteData=doc.data().data || JSON.parse(JSON.stringify(DEFAULT_DATA));
       }else{
         dlog('Документ пуст — создаю дефолт','warn');
@@ -518,7 +487,6 @@ async function loadData(){
         await db.collection('site').doc('main').set({data:siteData,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
       }
       dedupeAll();
-      
       unsubData=db.collection('site').doc('main').onSnapshot(snap=>{
         if(!snap.exists)return;
         const newData=snap.data().data;
@@ -536,7 +504,6 @@ async function loadData(){
       updateSyncDot('ok');
     }catch(e){
       dlog('Firebase load failed: '+e.message,'err');
-      dlog('Возможно Firestore rules блокируют доступ. Открой консоль (F12) для подробностей','warn');
       updateSyncDot('error');
       loadLocal();
     }
@@ -565,55 +532,35 @@ async function saveData(){
   localStorage.setItem(STORAGE_KEY,JSON.stringify(siteData));
   if(useFirebase){
     try{
-      await db.collection('site').doc('main').set({
-        data:siteData,
-        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
+      await db.collection('site').doc('main').set({data:siteData,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
       dlog('Сохранено в Firestore ✓','ok');
       updateSyncDot('ok');
     }catch(e){
       dlog('Firebase save failed: '+e.message,'err');
       updateSyncDot('error');
-      toast('⚠ Сохранено только локально. Проверь Firebase rules.');
+      toast('⚠ Сохранено только локально');
     }
   }
 }
 
 function cur(){return siteData[theme];}
+function curPoll(){ return Array.isArray(cur().poll)&&cur().poll.length?cur().poll:DEFAULT_POLL[theme]; }
 
-/* ============ РЕНДЕР ============ */
 function renderAll(){
   if(isRendering)return;
   isRendering=true;
-  try{
-    renderTeam(); renderPlay(); renderEvents(); renderWall(); renderGal(); observeReveal();
-  }finally{
-    isRendering=false;
-  }
+  try{ renderTeam(); renderPlay(); renderEvents(); renderWall(); renderGal(); observeReveal(); }finally{ isRendering=false; }
 }
 
 function renderTeam(){
   const box=$('#teamGrid'); if(!box)return; box.innerHTML='';
   const items=cur().team;
-  if(!items.length){
-    box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">✨</span><h3>Команда пока пуста</h3><p>админ добавит участников через админ-панель</p></div>`;
-    return;
-  }
+  if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">✨</span><h3>Команда пока пуста</h3><p>админ добавит участников через админ-панель</p></div>`; return; }
   items.forEach(it=>{
     const el=document.createElement('div');
     el.className='member themable reveal';
-    const av=it.avatar
-      ? `<div class="mav" style="background-image:url('${escapeHtml(it.avatar)}')"></div>`
-      : `<div class="mav" style="background:linear-gradient(135deg,${it.color||'var(--accent)'},${it.color||'var(--accent2)'})">${(it.name||'?')[0].toUpperCase()}</div>`;
-    el.innerHTML=`
-      <span class="sticker">${escapeHtml(it.sticker||'✨')}</span>
-      ${av}
-      <h3>${escapeHtml(it.name||'')}</h3>
-      <span class="discord-nick">${it.discord?'@'+escapeHtml(it.discord):''}</span>
-      <div class="status${it.status&&it.status.toLowerCase().includes('не')?' dnd':''}"><i></i><span>${escapeHtml(it.status||'в сети')}</span></div>
-      <div class="chip" style="background:color-mix(in srgb,${it.color||'var(--accent)'} 20%,transparent);color:${it.color||'var(--accent)'}">${escapeHtml(it.role||'')}</div>
-      <q>${escapeHtml(it.quote||'')}</q>
-    `;
+    const av=it.avatar?`<div class="mav" style="background-image:url('${escapeHtml(it.avatar)}')"></div>`:`<div class="mav" style="background:linear-gradient(135deg,${it.color||'var(--accent)'},${it.color||'var(--accent2)'})">${(it.name||'?')[0].toUpperCase()}</div>`;
+    el.innerHTML=`<span class="sticker">${escapeHtml(it.sticker||'✨')}</span>${av}<h3>${escapeHtml(it.name||'')}</h3><span class="discord-nick">${it.discord?'@'+escapeHtml(it.discord):''}</span><div class="status${it.status&&it.status.toLowerCase().includes('не')?' dnd':''}"><i></i><span>${escapeHtml(it.status||'в сети')}</span></div><div class="chip" style="background:color-mix(in srgb,${it.color||'var(--accent)'} 20%,transparent);color:${it.color||'var(--accent)'}">${escapeHtml(it.role||'')}</div><q>${escapeHtml(it.quote||'')}</q>`;
     box.appendChild(el);
   });
 }
@@ -621,7 +568,7 @@ function renderTeam(){
 function renderPlay(){
   const box=$('#playGrid'); if(!box)return; box.innerHTML='';
   const items=cur().play;
-  if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">🎲</span><h3>Игровая пока пуста</h3><p>админ добавит активности через админ-панель</p></div>`; return; }
+  if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">🎲</span><h3>Игровая пока пуста</h3><p>админ добавит активности</p></div>`; return; }
   items.forEach(it=>{
     const el=document.createElement('div');
     el.className='panel themable reveal';
@@ -633,7 +580,7 @@ function renderPlay(){
 function renderEvents(){
   const box=$('#eventsGrid'); if(!box)return; box.innerHTML='';
   const items=cur().events;
-  if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📅</span><h3>Расписания пока нет</h3><p>админ добавит ивенты через админ-панель</p></div>`; return; }
+  if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📅</span><h3>Расписания пока нет</h3><p>админ добавит ивенты</p></div>`; return; }
   items.forEach(it=>{
     const el=document.createElement('div');
     el.className='note themable reveal';
@@ -669,14 +616,7 @@ function renderGal(){
 
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
-/* ============ ТЕКСТЫ ============ */
-const MARQ={f:['нежность','дружба','мемы','караоке','какао','обнимашки','плейлисты','уют'],
-            m:['братва','честь','мемы','катки','кофе','респект','плейлисты','строй']};
-const POLL_OPTS=[
- {f:'🍿 Ромком и пледы',m:'🍿 Операция «Ромком»'},
- {f:'🌀 Аниме-марафон',m:'🌀 Марафон сериалов'},
- {f:'😱 Ужастики до мурашек',m:'😱 Хоррор для смелых'},
- {f:'🎬 Кино по заявкам',m:'🎬 Выбор отряда'}];
+const MARQ={f:['нежность','дружба','мемы','караоке','какао','обнимашки','плейлисты','уют'],m:['братва','честь','мемы','катки','кофе','респект','плейлисты','строй']};
 
 function scrambleTo(el,txt){
   if(reduced){el.textContent=txt;return;}
@@ -706,12 +646,10 @@ function applyTheme(t,origin){
   const w=$('#wipe');
   w.style.background=t==='f'?'#1a0f18':'#0d1220';
   const r=Math.hypot(Math.max(origin.x,innerWidth-origin.x),Math.max(origin.y,innerHeight-origin.y))+20;
-  w.animate([{clipPath:`circle(0px at ${origin.x}px ${origin.y}px)`,opacity:1},
-             {clipPath:`circle(${r}px at ${origin.x}px ${origin.y}px)`,opacity:1}],
+  w.animate([{clipPath:`circle(0px at ${origin.x}px ${origin.y}px)`,opacity:1},{clipPath:`circle(${r}px at ${origin.x}px ${origin.y}px)`,opacity:1}],
             {duration:430,easing:'cubic-bezier(.4,0,.2,1)'}).onfinish=()=>{
     commit();
-    w.animate([{opacity:1},{opacity:0}],{duration:420,easing:'ease'}).onfinish=()=>{
-      w.style.clipPath='circle(0px at 50% 50%)'; };
+    w.animate([{opacity:1},{opacity:0}],{duration:420,easing:'ease'}).onfinish=()=>{ w.style.clipPath='circle(0px at 50% 50%)'; };
   };
 }
 $('#themeBtn').addEventListener('click',e=>{
@@ -719,20 +657,20 @@ $('#themeBtn').addEventListener('click',e=>{
   applyTheme(theme==='f'?'m':'f',{x:b.left+b.width/2,y:b.top+b.height/2});
 });
 
-function renderMarquee(t){
-  const items=MARQ[t].map(w=>`<span>${w} ✦</span>`).join('');
-  $('#marquee').innerHTML=items+items;
-}
+function renderMarquee(t){ $('#marquee').innerHTML=MARQ[t].map(w=>`<span>${w} ✦</span>`).join('').repeat(2); }
 
 function pollKey(){return 'poll_'+theme;}
-function getPoll(){ try{return JSON.parse(localStorage.getItem(pollKey()))||{c:[0,0,0,0],v:null};}catch(e){return{c:[0,0,0,0],v:null};} }
+function getPoll(){ try{return JSON.parse(localStorage.getItem(pollKey()))||{c:[],v:null};}catch(e){return{c:[],v:null};} }
 function renderPoll(){
-  const st=getPoll(), box=$('#poll'); if(!box)return; box.innerHTML='';
+  const opts=curPoll();
+  const st=getPoll();
+  if(st.c.length!==opts.length)st.c=opts.map(()=>0);
+  const box=$('#poll'); if(!box)return; box.innerHTML='';
   const total=st.c.reduce((a,b)=>a+b,0);
-  POLL_OPTS.forEach((o,i)=>{
+  opts.forEach((o,i)=>{
     const b=document.createElement('button'); b.className='opt'+(st.v===i?' mine':'');
     const pct=total?Math.round(st.c[i]/total*100):0;
-    b.innerHTML=`<span class="fill"></span><span>${o[theme]} <span class="pct">${st.v!=null?pct+'%':''}</span>${st.v===i?' ✓':''}</span>`;
+    b.innerHTML=`<span class="fill"></span><span>${escapeHtml(o)} <span class="pct">${st.v!=null?pct+'%':''}</span>${st.v===i?' ✓':''}</span>`;
     b.addEventListener('click',()=>{
       if(st.v!=null){toast(theme==='f'?'Голос уже отдан! 💗':'Голос уже принят 🫡');return;}
       st.c[i]++; st.v=i; localStorage.setItem(pollKey(),JSON.stringify(st)); renderPoll();
@@ -777,13 +715,10 @@ addEventListener('pointermove',e=>{
 let io;
 function observeReveal(){
   if(io)io.disconnect();
-  io=new IntersectionObserver(es=>es.forEach(en=>{
-    if(en.isIntersecting){en.target.classList.add('in'); io.unobserve(en.target);}
-  }),{threshold:.12});
+  io=new IntersectionObserver(es=>es.forEach(en=>{ if(en.isIntersecting){en.target.classList.add('in'); io.unobserve(en.target);} }),{threshold:.12});
   $$('.reveal').forEach(el=>io.observe(el));
 }
 
-/* ============ АДМИНКА ============ */
 let isAdmin=false;
 let currentTab='team';
 
@@ -791,47 +726,28 @@ function openModal(id){$('#'+id).classList.add('open');}
 function closeModal(id){$('#'+id).classList.remove('open');}
 window.closeModal=closeModal;
 
-$('#adminLink').addEventListener('click',()=>{
-  if(isAdmin){ openAdmin(); }
-  else{ openModal('loginModal'); $('#loginUser').focus(); }
-});
+$('#adminLink').addEventListener('click',()=>{ if(isAdmin)openAdmin(); else{ openModal('loginModal'); $('#loginUser').focus(); } });
 
 $('#loginOk').addEventListener('click',tryLogin);
 $('#loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin();});
 function tryLogin(){
-  const u=$('#loginUser').value.trim();
-  const p=$('#loginPass').value;
-  if(u===ADMIN_USER && p===ADMIN_PASS){
-    isAdmin=true;
-    closeModal('loginModal');
-    $('#loginPass').value='';
-    openAdmin();
-  }else{
-    toast('Неверный логин или пароль');
-  }
+  const u=$('#loginUser').value.trim(), p=$('#loginPass').value;
+  if(u===ADMIN_USER && p===ADMIN_PASS){ isAdmin=true; closeModal('loginModal'); $('#loginPass').value=''; openAdmin(); }
+  else toast('Неверный логин или пароль');
 }
 
 function logout(){ isAdmin=false; closeModal('adminModal'); toast('Вы вышли из админки'); }
 window.logout=logout;
 
-function openAdmin(){
-  updateThemeNote();
-  updateSetupNote();
-  showTab(currentTab);
-  openModal('adminModal');
-}
+function openAdmin(){ updateThemeNote(); updateSetupNote(); showTab(currentTab); openModal('adminModal'); }
 
-function updateThemeNote(){
-  $('#themeNote').innerHTML=`<b>Редактируешь тему:</b> ${theme==='f'?'🌸 Девичья':'⚡ Мужская'}. Переключи тему сверху, чтобы редактировать другую.`;
-}
+function updateThemeNote(){ $('#themeNote').innerHTML=`<b>Редактируешь тему:</b> ${theme==='f'?'🌸 Девичья':'⚡ Мужская'}. Переключи тему сверху, чтобы редактировать другую.`; }
 
 function updateSetupNote(){
   const note=$('#setupNote');
-  if(useFirebase){
-    note.innerHTML='☁️ <b>Firebase подключён</b> — все изменения автоматически увидят все посетители сайта.';
-  }else{
-    note.innerHTML='⚠️ <b>Firebase не настроен</b> — изменения видны только тебе. Открой консоль (F12) чтобы увидеть ошибку. Пока работают экспорт/импорт.';
-  }
+  note.innerHTML=useFirebase
+    ? '☁️ <b>Firebase подключён</b> — все изменения увидят все посетители.'
+    : '⚠️ <b>Firebase не настроен</b> — проверь консоль (F12).';
 }
 
 $$('.admin-tabs button').forEach(b=>{
@@ -847,11 +763,7 @@ function showTab(tab){
   const box=$('#adminContent');
   if(tab==='data'){
     box.innerHTML=`
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:700">
-        ${useFirebase
-          ? '🟢 Firebase активен: данные хранятся в облаке.'
-          : '🟡 Firebase не настроен. Проверь консоль (F12).'}
-      </p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:700">${useFirebase?'🟢 Firebase активен.':'🟡 Firebase не настроен.'}</p>
       <div class="btns">
         <button class="btn solid" onclick="exportData()">📥 Экспорт</button>
         <button class="btn ghost" onclick="document.getElementById('importFile').click()">📤 Импорт</button>
@@ -861,44 +773,78 @@ function showTab(tab){
         <button class="btn ghost" onclick="resetFirebase()" style="border-color:#ff3333;color:#ff3333">🔥 Очистить Firebase</button>
       </div>
       <h4 style="font-size:13px;margin-top:14px;color:var(--muted)">📋 Диагностический лог:</h4>
-      <div class="debug-box" id="debugBox">${debugLog.map(e=>`<span class="${e.type}">[${e.time}] ${escapeHtml(e.msg)}</span>`).join('\n')}</div>
+      <div class="debug-box">${debugLog.map(e=>`<span class="${e.type}">[${e.time}] ${escapeHtml(e.msg)}</span>`).join('\n')}</div>
     `;
     return;
   }
+  if(tab==='poll'){ renderPollEditor(); return; }
   renderListEditor(tab);
 }
 
+function renderPollEditor(){
+  const box=$('#adminContent');
+  const opts=cur().poll||[];
+  let html=`<h3 style="font-size:16px;margin-bottom:8px">Варианты опроса (тема: ${theme==='f'?'🌸':'⚡'})</h3>`;
+  html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Изменяй, добавляй или удаляй варианты голосования</p>`;
+  html+=`<div class="admin-list">`;
+  opts.forEach((o,i)=>{
+    html+=`<div class="admin-list-item"><span>${i+1}. ${escapeHtml(o).slice(0,50)}</span><div class="acts"><button class="edit" onclick="editPollItem(${i})">✎</button><button class="del" onclick="delPollItem(${i})">✕</button></div></div>`;
+  });
+  html+=`</div>`;
+  html+=`<button class="btn solid" onclick="addPollItem()" style="width:100%">➕ Добавить вариант</button>`;
+  html+=`<div class="btns" style="margin-top:10px"><button class="btn ghost" onclick="resetPoll()" style="border-color:#ff6b6b;color:#ff6b6b">↻ Вернуть стандартные</button></div>`;
+  box.innerHTML=html;
+}
+
+window.addPollItem=function(){editPollItem(-1);};
+window.delPollItem=async function(i){
+  if(!confirm('Удалить вариант?'))return;
+  cur().poll.splice(i,1);
+  localStorage.removeItem(pollKey());
+  await saveData();
+  renderPollEditor();
+  renderPoll();
+  toast('Вариант удалён ✓');
+};
+
+window.editPollItem=function(i){
+  const opts=cur().poll||[];
+  const val=i<0?'':(opts[i]||'');
+  let html=`<h3 style="font-size:16px;margin-bottom:12px">${i<0?'Добавить вариант':'Редактировать вариант'}</h3>`;
+  html+=`<div class="form-row"><label>Текст варианта (можно с эмодзи)</label><input type="text" id="pollInput" value="${escapeHtml(val)}" placeholder="🍿 Ромком и пледы"></div>`;
+  html+=`<div class="btns"><button class="btn solid" id="savePollItem">💾 Сохранить</button><button class="btn ghost" onclick="showTab('poll')">Отмена</button></div>`;
+  $('#adminContent').innerHTML=html;
+  const input=$('#pollInput'); input.focus(); input.select();
+  $('#savePollItem').addEventListener('click',async ()=>{
+    const v=input.value.trim();
+    if(!v){toast('Введите текст');return;}
+    if(!Array.isArray(cur().poll))cur().poll=[];
+    if(i<0)cur().poll.push(v);
+    else cur().poll[i]=v;
+    localStorage.removeItem(pollKey());
+    await saveData();
+    renderPollEditor();
+    renderPoll();
+    toast('Сохранено ✓');
+  });
+};
+
+window.resetPoll=async function(){
+  if(!confirm('Сбросить варианты опроса к стандартным?'))return;
+  cur().poll=DEFAULT_POLL[theme].slice();
+  localStorage.removeItem(pollKey());
+  await saveData();
+  renderPollEditor();
+  renderPoll();
+  toast('Варианты сброшены');
+};
+
 const FIELD_DEFS={
-  team:[
-    {k:'name',label:'Имя / Ник',type:'text'},
-    {k:'discord',label:'Discord username (без @)',type:'text'},
-    {k:'avatar',label:'URL аватарки',type:'text'},
-    {k:'sticker',label:'Стикер сверху (эмодзи)',type:'text'},
-    {k:'status',label:'Статус',type:'text'},
-    {k:'role',label:'Роль (с эмодзи)',type:'text'},
-    {k:'quote',label:'Цитата',type:'textarea'},
-    {k:'color',label:'Цвет (hex)',type:'text'}
-  ],
-  play:[
-    {k:'emo',label:'Эмодзи',type:'text'},
-    {k:'title',label:'Заголовок',type:'text'},
-    {k:'desc',label:'Описание',type:'textarea'}
-  ],
-  events:[
-    {k:'day',label:'День и время',type:'text'},
-    {k:'title',label:'Название',type:'text'},
-    {k:'desc',label:'Описание',type:'textarea'},
-    {k:'emo',label:'Эмодзи',type:'text'}
-  ],
-  wall:[
-    {k:'text',label:'Текст записи',type:'textarea'},
-    {k:'author',label:'Автор',type:'text'},
-    {k:'pin',label:'Иконка-пин',type:'text'}
-  ],
-  gal:[
-    {k:'url',label:'URL картинки',type:'text'},
-    {k:'caption',label:'Подпись',type:'text'}
-  ]
+  team:[{k:'name',label:'Имя / Ник',type:'text'},{k:'discord',label:'Discord username (без @)',type:'text'},{k:'avatar',label:'URL аватарки',type:'text'},{k:'sticker',label:'Стикер сверху',type:'text'},{k:'status',label:'Статус',type:'text'},{k:'role',label:'Роль',type:'text'},{k:'quote',label:'Цитата',type:'textarea'},{k:'color',label:'Цвет (hex)',type:'text'}],
+  play:[{k:'emo',label:'Эмодзи',type:'text'},{k:'title',label:'Заголовок',type:'text'},{k:'desc',label:'Описание',type:'textarea'}],
+  events:[{k:'day',label:'День и время',type:'text'},{k:'title',label:'Название',type:'text'},{k:'desc',label:'Описание',type:'textarea'},{k:'emo',label:'Эмодзи',type:'text'}],
+  wall:[{k:'text',label:'Текст записи',type:'textarea'},{k:'author',label:'Автор',type:'text'},{k:'pin',label:'Иконка-пин',type:'text'}],
+  gal:[{k:'url',label:'URL картинки',type:'text'},{k:'caption',label:'Подпись',type:'text'}]
 };
 
 function renderListEditor(tab){
@@ -907,16 +853,12 @@ function renderListEditor(tab){
   const titles={team:'Участники команды',play:'Активности',events:'Ивенты',wall:'Записи на стене',gal:'Фото в галерее'};
   let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}</h3>`;
   html+=`<div class="admin-list">`;
-  if(!items.length){
-    html+=`<div class="admin-list-empty">Список пуст. Добавь первый элемент ↓</div>`;
-  }else{
-    items.forEach((it,i)=>{
-      const main=it.name||it.title||it.text||it.url||'без названия';
-      html+=`<div class="admin-list-item"><span>${i+1}. ${escapeHtml(main).slice(0,50)}</span><div class="acts"><button class="edit" onclick="editItem('${tab}',${i})">✎</button><button class="del" onclick="delItem('${tab}',${i})">✕</button></div></div>`;
-    });
-  }
-  html+=`</div>`;
-  html+=`<button class="btn solid" onclick="addItem('${tab}')" style="width:100%">➕ Добавить</button>`;
+  if(!items.length) html+=`<div class="admin-list-empty">Список пуст ↓</div>`;
+  else items.forEach((it,i)=>{
+    const main=it.name||it.title||it.text||it.url||'без названия';
+    html+=`<div class="admin-list-item"><span>${i+1}. ${escapeHtml(main).slice(0,50)}</span><div class="acts"><button class="edit" onclick="editItem('${tab}',${i})">✎</button><button class="del" onclick="delItem('${tab}',${i})">✕</button></div></div>`;
+  });
+  html+=`</div><button class="btn solid" onclick="addItem('${tab}')" style="width:100%">➕ Добавить</button>`;
   box.innerHTML=html;
 }
 
@@ -924,9 +866,7 @@ window.addItem=function(tab){editItem(tab,-1);};
 window.delItem=async function(tab,i){
   if(!confirm('Удалить элемент?'))return;
   cur()[tab].splice(i,1);
-  await saveData();
-  renderListEditor(tab);
-  renderAll();
+  await saveData(); renderListEditor(tab); renderAll();
   toast('Удалено ✓');
 };
 
@@ -936,23 +876,17 @@ window.editItem=function(tab,i){
   let html=`<h3 style="font-size:16px;margin-bottom:12px">${i<0?'Добавить':'Редактировать'}</h3>`;
   fields.forEach(f=>{
     const val=item[f.k]||'';
-    if(f.type==='textarea'){
-      html+=`<div class="form-row"><label>${f.label}</label><textarea data-field="${f.k}">${escapeHtml(val)}</textarea></div>`;
-    }else{
-      html+=`<div class="form-row"><label>${f.label}</label><input type="text" data-field="${f.k}" value="${escapeHtml(val)}"></div>`;
-    }
+    if(f.type==='textarea') html+=`<div class="form-row"><label>${f.label}</label><textarea data-field="${f.k}">${escapeHtml(val)}</textarea></div>`;
+    else html+=`<div class="form-row"><label>${f.label}</label><input type="text" data-field="${f.k}" value="${escapeHtml(val)}"></div>`;
   });
   html+=`<div class="btns"><button class="btn solid" id="saveItem">💾 Сохранить</button><button class="btn ghost" onclick="showTab('${tab}')">Отмена</button></div>`;
   $('#adminContent').innerHTML=html;
   $('#saveItem').addEventListener('click',async ()=>{
     const newObj={};
     fields.forEach(f=>{ newObj[f.k]=$('#adminContent [data-field="'+f.k+'"]').value; });
-    if(i<0){ cur()[tab].push(newObj); }
-    else{ cur()[tab][i]=newObj; }
+    if(i<0)cur()[tab].push(newObj); else cur()[tab][i]=newObj;
     dedupeAll();
-    await saveData();
-    renderListEditor(tab);
-    renderAll();
+    await saveData(); renderListEditor(tab); renderAll();
     toast(useFirebase?'Сохранено в облаке ✓':'Сохранено локально ✓');
   });
 };
@@ -960,74 +894,50 @@ window.editItem=function(tab,i){
 window.showTab=showTab;
 
 window.exportData=function(){
-  const data=JSON.stringify(siteData,null,2);
-  const blob=new Blob([data],{type:'application/json'});
+  const blob=new Blob([JSON.stringify(siteData,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download='site-data-'+Date.now()+'.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('Данные экспортированы 📥');
+  const a=document.createElement('a'); a.href=url; a.download='site-data-'+Date.now()+'.json'; a.click();
+  URL.revokeObjectURL(url); toast('Экспортировано 📥');
 };
 
 window.importData=async function(e){
-  const file=e.target.files[0];
-  if(!file)return;
+  const file=e.target.files[0]; if(!file)return;
   const r=new FileReader();
   r.onload=async ev=>{
     try{
       const data=JSON.parse(ev.target.result);
       if(!data.f||!data.m)throw new Error('bad format');
-      siteData=data;
-      dedupeAll();
-      await saveData();
-      renderAll();
-      showTab(currentTab);
-      toast('Данные импортированы ✓');
-    }catch(err){
-      toast('Ошибка импорта: '+err.message);
-    }
+      siteData=data; dedupeAll();
+      await saveData(); renderAll(); showTab(currentTab);
+      toast('Импортировано ✓');
+    }catch(err){ toast('Ошибка: '+err.message); }
   };
-  r.readAsText(file);
-  e.target.value='';
+  r.readAsText(file); e.target.value='';
 };
 
-window.clearDuplicates=async function(){
-  dedupeAll();
-  await saveData();
-  renderAll();
-  showTab(currentTab);
-  toast('Дубли удалены 🧹');
-};
+window.clearDuplicates=async function(){ dedupeAll(); await saveData(); renderAll(); showTab(currentTab); toast('Дубли удалены 🧹'); };
 
 window.resetData=async function(){
-  if(!confirm('Сбросить ЛОКАЛЬНЫЕ данные до стартовых?'))return;
-  siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
-  dedupeAll();
-  await saveData();
-  renderAll();
-  showTab(currentTab);
-  toast('Локальные данные сброшены');
+  if(!confirm('Сбросить ЛОКАЛЬНЫЕ данные?'))return;
+  siteData=JSON.parse(JSON.stringify(DEFAULT_DATA)); dedupeAll();
+  await saveData(); renderAll(); showTab(currentTab);
+  toast('Сброшено');
 };
 
 window.resetFirebase=async function(){
   if(!useFirebase){ toast('Firebase не активен'); return; }
-  if(!confirm('ПОЛНОСТЬЮ очистить данные в Firebase? Это сбросит всё для всех пользователей!'))return;
+  if(!confirm('Очистить Firebase для всех?'))return;
   try{
     await db.collection('site').doc('main').set({data:JSON.parse(JSON.stringify(DEFAULT_DATA)),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
     localStorage.setItem(STORAGE_KEY,JSON.stringify(siteData));
-    renderAll();
-    showTab(currentTab);
-    toast('Firebase очищен и заполнен дефолтами 🔥');
-  }catch(e){
-    toast('Ошибка: '+e.message);
-  }
+    renderAll(); showTab(currentTab);
+    toast('Firebase очищен 🔥');
+  }catch(e){ toast('Ошибка: '+e.message); }
 };
 
-/* ============ СТАРТ ============ */
 (async ()=>{
-  dlog('Старт сайта. theme='+theme);
+  dlog('Старт. theme='+theme);
   await loadData();
   swapTexts(theme,false);
   renderMarquee(theme);
