@@ -243,7 +243,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 .mem-filter{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
 .mem-filter input{flex:1;min-width:140px;padding:8px 12px;font-size:13px;border:2px solid var(--line);background:var(--bg2);color:var(--ink);border-radius:8px}
 .mem-filter .cnt{font-size:12px;color:var(--muted);font-weight:800}
-.storage-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:900;background:color-mix(in srgb,#6fdab8 20%,transparent);color:#6fdab8;margin-left:6px}
+.imgbb-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:900;background:color-mix(in srgb,#6fdab8 20%,transparent);color:#6fdab8;margin-left:6px}
 @media (max-width:860px){.hero{padding-top:40px}.nav{display:none}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}.gal-strip-track{animation:none}}
 </style>
@@ -417,7 +417,6 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
 <script>
 "use strict";
@@ -435,7 +434,14 @@ const FIREBASE_CONFIG = {
   appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
 
-const STORAGE_KEY='siteData_v17';
+/* ============================================================
+   ⚠️ ВСТАВЬТЕ СЮДА ВАШ API КЛЮЧ IMGBB
+   Получить бесплатно: https://imgbb.com → регистрация → 
+   аватар → Account settings → API key
+   ============================================================ */
+const IMGBB_API_KEY = '537bc949008c85e49d38ae20d320f268';
+
+const STORAGE_KEY='siteData_v18';
 const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
 const MAX_GAL=25;
@@ -466,9 +472,8 @@ const DEFAULT_DATA={
 
 let siteData;
 let db=null;
-let storage=null;
 let useFirebase=false;
-let useStorage=false;
+let useImgBB=false;
 let unsubData=null;
 let isRendering=false;
 let debugLog=[];
@@ -514,7 +519,6 @@ function probe(url,cb){
   }catch(e){ cb(4,3); }
 }
 
-// === FIREBASE ИНИЦИАЛИЗАЦИЯ (с Storage) ===
 function initFirebase(){
   try{
     if(typeof firebase==='undefined'){ dlog('Firebase SDK не загружен','err'); useFirebase=false; return; }
@@ -523,13 +527,13 @@ function initFirebase(){
     if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     db=firebase.firestore();
     
-    try{
-      storage=firebase.storage();
-      useStorage=true;
-      dlog('✓ Firebase Storage доступен','ok');
-    }catch(e){
-      dlog('⚠ Storage недоступен: '+e.message,'warn');
-      useStorage=false;
+    // Проверяем готовность ImgBB
+    if(IMGBB_API_KEY && !IMGBB_API_KEY.includes('ВСТАВЬТЕ')){
+      useImgBB=true;
+      dlog('✓ ImgBB готов к загрузке фото','ok');
+    }else{
+      useImgBB=false;
+      dlog('⚠ ImgBB API ключ не настроен — вставьте ключ в код','warn');
     }
     
     useFirebase=true;
@@ -747,7 +751,7 @@ async function saveData(){
       if(sizeBytes * 0.75 > MAX_DOC_SIZE){
         dlog(`⚠ Данные слишком большие: ${sizeMB} MB`,'err');
         updateSyncDot('error');
-        toast(`⚠ Лимит Firestore: ${sizeMB} MB. Нажмите «Перенести фото в Storage» в админке!`);
+        toast(`⚠ Лимит Firestore: ${sizeMB} MB. Нажмите «Перенести фото на ImgBB» в админке!`);
       }else{
         try{
           await db.collection('site').doc('main').set({
@@ -762,7 +766,7 @@ async function saveData(){
           dlog('✗ Ошибка Firestore: '+e.message,'err');
           updateSyncDot('error');
           if(e.message && e.message.includes('size')){
-            toast('⚠ Превышен лимит. Перенесите фото в Storage!');
+            toast('⚠ Превышен лимит. Перенесите фото на ImgBB!');
           }else if(e.code === 'permission-denied'){
             toast('⚠ Нет прав. Проверьте правила Firestore!');
           }else{
@@ -808,61 +812,73 @@ function compressImage(file, maxWidth=600, quality=0.6){
   });
 }
 
-// === ЗАГРУЗКА В FIREBASE STORAGE ===
-async function uploadToStorage(dataUrl, folder){
-  if(!useStorage || !storage){
-    throw new Error('Storage не активен');
+// === ЗАГРУЗКА ФОТО НА IMGBB (БЕСПЛАТНО, БЕЗЛИМИТ) ===
+async function uploadToImgBB(dataUrl){
+  if(!useImgBB){
+    throw new Error('ImgBB API ключ не настроен. Вставьте ключ в код (константа IMGBB_API_KEY)');
   }
+  
   try{
-    const response = await fetch(dataUrl);
-    const blob = await response.blob();
-    const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2,9)}.jpg`;
-    const ref = storage.ref(fileName);
-    dlog(`⏳ Загрузка в Storage: ${fileName} (${Math.round(blob.size/1024)} KB)`,'info');
-    await ref.put(blob, {contentType: 'image/jpeg'});
-    const url = await ref.getDownloadURL();
-    dlog('✓ Загружено в Storage','ok');
-    return url;
+    dlog('⏳ Загружаю фото на ImgBB...','info');
+    
+    const formData = new FormData();
+    formData.append('key', IMGBB_API_KEY);
+    formData.append('image', dataUrl.split(',')[1]);
+    
+    const response = await fetch('https://api.imgbb.com/1/upload', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if(!response.ok){
+      throw new Error('ImgBB ответил с ошибкой: ' + response.status);
+    }
+    
+    const result = await response.json();
+    
+    if(result.success && result.data && result.data.url){
+      dlog('✓ Фото загружено на ImgBB: '+result.data.url,'ok');
+      return result.data.url;
+    }else{
+      throw new Error(result.error?.message || 'ImgBB вернул неожиданный ответ');
+    }
   }catch(e){
-    dlog('✗ Storage error: '+e.message,'err');
+    dlog('✗ ImgBB error: '+e.message,'err');
     throw e;
   }
 }
 
 // === ЕДИНАЯ ФУНКЦИЯ: СЖАТЬ И ЗАГРУЗИТЬ ===
-async function compressAndUpload(file, folder, maxWidth, quality){
+async function compressAndUpload(file, maxWidth, quality){
   const compressed = await compressImage(file, maxWidth, quality);
   const sizeKB = Math.round((compressed.length * 0.75) / 1024);
   
-  if(useStorage){
+  if(useImgBB){
     try{
-      const url = await uploadToStorage(compressed, folder);
-      return {url, sizeKB, inStorage: true};
+      const url = await uploadToImgBB(compressed);
+      return {url, sizeKB, inCloud: true};
     }catch(e){
-      dlog('Storage не сработал, пробую base64: '+e.message,'warn');
-      if(sizeKB > 80){
-        throw new Error('Storage недоступен, а фото слишком большое для Firestore. Проверьте правила Storage!');
-      }
-      return {url: compressed, sizeKB, inStorage: false};
+      dlog('ImgBB не сработал: '+e.message,'err');
+      throw e;
     }
   }else{
     if(sizeKB > 80){
-      throw new Error('Storage не настроен, а фото слишком большое. Настройте Firebase Storage!');
+      throw new Error('ImgBB не настроен, а фото слишком большое для Firestore. Настройте IMGBB_API_KEY!');
     }
-    return {url: compressed, sizeKB, inStorage: false};
+    return {url: compressed, sizeKB, inCloud: false};
   }
 }
 
-// === МИГРАЦИЯ СТАРЫХ BASE64 ФОТО В STORAGE ===
-window.migratePhotosToStorage=async function(){
+// === МИГРАЦИЯ СТАРЫХ ФОТО ИЗ FIRESTORE НА IMGBB ===
+window.migratePhotosToImgBB=async function(){
   try{
-    if(!useStorage){
-      toast('Storage не активен. Проверьте Firebase консоль!');
+    if(!useImgBB){
+      toast('ImgBB API ключ не настроен! Вставьте ключ в код.');
       return;
     }
-    if(!confirm('Перенести все фото из Firestore в Storage? Размер данных уменьшится.'))return;
+    if(!confirm('Перенести все фото из Firestore на ImgBB? Размер данных уменьшится.'))return;
     
-    toast('Начинаю миграцию...');
+    toast('Начинаю миграцию на ImgBB...');
     let migrated = 0, failed = 0;
     
     for(const t of ['f','m']){
@@ -871,12 +887,12 @@ window.migratePhotosToStorage=async function(){
           const g = siteData[t].gal[i];
           if(g.url && g.url.startsWith('data:')){
             try{
-              g.url = await uploadToStorage(g.url, 'gallery');
+              g.url = await uploadToImgBB(g.url);
               migrated++;
-              dlog(`✓ Мигрировано фото ${t}[${i}]`,'ok');
+              dlog(`✓ Мигрировано фото ${t}[${i}] на ImgBB`,'ok');
             }catch(e){
               failed++;
-              dlog(`✗ Не удалось мигрировать ${t}[${i}]`,'err');
+              dlog(`✗ Не удалось мигрировать ${t}[${i}]: ${e.message}`,'err');
             }
           }
         }
@@ -886,9 +902,9 @@ window.migratePhotosToStorage=async function(){
           const m = siteData[t].team[i];
           if(m.avatar && m.avatar.startsWith('data:')){
             try{
-              m.avatar = await uploadToStorage(m.avatar, 'avatars');
+              m.avatar = await uploadToImgBB(m.avatar);
               migrated++;
-              dlog(`✓ Мигрирована аватарка ${t}[${i}]`,'ok');
+              dlog(`✓ Мигрирована аватарка ${t}[${i}] на ImgBB`,'ok');
             }catch(e){
               failed++;
             }
@@ -1280,8 +1296,8 @@ function updateSetupNote(){
     let txt='';
     if(useFirebase) txt += '☁️ <b>Firebase подключён</b> ✓ ';
     else txt += '⚠️ <b>Firebase не работает</b> — проверь правила Firestore! ';
-    if(useStorage) txt += '| 📦 <b>Storage активен</b> ✓ — фото хранятся в облаке';
-    else txt += '| ⚠️ <b>Storage не активен</b> — включи Storage в консоли Firebase';
+    if(useImgBB) txt += '| 📷 <b>ImgBB активен</b> ✓ — фото хранятся бесплатно и безлимитно';
+    else txt += '| ⚠️ <b>ImgBB не настроен</b> — вставь API ключ в код (константа IMGBB_API_KEY)';
     note.innerHTML=txt;
   }catch(e){}
 }
@@ -1316,10 +1332,10 @@ function showTab(tab){
       box.innerHTML=`
         <p style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:700">
           ${useFirebase?'🟢 Firebase активен':'🔴 Firebase не работает'} • 
-          ${useStorage?'🟢 Storage активен':'🔴 Storage не активен'}
+          ${useImgBB?'🟢 ImgBB активен':'🔴 ImgBB не настроен'}
         </p>
         ${base64Count>0?`<div style="background:color-mix(in srgb,#ffcc00 15%,transparent);border:2px solid #ffcc00;border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;font-weight:700;color:#ffcc00">
-          ⚠ Найдено <b>${base64Count}</b> фото/аватарок внутри Firestore. Нажмите «Перенести фото в Storage» чтобы освободить место!
+          ⚠ Найдено <b>${base64Count}</b> фото/аватарок внутри Firestore. Нажмите «Перенести фото на ImgBB» чтобы освободить место!
         </div>`:''}
         <div style="margin-bottom:14px;padding:12px;border-radius:10px;background:var(--bg2);border:2px solid var(--line)">
           <div style="font-size:12px;color:var(--muted);font-weight:800;margin-bottom:6px">📊 Размер Firestore:</div>
@@ -1329,7 +1345,7 @@ function showTab(tab){
           </div>
         </div>
         <div class="btns">
-          <button class="btn solid" onclick="window.migratePhotosToStorage()" style="background:#6fdab8">📦 Перенести фото в Storage</button>
+          <button class="btn solid" onclick="window.migratePhotosToImgBB()" style="background:#6fdab8">📷 Перенести фото на ImgBB</button>
           <button class="btn solid" onclick="window.exportData()">📥 Экспорт</button>
           <button class="btn ghost" onclick="document.getElementById('importFile').click()">📤 Импорт</button>
           <input type="file" id="importFile" accept=".json" style="display:none" onchange="window.importData(event)">
@@ -1446,10 +1462,10 @@ function renderListEditor(tab){
     const curData = cur();
     const items = Array.isArray(curData?.[tab]) ? curData[tab] : [];
     const titles={team:'Участники команды',play:'Активности',events:'Ивенты',wall:'Записи на стене',gal:`Фото в галерее (${items.length}/${MAX_GAL})`};
-    let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}${useStorage?'<span class="storage-badge">📦 Storage</span>':''}</h3>`;
+    let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}${useImgBB?'<span class="imgbb-badge">📷 ImgBB</span>':''}</h3>`;
     
     if(tab==='gal'){
-      html += `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Максимум <b>${MAX_GAL}</b> фото. ${useStorage?'Фото загружаются в Firebase Storage — лимит Firestore не тратится!':'⚠ Storage не активен — фото будут в base64 (лимит 1 MB)'}</p>`;
+      html += `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Максимум <b>${MAX_GAL}</b> фото. ${useImgBB?'Фото загружаются на ImgBB — бесплатно и безлимитно!':'⚠ ImgBB не настроен — фото будут в base64 (лимит 1 MB)'}</p>`;
     }
 
     html+=`<div class="admin-list">`;
@@ -1458,7 +1474,7 @@ function renderListEditor(tab){
       if(tab==='gal'){
         const thumb = it.url ? `<img class="thumb" src="${escapeHtml(it.url)}" onerror="this.style.visibility='hidden'">` : '';
         const caption = (it.caption || 'без подписи') + (it.rotate?` ↻${it.rotate}°`:'');
-        const isData = it.url && it.url.startsWith('data:') ? ' 📄' : ' ☁️';
+        const isData = it.url && it.url.startsWith('data:') ? ' 📄' : ' 🌐';
         html+=`<div class="admin-list-item"><div class="thumb-wrap">${thumb}<span>${i+1}. ${escapeHtml(caption).slice(0,40)}${isData}</span></div><div class="acts"><button class="edit" onclick="window.editItem('${tab}',${i})">✎</button><button class="del" onclick="window.delItem('${tab}',${i})">✕</button></div></div>`;
       }else if(tab==='team'){
         const thumb = it.avatar
@@ -1735,10 +1751,10 @@ window.editItem=function(tab,i){
             if(!file) return;
             if(!file.type.startsWith('image/')){ toast('Выбери файл-картинку'); return; }
             if(loading)loading.classList.add('show');
-            if(hint)hint.textContent = '⏳ Обрабатываю и загружаю в облако...';
-            const result = await compressAndUpload(file, 'avatars', 400, 0.6);
+            if(hint)hint.textContent = '⏳ Обрабатываю и загружаю на ImgBB...';
+            const result = await compressAndUpload(file, 400, 0.6);
             setAvatarUrl(result.url);
-            const where = result.inStorage ? '☁️ Storage' : 'локально';
+            const where = result.inCloud ? '🌐 ImgBB' : 'локально';
             toast(`Аватарка готова (${result.sizeKB} KB, ${where})`);
           }catch(err){
             toast('Ошибка: '+err.message);
@@ -1883,11 +1899,11 @@ window.editItem=function(tab,i){
             if(!file) return;
             if(!file.type.startsWith('image/')){ toast('Выбери файл-картинку'); return; }
             if(loading)loading.classList.add('show');
-            if(hint)hint.textContent = '⏳ Обрабатываю и загружаю в облако...';
-            const result = await compressAndUpload(file, 'gallery', 800, 0.6);
+            if(hint)hint.textContent = '⏳ Обрабатываю и загружаю на ImgBB...';
+            const result = await compressAndUpload(file, 800, 0.6);
             setGalUrl(result.url);
             if(urlField) urlField.value = result.url;
-            const where = result.inStorage ? '☁️ Storage' : 'локально';
+            const where = result.inCloud ? '🌐 ImgBB' : 'локально';
             toast(`Фото готово (${result.sizeKB} KB, ${where})`);
           }catch(err){
             toast('Ошибка: '+err.message);
