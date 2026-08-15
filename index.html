@@ -146,14 +146,12 @@ section{position:relative;z-index:1;padding:58px 0}
 .pnote:nth-child(6){transform:rotate(2deg) translateY(18px)}
 .pnote:hover{transform:rotate(0) scale(1.07);z-index:2}
 
-/* ===== Галерея: рамка подстраивается под фото ===== */
 .gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;align-items:start}
 .gitem{position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:3/2;border:2px solid var(--line);box-shadow:var(--shadow);background:rgba(0,0,0,.35);cursor:zoom-in;transition:transform .3s}
 .gitem:hover{transform:scale(1.03)}
 .gitem img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform-origin:center}
 .gitem figcaption{position:absolute;inset:auto 0 0;padding:34px 14px 12px;font-weight:900;font-size:14px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.55));pointer-events:none;z-index:2}
 
-/* ===== Лента ===== */
 .gal-strip{
   position:relative;overflow:hidden;width:100%;
   border-radius:var(--radius);padding:6px 0;
@@ -173,7 +171,6 @@ section{position:relative;z-index:1;padding:58px 0}
   to{transform:translateX(-50%)}
 }
 
-/* ===== Модалка просмотра ===== */
 #photoModal{background:rgba(0,0,0,.92);backdrop-filter:blur(18px)}
 #photoModal .modal-box{
   background:transparent;border:none;padding:0;max-width:92vw;max-height:92vh;
@@ -366,14 +363,6 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 }
 .mem-filter input{flex:1;min-width:140px;padding:8px 12px;font-size:13px;border:2px solid var(--line);background:var(--bg2);color:var(--ink);border-radius:8px}
 .mem-filter .cnt{font-size:12px;color:var(--muted);font-weight:800}
-
-.warning-box{
-  background:color-mix(in srgb,#ff6b6b 15%,transparent);
-  border:2px solid color-mix(in srgb,#ff6b6b 40%,transparent);
-  border-radius:10px;padding:12px 14px;font-size:12px;color:#ff6b6b;
-  font-weight:700;margin-bottom:12px;line-height:1.5;
-}
-.warning-box b{color:#ff3333}
 
 @media (max-width:860px){
   .hero{padding-top:40px}
@@ -572,7 +561,7 @@ const FIREBASE_CONFIG = {
   appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
 
-const STORAGE_KEY='siteData_v10';
+const STORAGE_KEY='siteData_v11';
 const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
 const MAX_GAL=25;
@@ -614,6 +603,13 @@ let importedMembers=[];
 let importFilter='';
 let currentAvatarTransform={x:0,y:0,scale:1};
 
+/* === Уникальный ID для каждого элемента (решает баг с дедупликацией) === */
+function newId(){
+  try{ return crypto.randomUUID(); }catch(e){
+    return 'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,10);
+  }
+}
+
 window.addEventListener('error', e=>{
   try{ dlog('JS error: '+e.message,'err'); }catch(_){}
 });
@@ -630,7 +626,6 @@ function dlog(msg,type='info'){
   }catch(e){}
 }
 
-/* Узнаёт реальные размеры картинки */
 function probe(url,cb){
   try{
     if(!url){ cb(4,3); return; }
@@ -690,7 +685,14 @@ function dedupeAll(){
       if(!siteData[t])siteData[t]={};
       ['team','play','events','wall','gal'].forEach(k=>{
         if(!Array.isArray(siteData[t][k]))siteData[t][k]=[];
-        const keyFns={team:i=>(i.name||'')+'::'+(i.discord||''),play:i=>(i.title||'')+'::'+(i.emo||''),events:i=>(i.title||'')+'::'+(i.day||''),wall:i=>(i.text||'')+'::'+(i.author||''),gal:i=>(i.url||'')+'::'+(i.caption||'')};
+        // Ключ дедупликации теперь по _id — разные элементы никогда не удалятся
+        const keyFns={
+          team:i=>i._id || (i.name||'')+'::'+(i.discord||''),
+          play:i=>i._id || (i.title||'')+'::'+(i.emo||''),
+          events:i=>i._id || (i.title||'')+'::'+(i.day||''),
+          wall:i=>i._id || (i.text||'')+'::'+(i.author||''),
+          gal:i=>i._id || (i.url||'')+'::'+(i.caption||'')
+        };
         const before=siteData[t][k].length;
         siteData[t][k]=dedupe(siteData[t][k],keyFns[k]);
         const after=siteData[t][k].length;
@@ -751,7 +753,15 @@ function migrateData(){
     ['f','m'].forEach(t=>{
       if(!siteData[t]) siteData[t]=JSON.parse(JSON.stringify(DEFAULT_DATA[t]));
       if(!Array.isArray(siteData[t].poll)) siteData[t].poll=[];
-      if(!Array.isArray(siteData[t].gal)) siteData[t].gal=[];
+      ['team','play','events','wall','gal'].forEach(k=>{
+        if(!Array.isArray(siteData[t][k])) siteData[t][k]=[];
+        // Каждому элементу присваиваем уникальный ID (если его нет)
+        siteData[t][k].forEach(item=>{
+          if(item && typeof item==='object' && !item._id){
+            item._id = newId();
+          }
+        });
+      });
       siteData[t].gal.forEach(g=>{
         if(typeof g.rotate!=='number') g.rotate=0;
       });
@@ -892,7 +902,6 @@ document.addEventListener('keydown', e=>{
   }
 });
 
-/* ===== Карточка фото: рамка подстраивается под пропорции фото ===== */
 function buildGalItem(it, mode){
   const fig=document.createElement('figure');
   fig.className='gitem themable reveal';
@@ -913,13 +922,12 @@ function buildGalItem(it, mode){
   const fit=()=>{
     try{
       const w=img.naturalWidth||4, h=img.naturalHeight||3;
-      const r = swapped ? h/w : w/h;   // пропорция рамки
+      const r = swapped ? h/w : w/h;
       fig.style.aspectRatio=String(r);
       if(mode==='strip'){
         fig.style.width=Math.round(STRIP_H*r)+'px';
       }
       if(swapped){
-        // фото повёрнуто: рисуем его так, чтобы после поворота оно точно заполнило рамку
         img.style.position='absolute';
         img.style.left='50%'; img.style.top='50%';
         img.style.width=(100/r)+'%';
@@ -1265,7 +1273,7 @@ function renderPollEditor(){
     const box=$('#adminContent');
     const curData = cur();
     const opts = Array.isArray(curData?.poll) ? curData.poll : [];
-    let html=`<h3 style="font-size:16px;margin-bottom:8px">Варианты опроса (тема: ${theme==='f'?'🌸':''})</h3>`;
+    let html=`<h3 style="font-size:16px;margin-bottom:8px">Варианты опроса (тема: ${theme==='f'?'🌸':'⚡'})</h3>`;
     if(!opts.length){
       const msg = theme==='f'
         ? {emo:'🌸', title:'Опрос пуст', text:'Добавь первый вариант для девочек ↓'}
@@ -1437,7 +1445,6 @@ window.delItem=async function(tab,i){
   }catch(e){ toast('Ошибка: '+e.message); }
 };
 
-/* Кроппер: один экземпляр на превью, чтобы слушатели не дублировались */
 function setupAvatarCropper(previewEl, innerEl, initialTransform, basePrefix){
   basePrefix = basePrefix || '';
   if(previewEl._cropper){
@@ -1502,16 +1509,22 @@ function setupAvatarCropper(previewEl, innerEl, initialTransform, basePrefix){
   return api;
 }
 
+/* === Исправленный extractUrlFromInner: надёжно работает с длинными base64 === */
 function extractUrlFromInner(inner){
   try{
     if(!inner) return null;
     const bg = inner.style.backgroundImage;
     if(!bg) return null;
-    const match = bg.match(/url\(['"]?(.+?)['"]?\)$/);
-    if(match) return match[1];
-    const match2 = bg.match(/url\(['"]?([^'"]+)['"]?\)/);
-    if(match2) return match2[1];
-    return null;
+    const start = bg.indexOf('url(');
+    if(start === -1) return null;
+    let i = start + 4;
+    if(bg[i] === '"' || bg[i] === "'") i++;
+    const end = bg.lastIndexOf(')');
+    if(end === -1 || end <= i) return null;
+    let j = end;
+    if(bg[j-1] === '"' || bg[j-1] === "'") j--;
+    const url = bg.slice(i, j).trim();
+    return url || null;
   }catch(e){ return null; }
 }
 
@@ -1734,7 +1747,6 @@ window.editItem=function(tab,i){
       const rotateBtn = $('#galRotateBtn');
       const rotateDegEl = $('#rotateDeg');
 
-      /* Подгоняет превью под пропорции фото (с учётом поворота) */
       function refreshGalFit(){
         try{
           const inner = preview.querySelector('.up-inner');
@@ -1905,6 +1917,14 @@ window.editItem=function(tab,i){
             newObj[f.k] = (el.type==='checkbox') ? el.checked : el.value;
           });
 
+          // === КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: сохраняем существующий _id или генерируем новый ===
+          if(i<0){
+            newObj._id = newId();
+          }else{
+            const existing = cur()[tab][i];
+            newObj._id = existing?._id || newId();
+          }
+
           if(tab==='team'){
             const preview = $('#avatarPreview');
             const inner = preview?.querySelector('.up-inner');
@@ -1962,10 +1982,6 @@ window.editItem=function(tab,i){
 
 window.showTab=showTab;
 
-/* ======================================================================== */
-/* ===================   ИМПОРТ УЧАСТНИКОВ ИЗ DISCORD   ================== */
-/* ======================================================================== */
-
 function avatarUrl(member){
   try{
     if(member.avatar){
@@ -1986,7 +2002,7 @@ function renderImportTab(){
     const serverId = siteData?.serverId || '';
 
     let html = `
-      <div class="import-info">
+      <div class="import_info">
         📖 <b>Как это работает:</b><br>
         1. В настройках Discord-сервера включи <b>«Виджет сервера»</b> (Server Settings → Widget → Enable Server Widget)<br>
         2. Скопируй <b>Server ID</b> (если не видно — включи Developer Mode в настройках Discord, ПКМ на иконке сервера → Copy Server ID)<br>
@@ -2178,6 +2194,7 @@ window.addImportedToTeam=async function(memberId,targetTheme){
     const displayName = m.globalName || m.username;
 
     const newItem = {
+      _id: newId(),   // ← уникальный ID
       _discordId: memberId,
       name: displayName,
       discord: m.discriminator&&m.discriminator!=='0' ? m.username+'#'+m.discriminator : m.username,
