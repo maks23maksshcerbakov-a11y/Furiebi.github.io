@@ -561,7 +561,7 @@ const FIREBASE_CONFIG = {
   appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
 
-const STORAGE_KEY='siteData_v11';
+const STORAGE_KEY='siteData_v12';
 const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
 const MAX_GAL=25;
@@ -603,7 +603,6 @@ let importedMembers=[];
 let importFilter='';
 let currentAvatarTransform={x:0,y:0,scale:1};
 
-/* === Уникальный ID для каждого элемента (решает баг с дедупликацией) === */
 function newId(){
   try{ return crypto.randomUUID(); }catch(e){
     return 'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,10);
@@ -667,17 +666,24 @@ function updateSyncDot(state){
   }catch(e){}
 }
 
+/* === ИСПРАВЛЕННАЯ дедупликация: не удаляет элементы при ошибках или отсутствии ключа === */
 function dedupe(arr,keyFn){
   if(!Array.isArray(arr))return [];
   const seen=new Set(), out=[];
   for(const it of arr){
     try{
       const key=keyFn(it);
+      // Если ключа нет (null/undefined/пустая строка) — оставляем элемент, не дедуплицируем
+      if(key==null||key===''){ out.push(it); continue; }
       if(!seen.has(key)){ seen.add(key); out.push(it); }
-    }catch(e){}
+    }catch(e){
+      // Ошибка в keyFn — оставляем элемент, не удаляем
+      out.push(it);
+    }
   }
   return out;
 }
+
 function dedupeAll(){
   try{
     if(!siteData)return;
@@ -685,16 +691,9 @@ function dedupeAll(){
       if(!siteData[t])siteData[t]={};
       ['team','play','events','wall','gal'].forEach(k=>{
         if(!Array.isArray(siteData[t][k]))siteData[t][k]=[];
-        // Ключ дедупликации теперь по _id — разные элементы никогда не удалятся
-        const keyFns={
-          team:i=>i._id || (i.name||'')+'::'+(i.discord||''),
-          play:i=>i._id || (i.title||'')+'::'+(i.emo||''),
-          events:i=>i._id || (i.title||'')+'::'+(i.day||''),
-          wall:i=>i._id || (i.text||'')+'::'+(i.author||''),
-          gal:i=>i._id || (i.url||'')+'::'+(i.caption||'')
-        };
+        // Дедупликация ТОЛЬКО по _id. Нет _id → элемент не дедуплицируется (остаётся)
         const before=siteData[t][k].length;
-        siteData[t][k]=dedupe(siteData[t][k],keyFns[k]);
+        siteData[t][k]=dedupe(siteData[t][k], i=>i._id);
         const after=siteData[t][k].length;
         if(before!==after) dlog(`Удалено ${before-after} дублей в ${t}.${k}`,'warn');
       });
@@ -755,16 +754,17 @@ function migrateData(){
       if(!Array.isArray(siteData[t].poll)) siteData[t].poll=[];
       ['team','play','events','wall','gal'].forEach(k=>{
         if(!Array.isArray(siteData[t][k])) siteData[t][k]=[];
-        // Каждому элементу присваиваем уникальный ID (если его нет)
         siteData[t][k].forEach(item=>{
           if(item && typeof item==='object' && !item._id){
             item._id = newId();
           }
         });
       });
-      siteData[t].gal.forEach(g=>{
-        if(typeof g.rotate!=='number') g.rotate=0;
-      });
+      if(Array.isArray(siteData[t].gal)){
+        siteData[t].gal.forEach(g=>{
+          if(typeof g.rotate!=='number') g.rotate=0;
+        });
+      }
     });
   }catch(e){ dlog('migrate error: '+e.message,'err'); }
 }
@@ -945,9 +945,19 @@ function buildGalItem(it, mode){
   };
 
   if(img.complete && img.naturalWidth) fit(); else img.onload=fit;
-  img.onerror=()=>{ fig.style.display='none'; };
+  /* ИСПРАВЛЕНО: не скрываем карточку при ошибке — показываем пустую рамку с подписью */
+  img.onerror=()=>{
+    try{
+      img.style.display='none';
+      fig.style.display='';
+      fig.style.minHeight='120px';
+      fig.style.display='flex';
+      fig.style.alignItems='center';
+      fig.style.justifyContent='center';
+    }catch(e){}
+  };
 
-  fig.addEventListener('click', ()=>openPhotoModal(it.url, it.caption, rotate));
+  fig.addEventListener('click', ()=>{ if(it.url) openPhotoModal(it.url, it.caption, rotate); });
   return fig;
 }
 
@@ -998,7 +1008,8 @@ function swapTexts(t,animate){
     });
     $('#lblF').classList.toggle('on',t==='f');
     $('#lblM').classList.toggle('on',t==='m');
-    $('#logoEmoji').textContent=t==='f'?'🌸':'';
+    /* ИСПРАВЛЕНО: ⚡ для мужской темы вместо пустой строки */
+    $('#logoEmoji').textContent=t==='f'?'🌸':'⚡';
     $('#heartBtn').textContent=t==='f'?'💖':'🫡';
   }catch(e){ dlog('swapTexts error: '+e.message,'err'); }
 }
@@ -1083,7 +1094,7 @@ $('#heartBtn').addEventListener('click',()=>{
     const zone=$('#loveZone');
     if(!reduced)for(let k=0;k<5;k++){
       const s=document.createElement('span'); s.className='fheart';
-      s.textContent=theme==='f'?['💖','💗','✨'][k%3]:['⚡','',''][k%3];
+      s.textContent=theme==='f'?['💖','💗','✨'][k%3]:['⚡','','🔥'][k%3];
       s.style.left=(30+Math.random()*40)+'%'; s.style.top='10px';
       s.style.setProperty('--dx',(Math.random()*80-40)+'px');
       zone.appendChild(s); setTimeout(()=>s.remove(),1150);
@@ -1509,7 +1520,6 @@ function setupAvatarCropper(previewEl, innerEl, initialTransform, basePrefix){
   return api;
 }
 
-/* === Исправленный extractUrlFromInner: надёжно работает с длинными base64 === */
 function extractUrlFromInner(inner){
   try{
     if(!inner) return null;
@@ -1917,7 +1927,7 @@ window.editItem=function(tab,i){
             newObj[f.k] = (el.type==='checkbox') ? el.checked : el.value;
           });
 
-          // === КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: сохраняем существующий _id или генерируем новый ===
+          /* === КЛЮЧЕВОЕ: всегда присваиваем _id === */
           if(i<0){
             newObj._id = newId();
           }else{
@@ -2002,7 +2012,7 @@ function renderImportTab(){
     const serverId = siteData?.serverId || '';
 
     let html = `
-      <div class="import_info">
+      <div class="import-info">
         📖 <b>Как это работает:</b><br>
         1. В настройках Discord-сервера включи <b>«Виджет сервера»</b> (Server Settings → Widget → Enable Server Widget)<br>
         2. Скопируй <b>Server ID</b> (если не видно — включи Developer Mode в настройках Discord, ПКМ на иконке сервера → Copy Server ID)<br>
@@ -2194,7 +2204,7 @@ window.addImportedToTeam=async function(memberId,targetTheme){
     const displayName = m.globalName || m.username;
 
     const newItem = {
-      _id: newId(),   // ← уникальный ID
+      _id: newId(),
       _discordId: memberId,
       name: displayName,
       discord: m.discriminator&&m.discriminator!=='0' ? m.username+'#'+m.discriminator : m.username,
