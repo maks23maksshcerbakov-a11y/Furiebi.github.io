@@ -561,11 +561,13 @@ const FIREBASE_CONFIG = {
   appId: "1:144716304483:web:71dd805ccc1c183e882856"
 };
 
-const STORAGE_KEY='siteData_v13';
+const STORAGE_KEY='siteData_v14';
 const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
 const MAX_GAL=25;
 const STRIP_H=240;
+/* Максимальный размер документа Firestore (1MB) с запасом */
+const MAX_DOC_SIZE = 900 * 1024;
 
 const EMPTY_POLL_MSG = {
   f: { emo:'🌙', title:'Опрос пока не создан', text:'Админ ещё не придумал, что будем решать вместе. Открой админку → вкладка Опрос → добавь первый вариант ✨', hint:'✨ настрой опрос в админке' },
@@ -599,7 +601,6 @@ let unsubData=null;
 let isRendering=false;
 let debugLog=[];
 
-/* === Флаг защиты от race condition === */
 let _savingUntil = 0;
 
 let importedMembers=[];
@@ -718,23 +719,21 @@ async function loadData(){
       migrateData();
       dedupeAll();
 
-      /* === ИСПРАВЛЕНИЕ 1: onSnapshot игнорирует кеш и защищает от race condition === */
       unsubData=db.collection('site').doc('main').onSnapshot(snap=>{
         try{
           if(!snap.exists)return;
-          /* Игнорируем кешированные данные — Firestore может отдать старую версию */
+          /* Игнорируем кеш Firestore */
           if(snap.metadata && snap.metadata.fromCache){
             dlog('Snapshot fromCache — пропускаю','warn');
             return;
           }
-          /* Игнорируем если мы сейчас сохраняем (race condition protection) */
+          /* Защита от race condition во время сохранения */
           if(Date.now() < _savingUntil){
             dlog('Snapshot во время saveData — пропускаю','warn');
             return;
           }
           const newData=snap.data().data;
           if(!newData)return;
-          /* Сравниваем по содержимому массивов, а не по JSON.stringify */
           if(!dataEqual(newData, siteData)){
             dlog('Snapshot: данные обновились из Firebase','ok');
             siteData=newData;
@@ -760,7 +759,6 @@ async function loadData(){
   }
 }
 
-/* === ИСПРАВЛЕНИЕ 2: Надёжное сравнение данных (не по JSON.stringify) === */
 function dataEqual(a,b){
   try{
     if(!a||!b) return false;
@@ -820,21 +818,42 @@ function loadLocal(){
   dedupeAll();
 }
 
-/* === ИСПРАВЛЕНИЕ 3: saveData устанавливает флаг защиты === */
+/* === ИСПРАВЛЕНИЕ: проверка размера перед записью + без merge === */
 async function saveData(){
-  /* Защищаем от onSnapshot на 3 секунды после записи */
-  _savingUntil = Date.now() + 3000;
+  _savingUntil = Date.now() + 10000; /* 10 секунд защиты от onSnapshot */
   try{
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(siteData));
+    const json = JSON.stringify(siteData);
+    const sizeKB = Math.round((json.length * 0.75) / 1024);
+    dlog(`Размер данных: ${sizeKB} KB (лимит ~${Math.round(MAX_DOC_SIZE/1024)} KB)`,'info');
+
+    localStorage.setItem(STORAGE_KEY, json);
+
     if(useFirebase){
+      /* Проверка размера ДО записи в Firestore */
+      if(json.length * 0.75 > MAX_DOC_SIZE){
+        const sizeMB = (sizeKB / 1024).toFixed(1);
+        dlog(`⚠ Данные слишком большие: ${sizeMB} MB > 1 MB`,'err');
+        updateSyncDot('error');
+        toast(`⚠ Слишком много фото! Размер: ${sizeMB} MB (лимит 1 MB). Удали несколько фото.`);
+        return;
+      }
       try{
-        await db.collection('site').doc('main').set({data:siteData,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+        /* БЕЗ {merge: true} — полная перезапись надёжнее */
+        await db.collection('site').doc('main').set({
+          data: siteData,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
         dlog('Сохранено в Firestore ✓','ok');
         updateSyncDot('ok');
       }catch(e){
         dlog('Firebase save failed: '+e.message,'err');
         updateSyncDot('error');
-        toast('⚠ Сохранено только локально');
+        /* Понятное сообщение о причине ошибки */
+        if(e.message && e.message.includes('size')){
+          toast('⚠ Превышен лимит Firebase. Удали несколько фото.');
+        }else{
+          toast('⚠ Ошибка Firebase. Сохранено локально.');
+        }
       }
     }
   }catch(e){ dlog('saveData error: '+e.message,'err'); }
@@ -1252,6 +1271,7 @@ $$('.admin-tabs button').forEach(b=>{
   });
 });
 
+/* === ИСПРАВЛЕНИЕ: более агрессивное сжатие фото === */
 function compressImage(file, maxWidth=1200, quality=0.85){
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
@@ -1266,13 +1286,13 @@ function compressImage(file, maxWidth=1200, quality=0.85){
           if(h > maxWidth){ w = Math.round(w * maxWidth / h); h = maxWidth; }
           canvas.width = w; canvas.height = h;
           ctx.drawImage(img, 0, 0, w, h);
-          const dataUrl = canvas.toDataURL('image/jpeg', quality);
-          const sizeMB = (dataUrl.length * 0.75) / (1024*1024);
-          if(sizeMB > 2){
-            resolve(canvas.toDataURL('image/jpeg', 0.6));
-          }else{
-            resolve(dataUrl);
+          let dataUrl = canvas.toDataURL('image/jpeg', quality);
+          /* Если всё ещё больше 250KB — снижаем качество ещё */
+          const sizeKB = (dataUrl.length * 0.75) / 1024;
+          if(sizeKB > 250){
+            dataUrl = canvas.toDataURL('image/jpeg', Math.max(0.5, quality * 0.7));
           }
+          resolve(dataUrl);
         }catch(err){ reject(err); }
       };
       img.onerror = () => reject(new Error('Не удалось загрузить изображение'));
@@ -1288,8 +1308,21 @@ function showTab(tab){
     const box=$('#adminContent');
     if(!box) return;
     if(tab==='data'){
+      /* Показываем текущий размер данных */
+      const sizeKB = Math.round((JSON.stringify(siteData).length * 0.75) / 1024);
+      const sizeMB = (sizeKB / 1024).toFixed(2);
+      const pct = Math.min(100, Math.round((sizeKB / (MAX_DOC_SIZE/1024)) * 100));
+      const color = pct > 80 ? '#ff6b6b' : pct > 60 ? '#ffcc00' : '#3ecf7a';
       box.innerHTML=`
         <p style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:700">${useFirebase?'🟢 Firebase активен.':'🟡 Firebase не настроен.'}</p>
+        <div style="margin-bottom:14px;padding:12px;border-radius:10px;background:var(--bg2);border:2px solid var(--line)">
+          <div style="font-size:12px;color:var(--muted);font-weight:800;margin-bottom:6px">📊 Размер данных:</div>
+          <div style="font-size:20px;font-weight:900;color:${color}">${sizeMB} MB <span style="font-size:13px;color:var(--muted)">/ 1 MB</span></div>
+          <div style="height:8px;background:var(--soft);border-radius:4px;margin-top:6px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${color};transition:width .3s"></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">${pct}% от лимита Firestore</div>
+        </div>
         <div class="btns">
           <button class="btn solid" onclick="window.exportData()">📥 Экспорт</button>
           <button class="btn ghost" onclick="document.getElementById('importFile').click()">📤 Импорт</button>
@@ -1436,7 +1469,23 @@ function renderListEditor(tab){
     const titles={team:'Участники команды',play:'Активности',events:'Ивенты',wall:'Записи на стене',gal:`Фото в галерее (${items.length}/${MAX_GAL})`};
     let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}</h3>`;
 
-    if(tab==='gal') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Максимум <b>${MAX_GAL}</b> фото. Рамка на сайте сама подстроится под пропорции фото. При >5 фото — лента. Кнопка ↻ поворачивает.</p>`;
+    if(tab==='gal'){
+      /* Показываем текущий размер данных */
+      const sizeKB = Math.round((JSON.stringify(siteData).length * 0.75) / 1024);
+      const sizeMB = (sizeKB / 1024).toFixed(2);
+      const pct = Math.min(100, Math.round((sizeKB / (MAX_DOC_SIZE/1024)) * 100));
+      const color = pct > 80 ? '#ff6b6b' : pct > 60 ? '#ffcc00' : '#3ecf7a';
+      html += `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Максимум <b>${MAX_GAL}</b> фото. Рамка подстраивается под пропорции. При >5 фото — лента.</p>`;
+      html += `<div style="margin-bottom:12px;padding:10px;border-radius:8px;background:var(--bg2);border:2px solid var(--line)">
+        <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:var(--muted);margin-bottom:4px">
+          <span>📊 Размер данных</span>
+          <span style="color:${color}">${sizeMB} MB / 1 MB</span>
+        </div>
+        <div style="height:6px;background:var(--soft);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${color};transition:width .3s"></div>
+        </div>
+      </div>`;
+    }
     if(tab==='team') html+=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px">👤 Аватарка загружается целиком без обрезки. В редакторе можно двигать и увеличивать картинку мышкой.</p>`;
 
     html+=`<div class="admin-list">`;
@@ -1924,7 +1973,8 @@ window.editItem=function(tab,i){
             }
             if(loading)loading.classList.add('show');
             if(hint)hint.textContent = '⏳ Обрабатываю...';
-            const compressed = await compressImage(file, 1200, 0.82);
+            /* === ИСПРАВЛЕНИЕ: для галереи сжимаем сильнее (800px, 70%) === */
+            const compressed = await compressImage(file, 800, 0.7);
             setGalUrl(compressed);
             if(urlField) urlField.value = compressed;
             const sizeKB = Math.round((compressed.length * 0.75) / 1024);
@@ -2007,7 +2057,6 @@ window.editItem=function(tab,i){
           }
 
           if(i<0)cur()[tab].push(newObj); else cur()[tab][i]=newObj;
-          /* === ИСПРАВЛЕНИЕ 4: Убрана лишняя дедупликация при сохранении === */
           await saveData(); renderListEditor(tab); renderAll();
           toast(useFirebase?'Сохранено в облаке ✓':'Сохранено локально ✓');
         }catch(err){
@@ -2044,7 +2093,7 @@ function renderImportTab(){
     const serverId = siteData?.serverId || '';
 
     let html = `
-      <div class="import_info">
+      <div class="import-info">
         📖 <b>Как это работает:</b><br>
         1. В настройках Discord-сервера включи <b>«Виджет сервера»</b> (Server Settings → Widget → Enable Server Widget)<br>
         2. Скопируй <b>Server ID</b> (если не видно — включи Developer Mode в настройках Discord, ПКМ на иконке сервера → Copy Server ID)<br>
