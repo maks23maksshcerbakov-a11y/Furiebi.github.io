@@ -544,6 +544,7 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
 <script>
 "use strict";
@@ -566,7 +567,6 @@ const ADMIN_USER='DEAD';
 const ADMIN_PASS='Dead12pull4';
 const MAX_GAL=25;
 const STRIP_H=240;
-/* Максимальный размер документа Firestore (1MB) с запасом */
 const MAX_DOC_SIZE = 900 * 1024;
 
 const EMPTY_POLL_MSG = {
@@ -580,29 +580,25 @@ const DEFAULT_DATA={
     team:[],
     play:[{emo:'🔮', title:'Шар судьбы', desc:'скоро тут появится предсказание на день'},{emo:'💌', title:'Генератор комплиментов', desc:'скоро тут можно будет получить порцию тёплых слов'},{emo:'🎧', title:'Плейлист сервера', desc:'скоро тут зазвучит наша любимая музыка'}],
     events:[{day:'пятница • 20:00', title:'Киновечер', desc:'ромком, пледы и какао. кто уснул — смотрит титры', emo:'🍿'},{day:'суббота • 19:00', title:'Караоке', desc:'поём громко, стыдно никому. закажи песню заранее!', emo:'🎤'}],
-    wall:[],
-    gal:[],
-    poll:[]
+    wall:[], gal:[], poll:[]
   },
   m:{
     team:[],
     play:[{emo:'🧭', title:'Оракул отряда', desc:'скоро тут появится боевой прогноз'},{emo:'🏆', title:'Генератор похвалы', desc:'скоро тут можно будет получить заслуженный респект'},{emo:'🎧', title:'Саундтрек базы', desc:'скоро тут зазвучит саундтрек отряда'}],
     events:[{day:'пятница • 20:00', title:'Кинооперация', desc:'фильм выбирает отряд. уснувшие смотрят титры', emo:'🎬'},{day:'среда • 21:00', title:'Тактические катки', desc:'турнир отряда. реванш обязателен', emo:'🎯'}],
-    wall:[],
-    gal:[],
-    poll:[]
+    wall:[], gal:[], poll:[]
   }
 };
 
 let siteData;
 let db=null;
+let storage=null;
 let useFirebase=false;
+let useStorage=false;
 let unsubData=null;
 let isRendering=false;
 let debugLog=[];
-
 let _savingUntil = 0;
-
 let importedMembers=[];
 let importFilter='';
 let currentAvatarTransform={x:0,y:0,scale:1};
@@ -613,12 +609,8 @@ function newId(){
   }
 }
 
-window.addEventListener('error', e=>{
-  try{ dlog('JS error: '+e.message,'err'); }catch(_){}
-});
-window.addEventListener('unhandledrejection', e=>{
-  try{ dlog('Promise error: '+(e.reason?.message||e.reason),'err'); }catch(_){}
-});
+window.addEventListener('error', e=>{ try{ dlog('JS error: '+e.message,'err'); }catch(_){} });
+window.addEventListener('unhandledrejection', e=>{ try{ dlog('Promise error: '+(e.reason?.message||e.reason),'err'); }catch(_){} });
 
 function dlog(msg,type='info'){
   try{
@@ -651,11 +643,77 @@ function initFirebase(){
     db=firebase.firestore();
     useFirebase=true;
     dlog('Firebase инициализирован ✓','ok');
+    
+    try{
+      if(typeof firebase.storage === 'function'){
+        storage = firebase.storage();
+        useStorage = true;
+        dlog('Firebase Storage доступен ✓','ok');
+      }else{
+        useStorage = false;
+        dlog('Firebase Storage не подключен','warn');
+      }
+    }catch(e){
+      useStorage = false;
+      dlog('Storage init error: '+e.message,'warn');
+    }
+    
     updateSyncDot('loading');
   }catch(e){
     dlog('Firebase init failed: '+e.message,'err');
     useFirebase=false;
+    useStorage=false;
   }
+}
+
+async function uploadBase64ToStorage(dataUrl, path){
+  if(!useStorage || !storage) return dataUrl;
+  try{
+    const fileRef = storage.ref().child(path);
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    const snapshot = await fileRef.put(blob);
+    const url = await snapshot.ref.getDownloadURL();
+    dlog('Загружено в Storage: '+path,'ok');
+    return url;
+  }catch(e){
+    dlog('Storage upload failed: '+e.message,'warn');
+    return dataUrl;
+  }
+}
+
+async function migrateBase64ToUrls(data){
+  if(!useStorage) return data;
+  try{
+    for(const t of ['f','m']){
+      if(!data[t]) continue;
+      
+      if(Array.isArray(data[t].gal)){
+        for(let i=0; i<data[t].gal.length; i++){
+          const item = data[t].gal[i];
+          if(item.url && typeof item.url === 'string' && item.url.startsWith('data:')){
+            const path = `gallery/${t}/${item._id || newId()}.jpg`;
+            dlog(`Загружаю фото галереи ${t}[${i}] в Storage...`);
+            item.url = await uploadBase64ToStorage(item.url, path);
+          }
+        }
+      }
+      
+      if(Array.isArray(data[t].team)){
+        for(let i=0; i<data[t].team.length; i++){
+          const item = data[t].team[i];
+          if(item.avatar && typeof item.avatar === 'string' && item.avatar.startsWith('data:')){
+            const path = `avatars/${t}/${item._id || newId()}.jpg`;
+            dlog(`Загружаю аватар ${t}[${i}] в Storage...`);
+            item.avatar = await uploadBase64ToStorage(item.avatar, path);
+          }
+        }
+      }
+    }
+  }catch(e){
+    dlog('migrateBase64ToUrls error: '+e.message,'err');
+  }
+  return data;
 }
 
 function updateSyncDot(state){
@@ -665,7 +723,7 @@ function updateSyncDot(state){
     dot.classList.remove('on','off','loading');
     if(!useFirebase){ dot.classList.add('off'); dot.title='Локальный режим'; return; }
     if(state==='loading'){ dot.classList.add('loading'); dot.title='Загрузка...'; }
-    else if(state==='ok'){ dot.classList.add('on'); dot.title='✓ Синхронизировано'; }
+    else if(state==='ok'){ dot.classList.add('on'); dot.title='✓ Синхронизировано'+(useStorage?' (со Storage)':''); }
     else if(state==='error'){ dot.classList.add('off'); dot.title='Ошибка'; }
   }catch(e){}
 }
@@ -678,9 +736,7 @@ function dedupe(arr,keyFn){
       const key=keyFn(it);
       if(key==null||key===''){ out.push(it); continue; }
       if(!seen.has(key)){ seen.add(key); out.push(it); }
-    }catch(e){
-      out.push(it);
-    }
+    }catch(e){ out.push(it); }
   }
   return out;
 }
@@ -722,16 +778,8 @@ async function loadData(){
       unsubData=db.collection('site').doc('main').onSnapshot(snap=>{
         try{
           if(!snap.exists)return;
-          /* Игнорируем кеш Firestore */
-          if(snap.metadata && snap.metadata.fromCache){
-            dlog('Snapshot fromCache — пропускаю','warn');
-            return;
-          }
-          /* Защита от race condition во время сохранения */
-          if(Date.now() < _savingUntil){
-            dlog('Snapshot во время saveData — пропускаю','warn');
-            return;
-          }
+          if(snap.metadata && snap.metadata.fromCache){ return; }
+          if(Date.now() < _savingUntil){ return; }
           const newData=snap.data().data;
           if(!newData)return;
           if(!dataEqual(newData, siteData)){
@@ -818,41 +866,47 @@ function loadLocal(){
   dedupeAll();
 }
 
-/* === ИСПРАВЛЕНИЕ: проверка размера перед записью + без merge === */
 async function saveData(){
-  _savingUntil = Date.now() + 10000; /* 10 секунд защиты от onSnapshot */
+  _savingUntil = Date.now() + 10000;
   try{
+    if(useStorage){
+      dlog('Миграция base64 в Storage перед сохранением...');
+      await migrateBase64ToUrls(siteData);
+    }
+    
     const json = JSON.stringify(siteData);
     const sizeKB = Math.round((json.length * 0.75) / 1024);
-    dlog(`Размер данных: ${sizeKB} KB (лимит ~${Math.round(MAX_DOC_SIZE/1024)} KB)`,'info');
+    dlog(`Размер данных: ${sizeKB} KB`,'info');
 
-    localStorage.setItem(STORAGE_KEY, json);
+    try{ localStorage.setItem(STORAGE_KEY, json); }catch(e){
+      dlog('localStorage save failed: '+e.message,'err');
+    }
 
     if(useFirebase){
-      /* Проверка размера ДО записи в Firestore */
       if(json.length * 0.75 > MAX_DOC_SIZE){
         const sizeMB = (sizeKB / 1024).toFixed(1);
         dlog(`⚠ Данные слишком большие: ${sizeMB} MB > 1 MB`,'err');
         updateSyncDot('error');
-        toast(`⚠ Слишком много фото! Размер: ${sizeMB} MB (лимит 1 MB). Удали несколько фото.`);
+        toast(`⚠ Превышен лимит! Размер: ${sizeMB} MB. Удали фото или включи Storage.`);
+        localStorage.setItem(STORAGE_KEY+'_local_only','1');
         return;
       }
       try{
-        /* БЕЗ {merge: true} — полная перезапись надёжнее */
         await db.collection('site').doc('main').set({
           data: siteData,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         dlog('Сохранено в Firestore ✓','ok');
         updateSyncDot('ok');
+        localStorage.setItem(STORAGE_KEY+'_local_only','0');
       }catch(e){
         dlog('Firebase save failed: '+e.message,'err');
         updateSyncDot('error');
-        /* Понятное сообщение о причине ошибки */
+        localStorage.setItem(STORAGE_KEY+'_local_only','1');
         if(e.message && e.message.includes('size')){
-          toast('⚠ Превышен лимит Firebase. Удали несколько фото.');
+          toast('⚠ Превышен лимит. Удали несколько фото.');
         }else{
-          toast('⚠ Ошибка Firebase. Сохранено локально.');
+          toast('⚠ Ошибка облака. Данные сохранены локально.');
         }
       }
     }
@@ -1255,7 +1309,7 @@ function updateSetupNote(){
     const note=$('#setupNote');
     if(!note)return;
     note.innerHTML = useFirebase
-      ? '☁️ <b>Firebase подключён</b> — все изменения увидят все посетители.'
+      ? `☁️ <b>Firebase подключён</b>${useStorage?' + Storage':''} — все изменения увидят все посетители.`
       : '⚠️ <b>Firebase не настроен</b> — проверь консоль (F12).';
   }catch(e){}
 }
@@ -1271,8 +1325,7 @@ $$('.admin-tabs button').forEach(b=>{
   });
 });
 
-/* === ИСПРАВЛЕНИЕ: более агрессивное сжатие фото === */
-function compressImage(file, maxWidth=1200, quality=0.85){
+function compressImage(file, maxWidth=600, quality=0.6){
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
     reader.onload = e => {
@@ -1287,10 +1340,9 @@ function compressImage(file, maxWidth=1200, quality=0.85){
           canvas.width = w; canvas.height = h;
           ctx.drawImage(img, 0, 0, w, h);
           let dataUrl = canvas.toDataURL('image/jpeg', quality);
-          /* Если всё ещё больше 250KB — снижаем качество ещё */
           const sizeKB = (dataUrl.length * 0.75) / 1024;
-          if(sizeKB > 250){
-            dataUrl = canvas.toDataURL('image/jpeg', Math.max(0.5, quality * 0.7));
+          if(sizeKB > 150){
+            dataUrl = canvas.toDataURL('image/jpeg', Math.max(0.4, quality * 0.7));
           }
           resolve(dataUrl);
         }catch(err){ reject(err); }
@@ -1308,7 +1360,6 @@ function showTab(tab){
     const box=$('#adminContent');
     if(!box) return;
     if(tab==='data'){
-      /* Показываем текущий размер данных */
       const sizeKB = Math.round((JSON.stringify(siteData).length * 0.75) / 1024);
       const sizeMB = (sizeKB / 1024).toFixed(2);
       const pct = Math.min(100, Math.round((sizeKB / (MAX_DOC_SIZE/1024)) * 100));
@@ -1470,7 +1521,6 @@ function renderListEditor(tab){
     let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}</h3>`;
 
     if(tab==='gal'){
-      /* Показываем текущий размер данных */
       const sizeKB = Math.round((JSON.stringify(siteData).length * 0.75) / 1024);
       const sizeMB = (sizeKB / 1024).toFixed(2);
       const pct = Math.min(100, Math.round((sizeKB / (MAX_DOC_SIZE/1024)) * 100));
@@ -1561,829 +1611,4 @@ function setupAvatarCropper(previewEl, innerEl, initialTransform, basePrefix){
   }
 
   previewEl.addEventListener('pointerdown', e=>{
-    if(e.button!==0)return;
-    isDragging=true;
-    startX=e.clientX; startY=e.clientY;
-    startTx=state.x; startTy=state.y;
-    try{previewEl.setPointerCapture(e.pointerId);}catch(_){}
-    e.preventDefault();
-  });
-
-  previewEl.addEventListener('pointermove', e=>{
-    if(!isDragging)return;
-    state.x = startTx + (e.clientX-startX);
-    state.y = startTy + (e.clientY-startY);
-    applyTransform();
-  });
-
-  const stopDrag = e=>{ isDragging=false; };
-  previewEl.addEventListener('pointerup', stopDrag);
-  previewEl.addEventListener('pointercancel', stopDrag);
-  previewEl.addEventListener('lostpointercapture', stopDrag);
-
-  previewEl.addEventListener('wheel', e=>{
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    state.scale = Math.min(4, Math.max(0.3, state.scale * delta));
-    applyTransform();
-  }, {passive:false});
-
-  applyTransform();
-
-  const api = {
-    _cfg: cfg,
-    getState: ()=>({...state}),
-    setState: (s)=>{state={...s};applyTransform();},
-    zoom: (mult)=>{state.scale=Math.min(4,Math.max(0.3,state.scale*mult));applyTransform();},
-    reset: ()=>{state={x:0,y:0,scale:1};applyTransform();},
-    setRotate: (deg)=>{previewEl.dataset.rotate=deg;applyTransform();}
-  };
-  previewEl._cropper=api;
-  return api;
-}
-
-function extractUrlFromInner(inner){
-  try{
-    if(!inner) return null;
-    const bg = inner.style.backgroundImage;
-    if(!bg) return null;
-    const start = bg.indexOf('url(');
-    if(start === -1) return null;
-    let i = start + 4;
-    if(bg[i] === '"' || bg[i] === "'") i++;
-    const end = bg.lastIndexOf(')');
-    if(end === -1 || end <= i) return null;
-    let j = end;
-    if(bg[j-1] === '"' || bg[j-1] === "'") j--;
-    const url = bg.slice(i, j).trim();
-    return url || null;
-  }catch(e){ return null; }
-}
-
-window.editItem=function(tab,i){
-  try{
-    const fields=FIELD_DEFS[tab];
-    const curData = cur();
-    const item=i<0?{}:(curData?.[tab]?.[i]||{});
-    let html=`<h3 style="font-size:16px;margin-bottom:12px">${i<0?'Добавить':'Редактировать'}</h3>`;
-
-    if(tab==='team'){
-      const curUrl = item.avatar || '';
-      const letter = ((item.name || '?')[0] || '?').toUpperCase();
-      const color = item.color || '#ff6faf';
-      const hasImg = !!curUrl;
-      const t = item.avatarTransform || {x:0,y:0,scale:1};
-      currentAvatarTransform = {...t};
-      html += `
-        <div class="upload-block">
-          <div class="up-loading" id="avatarLoading">⏳ Сжимаю фото...</div>
-          ${hasImg?`
-            <div class="crop-controls">
-              <button class="btn ghost" id="zoomOutBtn" type="button">➖</button>
-              <span class="zoom-info">${Math.round(t.scale*100)}%</span>
-              <button class="btn ghost" id="zoomInBtn" type="button">➕</button>
-              <button class="btn ghost" id="resetCropBtn" type="button">↻ Сброс</button>
-            </div>
-          `:''}
-          <div class="up-preview ${hasImg?'has-img':''}" id="avatarPreview"
-               style="${hasImg?'':`background:linear-gradient(135deg,${color},${color})`}">
-            ${hasImg?`<div class="up-inner" style="background-image:url('${escapeHtml(curUrl)}');transform:translate(${t.x}px,${t.y}px) scale(${t.scale})"></div>`:escapeHtml(letter)}
-          </div>
-          <div class="up-hint" id="avatarHint">${hasImg?'🖱 Фото целиком • колесо — приблизить':'Аватарки нет — будет градиент с буквой'}</div>
-          ${hasImg?`<div class="crop-hint">💡 Фото показывается целиком, без обрезки. Колесом мыши можно приблизить, мышкой — сдвинуть. Позиция сохранится.</div>`:''}
-          <div class="up-btns">
-            <label class="btn solid" for="avatarFile" style="display:inline-block">📁 Загрузить файл</label>
-            <input type="file" id="avatarFile" accept="image/*">
-            <button class="btn ghost" type="button" id="clearAvatarBtn">✕ Убрать</button>
-          </div>
-        </div>
-      `;
-    }
-
-    let currentRotate = (item.rotate||0)%360;
-    let lastGalUrl = item.url || '';
-
-    if(tab==='gal'){
-      const curUrl = item.url || '';
-      const hasImg = !!curUrl;
-      const t = item.galTransform || {x:0,y:0,scale:1};
-      html += `
-        <div class="upload-block">
-          <div class="up-loading" id="galLoading">⏳ Сжимаю фото...</div>
-          ${hasImg?`
-            <div class="crop-controls">
-              <button class="btn ghost" id="galZoomOutBtn" type="button">➖</button>
-              <span class="zoom-info">${Math.round(t.scale*100)}%</span>
-              <button class="btn ghost" id="galZoomInBtn" type="button">➕</button>
-              <button class="btn ghost" id="galResetCropBtn" type="button">↻ Сброс</button>
-              <button class="btn solid" id="galRotateBtn" type="button" style="margin-left:6px">↻ Поворот</button>
-            </div>
-            <div class="rotate-info">Поворот: <b id="rotateDeg">${currentRotate}°</b></div>
-          `:''}
-          <div class="up-preview gal ${hasImg?'has-img':''}" id="galPreview" data-rotate="${currentRotate}"
-               style="${hasImg?'':`background:linear-gradient(135deg,var(--accent),var(--accent2))`}">
-            ${hasImg?`<div class="up-inner" style="background-image:url('${escapeHtml(curUrl)}');transform:translate(${t.x}px,${t.y}px) scale(${t.scale}) rotate(${currentRotate}deg)"></div>`:'📸'}
-          </div>
-          <div class="up-hint" id="galHint">${hasImg?'🖱 Рамка подстроится под фото • колесо — зум':'Фото не загружено'}</div>
-          ${hasImg?`<div class="crop-hint">💡 Рамка превью повторяет пропорции фото. Колесо — зум, мышка — сдвиг, ↻ — поворот на 90°. Всё сохраняется.</div>`:''}
-          <div class="up-btns">
-            <label class="btn solid" for="galFile" style="display:inline-block">📁 Загрузить файл</label>
-            <input type="file" id="galFile" accept="image/*">
-            <button class="btn ghost" type="button" id="clearGalBtn">✕ Убрать</button>
-          </div>
-        </div>
-      `;
-    }
-
-    fields.forEach(f=>{
-      const val=item[f.k]||'';
-      const ph=f.placeholder?`placeholder="${escapeHtml(f.placeholder)}"`:'';
-      if(f.type==='textarea'){
-        html+=`<div class="form-row"><label>${f.label}</label><textarea data-field="${f.k}" ${ph}>${escapeHtml(val)}</textarea></div>`;
-      }else if(f.type==='checkbox'){
-        html+=`<div class="form-row"><label><input type="checkbox" data-field="${f.k}" ${val?'checked':''}> ${f.label}</label></div>`;
-      }else{
-        html+=`<div class="form-row"><label>${f.label}</label><input type="text" data-field="${f.k}" value="${escapeHtml(val)}" ${ph}></div>`;
-      }
-    });
-
-    html+=`<div class="btns"><button class="btn solid" id="saveItem">💾 Сохранить</button><button class="btn ghost" onclick="window.showTab('${tab}')">Отмена</button></div>`;
-    $('#adminContent').innerHTML=html;
-
-    let cropper=null;
-    let galCropper=null;
-
-    if(tab==='team'){
-      const fileInput = $('#avatarFile');
-      const preview = $('#avatarPreview');
-      const inner = preview ? preview.querySelector('.up-inner') : null;
-      const hint = $('#avatarHint');
-      const clearBtn = $('#clearAvatarBtn');
-      const nameInput = $('#adminContent [data-field="name"]');
-      const colorInput = $('#adminContent [data-field="color"]');
-      const loading = $('#avatarLoading');
-
-      if(inner){
-        cropper = setupAvatarCropper(preview, inner, currentAvatarTransform);
-      }
-
-      const zoomIn = $('#zoomInBtn');
-      const zoomOut = $('#zoomOutBtn');
-      const resetCrop = $('#resetCropBtn');
-      if(zoomIn) zoomIn.addEventListener('click',()=>{try{cropper && cropper.zoom(1.2);}catch(e){}});
-      if(zoomOut) zoomOut.addEventListener('click',()=>{try{cropper && cropper.zoom(0.8);}catch(e){}});
-      if(resetCrop) resetCrop.addEventListener('click',()=>{try{cropper && cropper.reset();}catch(e){}});
-
-      function setAvatarUrl(url){
-        try{
-          if(!preview)return;
-          if(url){
-            preview.innerHTML=`<div class="up-inner" style="background-image:url('${url}');transform:translate(0,0) scale(1)"></div>`;
-            preview.classList.add('has-img');
-            preview.style.background='';
-            const newInner = preview.querySelector('.up-inner');
-            cropper = setupAvatarCropper(preview, newInner, {x:0,y:0,scale:1});
-            currentAvatarTransform = {x:0,y:0,scale:1};
-
-            const existingControls = preview.parentElement.querySelector('.crop-controls');
-            if(!existingControls){
-              const controls = document.createElement('div');
-              controls.className='crop-controls';
-              controls.innerHTML=`
-                <button class="btn ghost" id="zoomOutBtn" type="button">➖</button>
-                <span class="zoom-info">100%</span>
-                <button class="btn ghost" id="zoomInBtn" type="button">➕</button>
-                <button class="btn ghost" id="resetCropBtn" type="button">↻ Сброс</button>
-              `;
-              preview.parentElement.insertBefore(controls, preview);
-              controls.querySelector('#zoomInBtn').addEventListener('click',()=>{try{cropper.zoom(1.2);}catch(e){}});
-              controls.querySelector('#zoomOutBtn').addEventListener('click',()=>{try{cropper.zoom(0.8);}catch(e){}});
-              controls.querySelector('#resetCropBtn').addEventListener('click',()=>{try{cropper.reset();}catch(e){}});
-            }
-
-            if(hint) hint.textContent='🖱 Фото целиком • колесо — приблизить';
-          }else{
-            preview.innerHTML = escapeHtml(((nameInput?.value||'?')[0]||'?').toUpperCase());
-            preview.classList.remove('has-img');
-            const c = colorInput?.value || '#ff6faf';
-            preview.style.background=`linear-gradient(135deg,${c},${c})`;
-            cropper = null;
-            currentAvatarTransform = {x:0,y:0,scale:1};
-            const existingControls = preview.parentElement.querySelector('.crop-controls');
-            if(existingControls) existingControls.remove();
-            const existingHint = preview.parentElement.querySelector('.crop-hint');
-            if(existingHint) existingHint.remove();
-            if(hint) hint.textContent='Аватарки нет — будет градиент с буквой';
-          }
-        }catch(e){}
-      }
-
-      if(nameInput) nameInput.addEventListener('input', ()=>{
-        try{
-          if(preview && !preview.classList.contains('has-img')){
-            const letter = ((nameInput.value||'?')[0]||'?').toUpperCase();
-            preview.textContent = letter;
-          }
-        }catch(e){}
-      });
-      if(colorInput) colorInput.addEventListener('input', ()=>{
-        try{
-          if(preview && !preview.classList.contains('has-img')){
-            const c = colorInput.value || '#ff6faf';
-            preview.style.background=`linear-gradient(135deg,${c},${c})`;
-          }
-        }catch(e){}
-      });
-
-      if(fileInput){
-        fileInput.addEventListener('change', async e=>{
-          try{
-            const file = e.target.files[0];
-            if(!file) return;
-            if(!file.type.startsWith('image/')){
-              toast('Выбери файл-картинку');
-              return;
-            }
-            if(loading)loading.classList.add('show');
-            if(hint)hint.textContent = '⏳ Обрабатываю...';
-            const compressed = await compressImage(file, 800, 0.85);
-            setAvatarUrl(compressed);
-            const sizeKB = Math.round((compressed.length * 0.75) / 1024);
-            toast(`Аватарка готова (${sizeKB} KB)`);
-          }catch(err){
-            toast('Ошибка: '+err.message);
-            if(hint)hint.textContent = '❌ Не удалось обработать';
-          }finally{
-            if(loading)loading.classList.remove('show');
-          }
-        });
-      }
-
-      if(clearBtn){
-        clearBtn.addEventListener('click', ()=>{
-          try{
-            if(fileInput) fileInput.value = '';
-            setAvatarUrl('');
-          }catch(e){}
-        });
-      }
-    }
-
-    if(tab==='gal'){
-      const fileInput = $('#galFile');
-      const preview = $('#galPreview');
-      const loading = $('#galLoading');
-      const hint = $('#galHint');
-      const clearBtn = $('#clearGalBtn');
-      const urlField = $('#adminContent [data-field="url"]');
-      const rotateBtn = $('#galRotateBtn');
-      const rotateDegEl = $('#rotateDeg');
-
-      function refreshGalFit(){
-        try{
-          const inner = preview.querySelector('.up-inner');
-          if(!inner || !lastGalUrl) return;
-          probe(lastGalUrl,(w,h)=>{
-            try{
-              const swapped = currentRotate%180!==0;
-              const r = swapped ? h/w : w/h;
-              preview.style.aspectRatio = String(r);
-              if(swapped){
-                inner.style.position='absolute';
-                inner.style.left='50%'; inner.style.top='50%';
-                inner.style.width=(100/r)+'%';
-                inner.style.height=(r*100)+'%';
-                inner.style.backgroundSize='100% 100%';
-              }else{
-                inner.style.position='';
-                inner.style.left=''; inner.style.top='';
-                inner.style.width='100%'; inner.style.height='100%';
-                inner.style.backgroundSize='cover';
-              }
-              const st = galCropper ? galCropper.getState() : {x:0,y:0,scale:1};
-              galCropper = setupAvatarCropper(preview, inner, st, swapped?'translate(-50%,-50%) ':'');
-              galCropper.setRotate(currentRotate);
-            }catch(e){}
-          });
-        }catch(e){}
-      }
-
-      const inner0 = preview ? preview.querySelector('.up-inner') : null;
-      if(inner0){
-        galCropper = setupAvatarCropper(preview, inner0, item.galTransform || {x:0,y:0,scale:1});
-        refreshGalFit();
-      }
-
-      const gZoomIn=$('#galZoomInBtn'), gZoomOut=$('#galZoomOutBtn'), gReset=$('#galResetCropBtn');
-      if(gZoomIn) gZoomIn.addEventListener('click',()=>{try{galCropper&&galCropper.zoom(1.2);}catch(e){}});
-      if(gZoomOut) gZoomOut.addEventListener('click',()=>{try{galCropper&&galCropper.zoom(0.8);}catch(e){}});
-      if(gReset) gReset.addEventListener('click',()=>{try{galCropper&&galCropper.reset();}catch(e){}});
-
-      function doRotate(){
-        try{
-          currentRotate = (currentRotate + 90) % 360;
-          const rd=$('#rotateDeg'); if(rd) rd.textContent = currentRotate+'°';
-          preview.dataset.rotate = currentRotate;
-          refreshGalFit();
-        }catch(e){}
-      }
-      if(rotateBtn) rotateBtn.addEventListener('click', doRotate);
-
-      function addGalCropControls(){
-        try{
-          const existingControls = preview.parentElement.querySelector('.crop-controls');
-          if(!existingControls){
-            const controls = document.createElement('div');
-            controls.className='crop-controls';
-            controls.innerHTML=`
-              <button class="btn ghost" id="galZoomOutBtn" type="button">➖</button>
-              <span class="zoom-info">100%</span>
-              <button class="btn ghost" id="galZoomInBtn" type="button">➕</button>
-              <button class="btn ghost" id="galResetCropBtn" type="button">↻ Сброс</button>
-              <button class="btn solid" id="galRotateBtn" type="button" style="margin-left:6px">↻ Поворот</button>
-            `;
-            preview.parentElement.insertBefore(controls, preview);
-            controls.querySelector('#galZoomInBtn').addEventListener('click',()=>{try{galCropper&&galCropper.zoom(1.2);}catch(e){}});
-            controls.querySelector('#galZoomOutBtn').addEventListener('click',()=>{try{galCropper&&galCropper.zoom(0.8);}catch(e){}});
-            controls.querySelector('#galResetCropBtn').addEventListener('click',()=>{try{galCropper&&galCropper.reset();}catch(e){}});
-            controls.querySelector('#galRotateBtn').addEventListener('click', doRotate);
-          }
-          const existingRotInfo = preview.parentElement.querySelector('.rotate-info');
-          if(!existingRotInfo){
-            const r=document.createElement('div');
-            r.className='rotate-info';
-            r.innerHTML=`Поворот: <b id="rotateDeg">${currentRotate}°</b>`;
-            preview.parentElement.insertBefore(r, preview.parentElement.querySelector('.up-hint'));
-          }
-          const existingHint = preview.parentElement.querySelector('.crop-hint');
-          if(!existingHint){
-            const h=document.createElement('div');
-            h.className='crop-hint';
-            h.textContent='💡 Рамка повторяет пропорции фото. Колесо — зум, мышка — сдвиг, ↻ — поворот.';
-            preview.parentElement.insertBefore(h, preview.parentElement.querySelector('.up-btns'));
-          }
-        }catch(e){}
-      }
-
-      function setGalUrl(url){
-        try{
-          if(!preview)return;
-          lastGalUrl = url || '';
-          if(url){
-            preview.innerHTML=`<div class="up-inner" style="background-image:url('${url}');transform:translate(0,0) scale(1) rotate(${currentRotate}deg)"></div>`;
-            preview.classList.add('has-img');
-            preview.style.background='';
-            refreshGalFit();
-            addGalCropControls();
-            if(hint) hint.textContent='🖱 Рамка подстроится под фото • колесо — зум';
-          }else{
-            preview.innerHTML='📸';
-            preview.classList.remove('has-img');
-            preview.style.background=`linear-gradient(135deg,var(--accent),var(--accent2))`;
-            preview.style.aspectRatio='';
-            galCropper=null;
-            const existingControls = preview.parentElement.querySelector('.crop-controls');
-            if(existingControls) existingControls.remove();
-            const existingHint = preview.parentElement.querySelector('.crop-hint');
-            if(existingHint) existingHint.remove();
-            const existingRot = preview.parentElement.querySelector('.rotate-info');
-            if(existingRot) existingRot.remove();
-            if(hint) hint.textContent='Фото не загружено';
-          }
-        }catch(e){}
-      }
-
-      if(urlField){
-        urlField.addEventListener('change', ()=>{
-          try{
-            const v=(urlField.value||'').trim();
-            if(v) setGalUrl(v);
-          }catch(e){}
-        });
-      }
-
-      if(fileInput){
-        fileInput.addEventListener('change', async e=>{
-          try{
-            const file = e.target.files[0];
-            if(!file) return;
-            if(!file.type.startsWith('image/')){
-              toast('Выбери файл-картинку');
-              return;
-            }
-            if(loading)loading.classList.add('show');
-            if(hint)hint.textContent = '⏳ Обрабатываю...';
-            /* === ИСПРАВЛЕНИЕ: для галереи сжимаем сильнее (800px, 70%) === */
-            const compressed = await compressImage(file, 800, 0.7);
-            setGalUrl(compressed);
-            if(urlField) urlField.value = compressed;
-            const sizeKB = Math.round((compressed.length * 0.75) / 1024);
-            toast(`Фото готово (${sizeKB} KB)`);
-          }catch(err){
-            toast('Ошибка: '+err.message);
-            if(hint)hint.textContent = '❌ Не удалось обработать';
-          }finally{
-            if(loading)loading.classList.remove('show');
-          }
-        });
-      }
-
-      if(clearBtn){
-        clearBtn.addEventListener('click', ()=>{
-          try{
-            if(fileInput) fileInput.value = '';
-            if(urlField) urlField.value = '';
-            setGalUrl('');
-          }catch(e){}
-        });
-      }
-    }
-
-    const saveBtn=$('#saveItem');
-    if(saveBtn){
-      saveBtn.addEventListener('click',async ()=>{
-        try{
-          const newObj={};
-          fields.forEach(f=>{
-            const el=$('#adminContent [data-field="'+f.k+'"]');
-            if(!el){ newObj[f.k]=(f.type==='checkbox')?false:''; return; }
-            newObj[f.k] = (el.type==='checkbox') ? el.checked : el.value;
-          });
-
-          if(i<0){
-            newObj._id = newId();
-          }else{
-            const existing = cur()[tab][i];
-            newObj._id = existing?._id || newId();
-          }
-
-          if(tab==='team'){
-            const preview = $('#avatarPreview');
-            const inner = preview?.querySelector('.up-inner');
-            if(preview && preview.classList.contains('has-img')){
-              if(cropper) newObj.avatarTransform = cropper.getState();
-              const url = extractUrlFromInner(inner);
-              if(url) newObj.avatar = url;
-            } else {
-              delete newObj.avatarTransform;
-              if(!newObj.avatar) newObj.avatar='';
-            }
-          }
-
-          if(tab==='gal'){
-            const preview = $('#galPreview');
-            const inner = preview?.querySelector('.up-inner');
-            newObj.rotate = (parseInt(preview?.dataset.rotate||0,10) || 0) % 360;
-            if(preview && preview.classList.contains('has-img')){
-              if(galCropper) newObj.galTransform = galCropper.getState();
-              const url = extractUrlFromInner(inner) || lastGalUrl;
-              if(url) newObj.url = url;
-            } else {
-              delete newObj.galTransform;
-            }
-          }
-
-          if(tab==='gal' && !newObj.url && !newObj.caption){
-            toast('Добавь хотя бы фото или подпись');
-            return;
-          }
-
-          if(tab==='gal' && i<0){
-            const items = cur().gal || [];
-            if(items.length>=MAX_GAL){
-              toast(`Максимум ${MAX_GAL} фото в альбоме`);
-              return;
-            }
-          }
-
-          if(i<0)cur()[tab].push(newObj); else cur()[tab][i]=newObj;
-          await saveData(); renderListEditor(tab); renderAll();
-          toast(useFirebase?'Сохранено в облаке ✓':'Сохранено локально ✓');
-        }catch(err){
-          dlog('Save error: '+err.message,'err');
-          toast('Ошибка сохранения: '+err.message);
-        }
-      });
-    }
-  }catch(err){
-    dlog('editItem error: '+err.message,'err');
-    try{ toast('Ошибка: '+err.message); }catch(_){}
-  }
-};
-
-window.showTab=showTab;
-
-function avatarUrl(member){
-  try{
-    if(member.avatar){
-      return `https://cdn.discordapp.com/avatars/${member.id}/${member.avatar}.${member.avatar.startsWith('a_')?'gif':'png'}?size=256`;
-    }
-    const defIdx = member.discriminator && member.discriminator!=='0'
-      ? parseInt(member.discriminator)%5
-      : Number((BigInt(member.id)>>22)%6n);
-    return `https://cdn.discordapp.com/embed/avatars/${defIdx}.png`;
-  }catch(e){
-    return `https://cdn.discordapp.com/embed/avatars/0.png`;
-  }
-}
-
-function renderImportTab(){
-  try{
-    const box=$('#adminContent');
-    const serverId = siteData?.serverId || '';
-
-    let html = `
-      <div class="import-info">
-        📖 <b>Как это работает:</b><br>
-        1. В настройках Discord-сервера включи <b>«Виджет сервера»</b> (Server Settings → Widget → Enable Server Widget)<br>
-        2. Скопируй <b>Server ID</b> (если не видно — включи Developer Mode в настройках Discord, ПКМ на иконке сервера → Copy Server ID)<br>
-        3. Вставь ID ниже и жми <b>«📡 Загрузить участников»</b> — сайт подтянет онлайн-участников с аватарками<br><br>
-        💡 <b>Важно:</b> загружаются только <b>онлайн</b> участники (ограничение Discord). Офлайн-участников можно добавить вручную во вкладке «Команда».
-      </div>
-
-      <div class="import-header">
-        <input type="text" id="serverIdInput" value="${escapeHtml(serverId)}" placeholder="Server ID (например: 123456789012345678)" style="font-size:14px">
-        <button class="btn solid" id="loadMembersBtn" type="button">📡 Загрузить участников</button>
-        <button class="btn ghost" id="saveServerIdBtn" type="button" title="Сохранить ID">💾</button>
-      </div>
-
-      <div id="importStatus"></div>
-      <div id="importList"></div>
-    `;
-    box.innerHTML=html;
-
-    $('#saveServerIdBtn').addEventListener('click',async ()=>{
-      try{
-        const val=$('#serverIdInput').value.trim();
-        siteData.serverId=val;
-        await saveData();
-        toast('Server ID сохранён ✓');
-      }catch(e){ toast('Ошибка: '+e.message); }
-    });
-
-    $('#loadMembersBtn').addEventListener('click',()=>{try{loadMembersFromDiscord();}catch(e){toast('Ошибка: '+e.message);}});
-
-    $('#serverIdInput').addEventListener('keydown',e=>{
-      if(e.key==='Enter'){try{loadMembersFromDiscord();}catch(err){}}
-    });
-
-    if(importedMembers.length) renderImportedMemberList();
-  }catch(e){
-    dlog('renderImportTab error: '+e.message,'err');
-    try{ $('#adminContent').innerHTML = `<div class="admin-list-empty">Ошибка загрузки вкладки: ${escapeHtml(e.message)}</div>`; }catch(_){}
-  }
-}
-
-async function loadMembersFromDiscord(){
-  try{
-    const id=$('#serverIdInput').value.trim();
-    if(!id){toast('Введи Server ID');return;}
-    if(!/^\d{15,25}$/.test(id)){toast('Server ID должен быть 15-25 цифр');return;}
-
-    siteData.serverId=id;
-    await saveData();
-
-    const statusEl=$('#importStatus');
-
-    statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px">⏳ Загружаю онлайн-участников с сервера <code>${escapeHtml(id)}</code>...</div>`;
-
-    const url=`https://discord.com/api/v10/guilds/${id}/widget.json`;
-    const res=await fetch(url);
-    if(!res.ok){
-      if(res.status===404){
-        throw new Error('Виджет не включён или Server ID неверный. Включи Widget в настройках сервера Discord.');
-      }
-      if(res.status===403){
-        throw new Error('Виджет отключён. Включи его в Server Settings → Widget');
-      }
-      throw new Error(`Ошибка Discord: ${res.status}`);
-    }
-    const data=await res.json();
-
-    if(!data.members || !data.members.length){
-      statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px;background:color-mix(in srgb,#ffcc00 15%,transparent);color:#ffcc00">⚠️ Виджет работает, но сейчас никто не онлайн на сервере. Попробуй позже, когда участники будут активны.</div>`;
-      importedMembers=[];
-      $('#importList').innerHTML='';
-      return;
-    }
-
-    importedMembers=data.members.map(m=>({
-      id:m.id,
-      username:m.username || `user_${m.id}`,
-      globalName: m.username,
-      discriminator:m.discriminator || '0',
-      avatar:m.avatar || null,
-      avatarUrl:avatarUrl(m),
-      status:m.status || 'online',
-      nick:null
-    }));
-
-    dlog(`Загружено ${importedMembers.length} участников через Widget API`,'ok');
-    renderImportedMemberList();
-    toast(`Загружено ${importedMembers.length} участников ✓`);
-  }catch(err){
-    dlog('Discord fetch error: '+err.message,'err');
-    try{
-      const statusEl=$('#importStatus');
-      statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px;background:color-mix(in srgb,#ff6b6b 15%,transparent);color:#ff6b6b">❌ ${escapeHtml(err.message)}</div>`;
-      $('#importList').innerHTML='';
-    }catch(_){}
-  }
-}
-
-function isMemberAddedInTheme(memberId,targetTheme){
-  try{
-    return (siteData?.[targetTheme]?.team||[]).some(t=>t._discordId===memberId);
-  }catch(e){ return false; }
-}
-
-function renderImportedMemberList(){
-  try{
-    const statusEl=$('#importStatus');
-
-    statusEl.innerHTML=`
-      <div class="mem-filter">
-        <input type="text" id="memFilter" placeholder="🔍 Поиск по нику..." value="${escapeHtml(importFilter)}">
-        <span class="cnt">Найдено: <b id="memCount">${importedMembers.length}</b> 📡</span>
-      </div>
-    `;
-
-    $('#memFilter').addEventListener('input',e=>{
-      importFilter=e.target.value.toLowerCase().trim();
-      renderImportCards();
-    });
-
-    renderImportCards();
-  }catch(e){ dlog('renderImportedMemberList error: '+e.message,'err'); }
-}
-
-function renderImportCards(){
-  try{
-    const listEl=$('#importList');
-    const filter=importFilter;
-    const filtered = filter
-      ? importedMembers.filter(m=>m.username.toLowerCase().includes(filter) || (m.globalName||'').toLowerCase().includes(filter))
-      : importedMembers;
-
-    const cntEl=$('#memCount');
-    if(cntEl) cntEl.textContent=filtered.length;
-
-    if(!filtered.length){
-      listEl.innerHTML=`<div class="admin-list-empty">Ничего не найдено</div>`;
-      return;
-    }
-
-    let html='<div class="member-grid">';
-    filtered.forEach(m=>{
-      const inF = isMemberAddedInTheme(m.id,'f');
-      const inM = isMemberAddedInTheme(m.id,'m');
-      const addedClass = (inF||inM) ? 'added' : '';
-      const displayName = m.globalName || m.username;
-
-      html+=`
-        <div class="mem-card ${addedClass}" data-id="${m.id}">
-          <div class="mem-top">
-            <div class="mem-avatar" style="background-image:url('${escapeHtml(m.avatarUrl)}')"></div>
-            <div class="mem-info">
-              <div class="mem-name">${escapeHtml(displayName)}</div>
-              <div class="mem-username">${m.discriminator&&m.discriminator!=='0'?'#'+m.discriminator:'@'+m.username}</div>
-              <span class="mem-status ${m.status}"><i></i>${escapeHtml(m.status)}</span>
-            </div>
-          </div>
-          <div class="mem-actions">
-            <button class="btn f-btn" ${inF?'disabled':''} onclick="window.addImportedToTeam('${m.id}','f')">🌸 Женская ${inF?'✓':''}</button>
-            <button class="btn m-btn" ${inM?'disabled':''} onclick="window.addImportedToTeam('${m.id}','m')">⚡ Мужская ${inM?'✓':''}</button>
-          </div>
-        </div>
-      `;
-    });
-    html+='</div>';
-    listEl.innerHTML=html;
-  }catch(e){ dlog('renderImportCards error: '+e.message,'err'); }
-}
-
-window.addImportedToTeam=async function(memberId,targetTheme){
-  try{
-    const m = importedMembers.find(x=>x.id===memberId);
-    if(!m){toast('Участник не найден');return;}
-
-    if(isMemberAddedInTheme(memberId,targetTheme)){
-      toast('Уже добавлен в эту команду');
-      return;
-    }
-
-    const colors = targetTheme==='f'
-      ? ['#ff5fa2','#c49cff','#ff8fc8','#b685f0','#ff6faf']
-      : ['#37e6ff','#ff9f45','#c6ff4a','#ffcc00','#6fdab8'];
-    const randColor = colors[Math.floor(Math.random()*colors.length)];
-
-    const sticker = targetTheme==='f'
-      ? ['🌸','💗','🎀','✨','🦋'][Math.floor(Math.random()*5)]
-      : ['⚡','','🎖️','',''][Math.floor(Math.random()*5)];
-
-    const role = targetTheme==='f' ? '🌸 Furiebi' : '⚡ Furiebi';
-    const displayName = m.globalName || m.username;
-
-    const newItem = {
-      _id: newId(),
-      _discordId: memberId,
-      name: displayName,
-      discord: m.discriminator&&m.discriminator!=='0' ? m.username+'#'+m.discriminator : m.username,
-      avatar: m.avatarUrl,
-      avatarTransform: {x:0,y:0,scale:1},
-      status: m.status==='online'?'в сети':m.status==='idle'?'не активен':m.status==='dnd'?'не беспокоить':'офлайн',
-      role: role,
-      quote: '«Напиши цитату через кнопку редактирования»',
-      sticker: sticker,
-      color: randColor
-    };
-
-    siteData[targetTheme].team.push(newItem);
-    await saveData();
-    renderAll();
-    renderImportCards();
-
-    toast(`${displayName} добавлен в ${targetTheme==='f'?'женскую':'мужскую'} команду ✓`);
-
-    const idx = siteData[targetTheme].team.findIndex(t=>t._discordId===memberId);
-    if(idx>=0){
-      theme = targetTheme;
-      document.body.dataset.theme = targetTheme;
-      localStorage.setItem('theme',targetTheme);
-      swapTexts(targetTheme,false);
-      editItem('team',idx);
-    }
-  }catch(err){
-    dlog('addImportedToTeam error: '+err.message,'err');
-    try{ toast('Ошибка: '+err.message); }catch(_){}
-  }
-};
-
-window.exportData=function(){
-  try{
-    const blob=new Blob([JSON.stringify(siteData,null,2)],{type:'application/json'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=url; a.download='site-data-'+Date.now()+'.json'; a.click();
-    URL.revokeObjectURL(url); toast('Экспортировано 📥');
-  }catch(e){ toast('Ошибка: '+e.message); }
-};
-
-window.importData=async function(e){
-  try{
-    const file=e.target.files[0]; if(!file)return;
-    const r=new FileReader();
-    r.onload=async ev=>{
-      try{
-        const data=JSON.parse(ev.target.result);
-        if(!data.f||!data.m)throw new Error('bad format');
-        siteData=data; migrateData(); dedupeAll();
-        await saveData(); renderAll(); renderPoll(); showTab(currentTab);
-        toast('Импортировано ✓');
-      }catch(err){ toast('Ошибка: '+err.message); }
-    };
-    r.readAsText(file); e.target.value='';
-  }catch(err){ toast('Ошибка: '+err.message); }
-};
-
-window.clearDuplicates=async function(){ try{ dedupeAll(); await saveData(); renderAll(); renderPoll(); showTab(currentTab); toast('Дубли удалены 🧹'); }catch(e){toast('Ошибка: '+e.message);} };
-
-window.resetData=async function(){
-  try{
-    if(!confirm('Сбросить ЛОКАЛЬНЫЕ данные?'))return;
-    siteData=JSON.parse(JSON.stringify(DEFAULT_DATA)); migrateData(); dedupeAll();
-    await saveData(); renderAll(); renderPoll(); showTab(currentTab);
-    toast('Сброшено');
-  }catch(e){ toast('Ошибка: '+e.message); }
-};
-
-window.resetFirebase=async function(){
-  try{
-    if(!useFirebase){ toast('Firebase не активен'); return; }
-    if(!confirm('Очистить Firebase для всех?'))return;
-    await db.collection('site').doc('main').set({data:JSON.parse(JSON.stringify(DEFAULT_DATA)),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-    siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(siteData));
-    migrateData(); dedupeAll();
-    renderAll(); renderPoll(); showTab(currentTab);
-    toast('Firebase очищен 🔥');
-  }catch(e){ toast('Ошибка: '+e.message); }
-};
-
-(async ()=>{
-  try{
-    dlog('Старт. theme='+theme);
-    await loadData();
-    swapTexts(theme,false);
-    renderMarquee(theme);
-    renderPoll();
-    renderAll();
-    renderPoll();
-    dlog('Старт завершён','ok');
-  }catch(e){
-    dlog('Init error: '+e.message,'err');
-    try{ toast('Ошибка инициализации: '+e.message); }catch(_){}
-  }
-})();
-</script>
-</body>
-</html>
+    if(e.button
