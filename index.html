@@ -155,7 +155,7 @@ section{position:relative;z-index:1;padding:58px 0}
 .gitem figcaption{position:absolute;inset:auto 0 0;padding:34px 14px 12px;font-weight:900;font-size:14px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.55));pointer-events:none;z-index:2}
 
 .gal-strip{position:relative;overflow:hidden;width:100%;border-radius:var(--radius);padding:6px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%)}
-.gal-strip-track{display:flex;gap:18px;width:max-content;align-items:center;animation:galScroll 40s linear infinite}
+.gal-strip-track{display:flex;gap:18px;width:max-content;align-items:center;animation:galScroll 80s linear infinite}
 .gal-strip:hover .gal-strip-track{animation-play-state:paused}
 .gal-strip .gitem{flex:0 0 auto;margin:0}
 @keyframes galScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -313,6 +313,9 @@ footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-widt
   .placeholder-grid{grid-template-columns:1fr;gap:16px}
   .play{grid-template-columns:1fr;gap:16px}
   .gal{grid-template-columns:1fr 1fr;gap:12px}
+  
+  .gal-strip-track{gap:12px;animation-duration:60s}
+  .gal-strip .gitem{min-width:180px}
   
   .member{padding:20px 16px 16px}
   .member h3{font-size:20px}
@@ -1299,20 +1302,17 @@ function renderGal(){
     const box=$('#galGrid'); if(!box)return; box.innerHTML='';
     const items=cur().gal || [];
     if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📸</span><h3>Альбом пока пуст</h3><p>админ добавит фото через админ-панель (максимум ${MAX_GAL} фото)</p></div>`; return; }
-    if(items.length>5 && !isMobile){
-      const strip=document.createElement('div');
-      strip.className='gal-strip';
-      const track=document.createElement('div');
-      track.className='gal-strip-track';
-      [...items,...items].forEach((it)=>{ track.appendChild(buildGalItem(it,'strip')); });
-      strip.appendChild(track);
-      box.appendChild(strip);
-    }else{
-      const grid=document.createElement('div');
-      grid.className='gal';
-      items.forEach((it)=>{ grid.appendChild(buildGalItem(it,'grid')); });
-      box.appendChild(grid);
+    
+    const strip=document.createElement('div');
+    strip.className='gal-strip';
+    const track=document.createElement('div');
+    track.className='gal-strip-track';
+    const repeatCount = items.length < 3 ? 4 : 2;
+    for(let r=0; r<repeatCount; r++){
+      items.forEach((it)=>{ track.appendChild(buildGalItem(it,'strip')); });
     }
+    strip.appendChild(track);
+    box.appendChild(strip);
     observeReveal();
   }catch(e){ dlog('renderGal error: '+e.message,'err'); }
 }
@@ -2154,7 +2154,7 @@ window.editItem=function(tab,i){
             const inner = preview?.querySelector('.up-inner');
             newObj.rotate = (parseInt(preview?.dataset.rotate||0,10) || 0) % 360;
             if(preview && preview.classList.contains('has-img')){
-              if(galCropper) newObj.galTransform = galCropper.getState();
+              if(galGropper) newObj.galTransform = galGropper.getState();
               const url = extractUrlFromInner(inner) || lastGalUrl;
               if(url) newObj.url = url;
             } else {
