@@ -1614,11 +1614,22 @@ async function getVisitorIP(){
 async function logVisit(){
   try{
     const info=await getVisitorIP();
+    const conn=info&&info.connection;
+    const tz=info&&info.timezone;
+    const tzStr=typeof tz==='object'?(tz.id||tz.utc||''):(tz||'');
     const visit={
       ip: (info&&info.ip)||'не определён',
-      city: (info&&(info.city||info.region))||'',
-      country: (info&&info.country)||'',
-      isp: (info&&(info.connection?.isp||info.org||info.connection?.asn))||'',
+      country: (info&&(info.country||info.country_name))||'',
+      countryCode: (info&&(info.country_code||info.countryCode))||'',
+      region: (info&&(info.region||info.region_code))||'',
+      city: (info&&info.city)||'',
+      postal: (info&&info.postal)||'',
+      lat: (info&&typeof info.latitude==='number')?info.latitude:null,
+      lon: (info&&typeof info.longitude==='number')?info.longitude:null,
+      timezone: tzStr,
+      flag: (info&&info.flag&&info.flag.emoji)||'',
+      isp: (conn&&(conn.isp||conn.asn))||(info&&(info.asn||info.org))||'',
+      org: (conn&&conn.org)||(info&&info.org)||'',
       time: new Date().toISOString(),
       timeLocal: new Date().toLocaleString('ru-RU'),
       userAgent: navigator.userAgent,
@@ -1672,13 +1683,17 @@ async function renderVisitsTab(){
     let html=`<h3 style="font-size:16px;margin-bottom:8px">👁 Посещения сайта <span style="color:var(--muted);font-weight:800;font-size:12px">(последние ${rows.length})</span></h3>`;
     html+=`<div class="admin-list" style="max-height:420px">`;
     rows.forEach((v)=>{
-      const where=[v.city,v.country].filter(Boolean).join(', ');
+      const addr=[v.country,v.region,v.city].filter(Boolean).join(', ');
+      const coords=(v.lat!=null&&v.lon!=null)?`${v.lat}, ${v.lon}`:'';
+      const maps=coords?`https://www.google.com/maps?q=${encodeURIComponent(coords)}`:'';
       html+=`<div class="admin-list-item" style="flex-direction:column;align-items:flex-start;gap:4px">
         <div style="display:flex;justify-content:space-between;width:100%;gap:8px;flex-wrap:wrap">
           <b style="color:var(--accent);font-family:monospace">${escapeHtml(v.ip||'?')}</b>
           <span style="color:var(--muted)">${escapeHtml(v.timeLocal||v.time||'')}</span>
         </div>
-        ${where?`<div style="font-size:11px;color:var(--muted)">📍 ${escapeHtml(where)}${v.isp?' • '+escapeHtml(v.isp):''}</div>`:''}
+        ${addr?`<div style="font-size:12px;color:var(--ink);font-weight:800">${v.flag?escapeHtml(v.flag)+' ':''}📍 ${escapeHtml(addr)}${v.postal?' • '+escapeHtml(v.postal):''}</div>`:''}
+        ${(v.org||v.isp)?`<div style="font-size:11px;color:var(--muted)">🌐 ${escapeHtml(v.org||v.isp)}${v.isp&&v.org&&v.isp!==v.org?' • '+escapeHtml(v.isp):''}</div>`:''}
+        ${coords?`<div style="font-size:11px;color:var(--muted)">🧭 ${escapeHtml(coords)}${maps?` — <a href="${maps}" target="_blank" rel="noopener" style="color:var(--accent)">открыть на карте ↗</a>`:''}</div>`:''}
         <div style="font-size:11px;color:var(--muted);word-break:break-all">${escapeHtml(v.userAgent||'')}</div>
       </div>`;
     });
