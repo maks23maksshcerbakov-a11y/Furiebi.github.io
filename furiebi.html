@@ -1,0 +1,2564 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Furiebi</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌚</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800;900&family=Russo+One&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+body[data-theme="f"]{
+  --bg:#1a0f18; --bg2:#261624; --card:#2d1a2a; --ink:#f5e3ec; --muted:#b98aa6;
+  --accent:#ff6faf; --accent2:#c49cff; --accent3:#6fdab8; --line:#4a2844;
+  --soft:#3a1e36; --radius:22px; --font-d:'Pacifico',cursive; --font-b:'Nunito',sans-serif;
+  --shadow:0 14px 34px rgba(0,0,0,.5);
+}
+body[data-theme="m"]{
+  --bg:#0d1220; --bg2:#131b32; --card:#161f38; --ink:#eaf2ff; --muted:#8fa3c8;
+  --accent:#37e6ff; --accent2:#ff9f45; --accent3:#c6ff4a; --line:#273353;
+  --soft:#1a2440; --radius:10px; --font-d:'Russo One',sans-serif; --font-b:'Manrope',sans-serif;
+  --shadow:0 14px 34px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:16.5px;line-height:1.55;overflow-x:hidden;min-height:100vh;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+body,.themable,.themable *{transition:background-color .5s ease,border-color .5s ease,color .5s ease,box-shadow .5s ease}
+::selection{background:var(--accent);color:#fff}
+img{display:block;max-width:100%}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:120;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")}
+.floaters{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.floaters span{position:absolute;font-size:26px;opacity:.28;animation:drift 12s ease-in-out infinite alternate}
+body[data-theme="m"] .fl-f{display:none}
+body[data-theme="f"] .fl-m{display:none}
+@keyframes drift{from{transform:translateY(0) rotate(-8deg)}to{transform:translateY(-34px) rotate(10deg)}}
+
+.topbar{position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:2px dashed var(--line)}
+.topbar .wrap{display:flex;align-items:center;gap:14px;height:66px}
+.server-icon{width:42px;height:42px;border-radius:14px 14px 14px 4px;display:grid;place-items:center;font-size:22px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:var(--shadow);flex:none}
+.server-name{font-family:var(--font-d);font-size:20px;white-space:nowrap}
+.nav{display:flex;gap:4px;margin-left:auto}
+.nav a{color:var(--muted);text-decoration:none;font-weight:800;font-size:14px;padding:7px 12px;border-radius:999px}
+.nav a:hover{color:var(--accent);background:var(--soft)}
+.sync-dot{width:10px;height:10px;border-radius:50%;background:var(--muted);transition:background .3s;flex:none}
+.sync-dot.on{background:#3ecf7a;box-shadow:0 0 10px #3ecf7a}
+.sync-dot.off{background:#ff6b6b}
+.sync-dot.loading{background:#ffcc00;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.3}}
+.switch{display:inline-flex;align-items:center;gap:10px;border:2px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-weight:900;font-size:13.5px;letter-spacing:.3px}
+.switch .lbl{color:var(--muted);transition:color .4s}
+.switch .lbl.on{color:var(--accent)}
+.track{width:54px;height:26px;border-radius:999px;background:var(--line);position:relative;flex:none}
+.knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--accent);transition:transform .45s cubic-bezier(.34,1.6,.64,1),background-color .5s}
+body[data-theme="m"] .knob{transform:translateX(28px)}
+
+.burger{display:none;width:44px;height:44px;border-radius:12px;background:var(--card);border:2px solid var(--line);place-items:center;flex:none;position:relative;z-index:101}
+.burger span{display:block;width:20px;height:2px;background:var(--ink);margin:4px auto;transition:all .3s;border-radius:2px}
+.burger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.burger.active span:nth-child(2){opacity:0}
+.burger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+.mobile-menu{position:fixed;top:0;right:-100%;width:min(320px,85vw);height:100vh;background:var(--bg);border-left:2px dashed var(--line);z-index:99;padding:80px 24px 24px;transition:right .4s ease;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.mobile-menu.open{right:0}
+.mobile-menu a{display:block;color:var(--ink);text-decoration:none;font-weight:800;font-size:18px;padding:16px 20px;border-radius:14px;border:2px solid var(--line);background:var(--card);transition:all .2s}
+.mobile-menu a:active{background:var(--soft);transform:scale(.97)}
+.mobile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:98;opacity:0;pointer-events:none;transition:opacity .3s}
+.mobile-overlay.open{opacity:1;pointer-events:auto}
+
+.hero{display:grid;grid-template-columns:1fr;gap:44px;align-items:center;padding:64px 0 46px;position:relative;z-index:1;max-width:720px}
+.hero-kick{font-size:12.5px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--accent)}
+.hero h1{font-family:var(--font-d);font-size:clamp(38px,6.4vw,72px);line-height:1.12;margin:14px 0 18px}
+.hero p.lead{font-size:17.5px;color:var(--muted);font-weight:700;max-width:580px}
+.hero-btns{display:flex;gap:14px;margin-top:26px;flex-wrap:wrap}
+.btn{display:inline-block;padding:14px 28px;border-radius:999px;font-weight:900;font-size:15.5px;letter-spacing:.3px;text-decoration:none;box-shadow:var(--shadow);transition:transform .15s;cursor:pointer;border:none}
+.btn:active{transform:scale(.94)}
+.btn.solid{background:var(--accent);color:#fff}
+.btn.ghost{border:2px solid var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
+.chipst{background:var(--card);border:2px dashed var(--line);border-radius:999px;padding:8px 15px;font-weight:900;font-size:13px;animation:pulseSoft 3s ease-in-out infinite}
+.chipst:nth-child(2){animation-delay:1s}.chipst:nth-child(3){animation-delay:2s}
+@keyframes pulseSoft{50%{transform:translateY(-4px)}}
+
+.ribbon{border-block:2px dashed var(--line);padding:11px 0;overflow:hidden;background:var(--card);position:relative;z-index:1}
+.mtrack{display:flex;gap:34px;width:max-content;animation:mq 26s linear infinite;font-family:var(--font-d);font-size:17px;color:var(--accent)}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+section{position:relative;z-index:1;padding:58px 0}
+.sec-head{margin-bottom:32px}
+.sec-kick{font-size:12px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--accent2)}
+.sec-title{font-family:var(--font-d);font-size:clamp(30px,4.5vw,46px);margin-top:6px}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+
+.member{position:relative;background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:24px 20px 20px;text-align:center;box-shadow:var(--shadow);transition:transform .35s}
+.member:hover{transform:translateY(-6px) rotate(-1deg)}
+.member .sticker{position:absolute;top:-13px;right:14px;font-size:24px;transform:rotate(12deg)}
+.mav{width:84px;height:84px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:900;font-size:28px;box-shadow:0 0 0 4px var(--soft),0 0 0 6px var(--accent);overflow:hidden;position:relative}
+.mav:has(.mav-img){background:var(--soft)}
+.mav-img{width:100%;height:100%;background-size:contain;background-position:center;background-repeat:no-repeat;transition:none}
+.member h3{font-family:var(--font-d);font-size:22px}
+.discord-nick{display:block;font-size:13px;font-weight:800;color:var(--muted);margin-top:2px}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--muted);margin:6px 0 10px}
+.status i{width:9px;height:9px;border-radius:50%;background:#3ecf7a}
+.status.dnd i{background:#ff6b6b}
+.chip{display:inline-block;font-size:12.5px;font-weight:900;padding:5px 12px;border-radius:999px;background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--accent);margin-bottom:12px}
+.member q{display:block;font-size:13.5px;color:var(--muted);font-style:italic}
+
+.placeholder{background:var(--card);border:2px dashed var(--line);border-radius:var(--radius);padding:46px 24px;text-align:center;box-shadow:var(--shadow);transition:transform .35s}
+.placeholder:hover{transform:translateY(-4px)}
+.placeholder .ph-emo{font-size:44px;display:block;margin-bottom:14px}
+.placeholder h3{font-family:var(--font-d);font-size:22px;margin-bottom:8px}
+.placeholder p{color:var(--muted);font-weight:700;font-size:14.5px;max-width:520px;margin:0 auto}
+.placeholder-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+
+.poll-empty{background:var(--card);border:2px dashed var(--line);border-radius:var(--radius);padding:40px 24px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.poll-empty::before{content:"";position:absolute;inset:0;opacity:.05;background:radial-gradient(circle at 20% 30%,var(--accent),transparent 50%),radial-gradient(circle at 80% 70%,var(--accent2),transparent 50%);pointer-events:none}
+.poll-empty .pe-emo{font-size:56px;display:block;margin-bottom:14px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-8px) rotate(5deg)}}
+.poll-empty h3{font-family:var(--font-d);font-size:24px;margin-bottom:10px;color:var(--ink)}
+.poll-empty p{color:var(--muted);font-weight:700;font-size:14.5px;max-width:420px;margin:0 auto;line-height:1.6}
+.poll-empty .pe-hint{display:inline-block;margin-top:16px;padding:6px 14px;border-radius:999px;background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent);font-size:12px;font-weight:900;letter-spacing:.5px}
+
+.note{position:relative;width:235px;background:var(--card);border:2px dashed var(--line);border-radius:6px;padding:26px 18px 20px;box-shadow:var(--shadow);transition:transform .35s}
+.note::before{content:"";position:absolute;top:-11px;left:50%;transform:translateX(-50%) rotate(-3deg);width:74px;height:22px;background:color-mix(in srgb,var(--accent) 35%,transparent);border-radius:3px}
+.notes{display:flex;flex-wrap:wrap;gap:24px;justify-content:center}
+.note:nth-child(odd){transform:rotate(-2.2deg)}
+.note:nth-child(even){transform:rotate(2deg) translateY(12px)}
+.note:nth-child(3n){transform:rotate(-1deg) translateY(-8px)}
+.note:hover{transform:rotate(0) scale(1.05);z-index:2}
+.note .day{font-size:11.5px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--accent)}
+.note h4{font-family:var(--font-d);font-size:19px;margin:7px 0}
+.note p{font-size:13.5px;color:var(--muted)}
+.note .emo{position:absolute;bottom:10px;right:12px;font-size:22px}
+
+.wall{display:flex;flex-wrap:wrap;gap:26px;justify-content:center;padding:14px 0}
+.pnote{width:225px;background:color-mix(in srgb,var(--accent) 18%,var(--card));border-radius:12px;padding:20px 16px 16px;font-size:14px;font-weight:700;box-shadow:var(--shadow);transition:transform .4s cubic-bezier(.34,1.4,.64,1);position:relative}
+.pnote small{display:block;margin-top:12px;color:var(--muted);font-weight:900;font-size:11.5px;letter-spacing:1px;text-transform:uppercase}
+.pnote::after{content:attr(data-pin);position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:20px}
+.pnote:nth-child(1){transform:rotate(-4deg)}
+.pnote:nth-child(2){transform:rotate(3deg) translateY(16px)}
+.pnote:nth-child(3){transform:rotate(-2deg) translateY(-6px)}
+.pnote:nth-child(4){transform:rotate(4deg) translateY(10px)}
+.pnote:nth-child(5){transform:rotate(-3deg)}
+.pnote:nth-child(6){transform:rotate(2deg) translateY(18px)}
+.pnote:hover{transform:rotate(0) scale(1.07);z-index:2}
+
+.gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;align-items:start}
+.gitem{position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:3/2;border:2px solid var(--line);box-shadow:var(--shadow);background:rgba(0,0,0,.35);cursor:zoom-in;transition:transform .3s}
+.gitem:hover{transform:scale(1.03)}
+.gitem img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform-origin:center}
+.gitem figcaption{position:absolute;inset:auto 0 0;padding:34px 14px 12px;font-weight:900;font-size:14px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.55));pointer-events:none;z-index:2}
+
+.gal-strip{position:relative;overflow:hidden;width:100%;border-radius:var(--radius);padding:6px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%)}
+.gal-strip-track{display:flex;gap:18px;width:max-content;align-items:center;animation:galScroll 80s linear infinite}
+.gal-strip:hover .gal-strip-track{animation-play-state:paused}
+.gal-strip .gitem{flex:0 0 auto;margin:0}
+@keyframes galScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+#photoModal{background:rgba(0,0,0,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+#photoModal .modal-box{background:transparent;border:none;padding:0;max-width:92vw;max-height:92vh;display:flex;align-items:center;justify-content:center;position:relative;animation:photoZoomIn .4s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes photoZoomIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+#photoModal img{max-width:90vw;max-height:85vh;object-fit:contain;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.7);background:rgba(0,0,0,.5)}
+#photoModal .photo-cap{position:absolute;bottom:-44px;left:50%;transform:translateX(-50%);color:#fff;font-weight:800;font-size:14px;text-align:center;max-width:80vw;opacity:.85}
+#photoModal .photo-close{position:fixed;top:20px;right:24px;background:rgba(255,255,255,.15);color:#fff;width:46px;height:46px;border-radius:50%;font-size:22px;border:2px solid rgba(255,255,255,.2);z-index:10;backdrop-filter:blur(10px)}
+#photoModal .photo-close:hover{background:rgba(255,255,255,.3)}
+
+.admin-list-item .thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none;background:var(--soft);border:1px solid var(--line);margin-right:8px}
+.admin-list-item .thumb-wrap{display:flex;align-items:center;flex:1;min-width:0}
+.admin-list-item .thumb-wrap span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.play{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.panel h3{font-family:var(--font-d);font-size:21px;margin-bottom:12px;text-align:center}
+.panel .pdesc{color:var(--muted);font-weight:700;font-size:14px;text-align:center}
+.panel .pemo{font-size:56px;text-align:center;display:block;margin-bottom:14px}
+
+.poll{max-width:620px;margin:0 auto;background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
+.opt{position:relative;display:block;width:100%;text-align:left;border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;font-weight:800;font-size:15px;overflow:hidden;background:var(--bg2)}
+.opt .fill{position:absolute;inset:0;width:0;background:color-mix(in srgb,var(--accent) 20%,transparent);transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.opt span{position:relative;z-index:1}
+.opt .pct{float:right;color:var(--accent);font-weight:900}
+.opt.mine{border-color:var(--accent)}
+.poll-foot{text-align:center;color:var(--muted);font-size:13px;font-weight:800;margin-top:16px}
+
+footer{border-top:2px dashed var(--line);padding:60px 0 40px;text-align:center;position:relative;z-index:1}
+footer .thanks{font-family:var(--font-d);font-size:clamp(24px,4vw,36px);max-width:660px;margin:0 auto 26px}
+.love{display:inline-flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:28px;position:relative}
+.heartbtn{font-size:34px;background:var(--card);border:2px solid var(--line);border-radius:50%;width:74px;height:74px;transition:transform .15s;box-shadow:var(--shadow)}
+.heartbtn:active{transform:scale(.88)}
+.love .cnt{font-weight:900;font-size:13px;color:var(--muted)}
+.fheart{position:absolute;font-size:20px;pointer-events:none;animation:rise 1.1s ease-out forwards}
+@keyframes rise{to{transform:translate(var(--dx),-110px) rotate(20deg);opacity:0}}
+.foot-small{margin-top:26px;font-size:12.5px;color:var(--muted);font-weight:700}
+.admin-link{margin-top:16px;font-size:11px;color:var(--muted);opacity:.5;cursor:pointer}
+.admin-link:hover{opacity:1;color:var(--accent)}
+
+#wipe{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;clip-path:circle(0px at 50% 50%)}
+#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 24px;border-radius:999px;font-weight:900;font-size:14px;opacity:0;pointer-events:none;transition:all .35s;z-index:300;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.trail{position:fixed;z-index:150;pointer-events:none;font-size:16px;animation:trailUp .8s ease-out forwards}
+@keyframes trailUp{to{transform:translateY(-46px) scale(.4);opacity:0}}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
+.modal.open{display:flex}
+.modal-box{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:28px;max-width:720px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-box h2{font-family:var(--font-d);font-size:26px;margin-bottom:16px}
+.modal-box .form-row{margin-bottom:14px}
+.modal-box label{display:block;font-size:13px;font-weight:800;color:var(--muted);margin-bottom:4px}
+.modal-box input,.modal-box textarea,.modal-box select{width:100%;padding:10px 14px;border-radius:10px;border:2px solid var(--line);background:var(--bg2);color:var(--ink);font-family:inherit;font-size:14px;font-weight:700}
+.modal-box textarea{resize:vertical;min-height:60px}
+.modal-box input:focus,.modal-box textarea:focus,.modal-box select:focus{outline:none;border-color:var(--accent)}
+.modal-box .btns{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.admin-tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap}
+.admin-tabs button{padding:8px 14px;border-radius:999px;font-weight:800;font-size:13px;border:2px solid var(--line);background:var(--bg2);color:var(--muted)}
+.admin-tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.admin-list{max-height:320px;overflow-y:auto;border:2px solid var(--line);border-radius:12px;padding:10px;margin-bottom:14px;background:var(--bg2)}
+.admin-list-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:4px;background:var(--card);font-size:13px;font-weight:700}
+.admin-list-item .acts{display:flex;gap:6px;flex:none}
+.admin-list-item button{padding:4px 10px;border-radius:6px;font-size:12px;font-weight:800}
+.admin-list-item .edit{background:var(--accent2);color:#fff}
+.admin-list-item .del{background:#ff6b6b;color:#fff}
+.admin-list-empty{text-align:center;padding:20px;color:var(--muted);font-weight:700;font-size:13px}
+.theme-note{background:color-mix(in srgb,var(--accent) 15%,transparent);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:800;color:var(--accent);margin-bottom:14px}
+.setup-note{background:color-mix(in srgb,#37e6ff 15%,transparent);padding:12px 16px;border-radius:10px;font-size:13px;font-weight:700;color:#37e6ff;margin-bottom:14px;line-height:1.5}
+.debug-box{background:var(--bg2);border:2px solid var(--line);border-radius:10px;padding:12px;margin-top:12px;font-family:monospace;font-size:11px;max-height:200px;overflow-y:auto;color:var(--muted);white-space:pre-wrap}
+.debug-box .ok{color:#3ecf7a}.debug-box .err{color:#ff6b6b}.debug-box .warn{color:#ffcc00}
+
+.upload-block{border:2px dashed var(--line);border-radius:14px;padding:18px;background:var(--bg2);margin-bottom:14px;text-align:center;position:relative}
+.upload-block .up-preview{width:140px;height:140px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,var(--accent),var(--accent2));background-size:contain;background-position:center;background-repeat:no-repeat;display:grid;place-items:center;color:#fff;font-weight:900;font-size:44px;box-shadow:var(--shadow);overflow:hidden;cursor:grab;position:relative}
+.upload-block .up-preview:active{cursor:grabbing}
+.upload-block .up-preview .up-inner{width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat;transition:none}
+.upload-block .up-preview.has-img{color:transparent;background:var(--soft)}
+.upload-block .up-preview.gal{border-radius:12px;width:100%;max-width:340px;height:auto;aspect-ratio:3/2;font-size:32px;margin:0 auto 12px}
+.upload-block .up-hint{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:10px;min-height:16px}
+.upload-block .up-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.upload-block .up-btns .btn{padding:8px 14px;font-size:13px}
+.upload-block input[type=file]{display:none}
+.upload-block .up-loading{position:absolute;inset:0;background:rgba(0,0,0,.6);border-radius:14px;display:none;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;z-index:2}
+.upload-block .up-loading.show{display:flex}
+
+.rotate-info{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:2px solid var(--line);padding:6px 14px;border-radius:999px;font-size:12px;font-weight:800;color:var(--muted);margin:8px 6px}
+.rotate-info b{color:var(--accent)}
+.crop-controls{display:flex;gap:6px;justify-content:center;margin-bottom:10px;align-items:center;flex-wrap:wrap}
+.crop-controls .btn{padding:5px 10px;font-size:12px}
+.crop-controls .zoom-info{font-size:11px;color:var(--muted);font-weight:800;font-family:monospace;min-width:60px;text-align:center}
+.crop-hint{font-size:11px;color:var(--muted);font-weight:700;background:color-mix(in srgb,var(--accent) 10%,transparent);padding:6px 10px;border-radius:8px;margin-top:6px;line-height:1.5}
+
+.import-header{display:flex;gap:10px;align-items:center;margin-bottom:12px;padding:14px;background:var(--bg2);border:2px solid var(--line);border-radius:12px;flex-wrap:wrap}
+.import-header input{flex:1;font-family:monospace;letter-spacing:.5px;min-width:200px}
+.import-header .btn{padding:8px 16px;font-size:13px}
+.import-info{font-size:12.5px;color:var(--muted);font-weight:700;padding:10px 14px;background:color-mix(in srgb,var(--accent) 8%,transparent);border-left:3px solid var(--accent);border-radius:4px;margin-bottom:14px;line-height:1.6}
+.import-info b{color:var(--accent)}
+.import-info code{background:var(--soft);padding:2px 6px;border-radius:4px;font-size:11.5px;color:var(--accent)}
+
+.member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;max-height:420px;overflow-y:auto;padding:6px}
+.mem-card{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s,transform .2s}
+.mem-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.mem-card.added{opacity:.5;border-style:dashed}
+.mem-top{display:flex;align-items:center;gap:10px}
+.mem-avatar{width:44px;height:44px;border-radius:50%;flex:none;background:var(--soft);background-size:cover;background-position:center;display:grid;place-items:center;color:#fff;font-weight:900;font-size:18px}
+.mem-info{flex:1;min-width:0}
+.mem-name{font-weight:900;font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mem-username{font-size:11.5px;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mem-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--muted);margin-top:2px}
+.mem-status i{width:7px;height:7px;border-radius:50%}
+.mem-status.online i{background:#3ecf7a}
+.mem-status.idle i{background:#ffcc00}
+.mem-status.dnd i{background:#ff6b6b}
+.mem-status.offline i{background:#888}
+.mem-actions{display:flex;gap:6px;flex-wrap:wrap}
+.mem-actions .btn{padding:6px 12px;font-size:12px;flex:1;min-width:0}
+.mem-actions .btn.f-btn{background:var(--accent);color:#fff}
+.mem-actions .btn.m-btn{background:var(--accent2);color:#fff}
+.mem-filter{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
+.mem-filter input{flex:1;min-width:140px;padding:8px 12px;font-size:13px;border:2px solid var(--line);background:var(--bg2);color:var(--ink);border-radius:8px}
+.mem-filter .cnt{font-size:12px;color:var(--muted);font-weight:800}
+.imgbb-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:900;background:color-mix(in srgb,#6fdab8 20%,transparent);color:#6fdab8;margin-left:6px}
+
+@media (max-width:860px){
+  .nav{display:none}
+  .burger{display:grid}
+  .hero{padding-top:40px;padding-bottom:30px;gap:30px}
+  .hero h1{font-size:clamp(32px,8vw,52px)}
+  .hero p.lead{font-size:16px}
+  .switch{padding:6px 10px;font-size:12px;gap:6px}
+  .switch .lbl{font-size:11px}
+  .track{width:44px;height:22px}
+  .knob{width:16px;height:16px}
+  body[data-theme="m"] .knob{transform:translateX(24px)}
+  section{padding:42px 0}
+  .sec-head{margin-bottom:24px}
+  .sec-title{font-size:clamp(26px,6vw,38px)}
+}
+
+@media (max-width:560px){
+  .wrap{padding:0 14px}
+  .topbar .wrap{height:60px;gap:10px}
+  .server-icon{width:38px;height:38px;font-size:20px}
+  .server-name{font-size:17px}
+  .hero{padding-top:30px;padding-bottom:20px;gap:22px}
+  .hero-kick{font-size:11px;letter-spacing:2px}
+  .hero h1{font-size:clamp(28px,9vw,44px);margin:10px 0 14px}
+  .hero p.lead{font-size:15px}
+  .hero-btns{gap:10px;margin-top:20px}
+  .hero-btns .btn{padding:12px 22px;font-size:14px;width:100%;text-align:center}
+  .chips{gap:8px;margin-top:22px;justify-content:center}
+  .chipst{font-size:11.5px;padding:6px 12px}
+  
+  .placeholder-grid{grid-template-columns:1fr;gap:16px}
+  .play{grid-template-columns:1fr;gap:16px}
+  .gal{grid-template-columns:1fr 1fr;gap:12px}
+  
+  .gal-strip-track{gap:12px;animation-duration:60s}
+  .gal-strip .gitem{min-width:180px}
+  
+  .member{padding:20px 16px 16px}
+  .member h3{font-size:20px}
+  .mav{width:76px;height:76px;font-size:26px}
+  
+  .notes{gap:16px}
+  .note{width:100%;max-width:300px}
+  .note:nth-child(odd){transform:rotate(-1deg)}
+  .note:nth-child(even){transform:rotate(1deg) translateY(6px)}
+  .note:nth-child(3n){transform:rotate(-0.5deg) translateY(-4px)}
+  
+  .wall{gap:16px}
+  .pnote{width:calc(50% - 8px);min-width:140px}
+  .pnote:nth-child(1){transform:rotate(-2deg)}
+  .pnote:nth-child(2){transform:rotate(2deg) translateY(8px)}
+  .pnote:nth-child(3){transform:rotate(-1deg) translateY(-4px)}
+  .pnote:nth-child(4){transform:rotate(1deg) translateY(6px)}
+  .pnote:nth-child(5){transform:rotate(-1.5deg)}
+  .pnote:nth-child(6){transform:rotate(1.5deg) translateY(10px)}
+  
+  .panel{padding:18px}
+  .panel h3{font-size:19px}
+  .panel .pemo{font-size:48px;margin-bottom:10px}
+  
+  .poll{padding:20px}
+  .opt{padding:12px 14px;font-size:14px}
+  
+  footer{padding:44px 0 30px}
+  footer .thanks{font-size:clamp(22px,6vw,32px);margin-bottom:20px}
+  .foot-small{font-size:11.5px;margin-top:20px}
+  .heartbtn{width:66px;height:66px;font-size:30px}
+  
+  .modal-box{padding:22px;border-radius:18px;max-height:94vh}
+  .modal-box h2{font-size:22px;margin-bottom:14px}
+  
+  .admin-tabs{gap:3px}
+  .admin-tabs button{padding:7px 11px;font-size:12px}
+  
+  .admin-list-item{padding:10px;font-size:12.5px;flex-wrap:wrap;gap:8px}
+  .admin-list-item .thumb-wrap{flex:1 1 100%;margin-bottom:4px}
+  .admin-list-item .acts{flex:1 1 100%;justify-content:flex-end}
+  
+  .upload-block{padding:14px}
+  .upload-block .up-preview{width:120px;height:120px;font-size:36px}
+  .upload-block .up-preview.gal{max-width:280px}
+  
+  .member-grid{grid-template-columns:1fr;max-height:none}
+  .mem-card{padding:12px}
+  .mem-actions{flex-direction:row}
+  .mem-actions .btn{flex:1}
+  
+  .import-header{padding:12px;gap:8px}
+  .import-header input{min-width:0;font-size:13px}
+  .import-header .btn{padding:8px 12px;font-size:12px;width:100%}
+  
+  .btn{padding:12px 22px;font-size:14.5px}
+  .btns{gap:8px}
+  .btns .btn{flex:1;min-width:0;text-align:center}
+  
+  .modal{padding:10px}
+  
+  #toast{font-size:13px;padding:10px 18px;bottom:20px;max-width:calc(100vw - 30px)}
+  
+  .mtrack{gap:24px;font-size:15px}
+  .ribbon{padding:8px 0}
+  
+  .form-row input,.form-row textarea{font-size:16px !important;padding:12px 14px}
+}
+
+@media (max-width:380px){
+  .wrap{padding:0 10px}
+  body{font-size:15.5px}
+  .topbar .wrap{height:56px;gap:8px}
+  .server-icon{width:34px;height:34px;font-size:18px;border-radius:10px 10px 10px 3px}
+  .server-name{font-size:15px}
+  .burger{width:40px;height:40px}
+  .burger span{width:18px}
+  
+  .switch{padding:5px 8px;gap:4px;font-size:11px}
+  .switch .lbl{font-size:10px}
+  .track{width:38px;height:20px}
+  .knob{width:14px;height:14px;top:3px;left:3px}
+  body[data-theme="m"] .knob{transform:translateX(20px)}
+  
+  .hero h1{font-size:clamp(26px,10vw,36px);margin:8px 0 12px}
+  .hero p.lead{font-size:14px}
+  .chipst{font-size:10.5px;padding:5px 10px}
+  
+  .sec-title{font-size:clamp(22px,7vw,30px)}
+  .sec-kick{font-size:10px;letter-spacing:2px}
+  
+  .member h3{font-size:18px}
+  .member q{font-size:12.5px}
+  .mav{width:70px;height:70px;font-size:24px}
+  
+  .pnote{width:100%;max-width:none}
+  .pnote:nth-child(n){transform:none}
+  
+  .note{width:100%;max-width:none}
+  .note:nth-child(n){transform:none}
+  
+  .gal{grid-template-columns:1fr}
+  
+  .upload-block .up-preview{width:100px;height:100px;font-size:30px}
+  .upload-block .up-preview.gal{max-width:100%}
+  
+  .admin-tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;margin-bottom:14px;-webkit-overflow-scrolling:touch}
+  .admin-tabs button{flex-shrink:0;white-space:nowrap}
+  
+  .mobile-menu{width:90vw}
+  
+  footer .thanks{font-size:22px}
+}
+
+@media (min-width:1400px){
+  .wrap{max-width:1280px}
+}
+
+@media (hover:none){
+  .member:hover{transform:none}
+  .gitem:hover{transform:none}
+  .note:hover{transform:rotate(0) scale(1.02)}
+  .pnote:hover{transform:rotate(0) scale(1.03)}
+  .nav a:hover{background:none}
+  .btn:hover{transform:none}
+  .admin-link:hover{opacity:.5}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  .gal-strip-track{animation:none}
+}
+
+/* Пейзажная ориентация на мобильных */
+@media (max-height:500px) and (orientation:landscape){
+  .hero{padding-top:20px;padding-bottom:10px}
+  .hero h1{font-size:clamp(24px,5vw,36px);margin:8px 0 10px}
+  section{padding:30px 0}
+  .modal-box{max-height:98vh}
+}
+</style>
+</head>
+<body data-theme="f">
+
+<div class="floaters" aria-hidden="true">
+  <span class="fl-f" style="left:6%;top:18%">🌸</span><span class="fl-f" style="left:88%;top:12%;animation-delay:-3s">✨</span>
+  <span class="fl-f" style="left:14%;top:70%;animation-delay:-6s">💗</span><span class="fl-f" style="left:80%;top:64%;animation-delay:-2s">🎀</span>
+  <span class="fl-f" style="left:48%;top:38%;animation-delay:-8s">🫧</span><span class="fl-f" style="left:68%;top:86%;animation-delay:-4s">🌷</span>
+  <span class="fl-m" style="left:6%;top:18%">⚡</span><span class="fl-m" style="left:88%;top:12%;animation-delay:-3s">🔥</span>
+  <span class="fl-m" style="left:14%;top:70%;animation-delay:-6s">🎮</span><span class="fl-m" style="left:80%;top:64%;animation-delay:-2s">🛡️</span>
+  <span class="fl-m" style="left:48%;top:38%;animation-delay:-8s">🚀</span><span class="fl-m" style="left:68%;top:86%;animation-delay:-4s">🏴</span>
+</div>
+
+<div class="mobile-overlay" id="mobileOverlay"></div>
+<nav class="mobile-menu" id="mobileMenu">
+  <a href="#team" data-close>команда</a>
+  <a href="#play" data-close>игровая</a>
+  <a href="#events" data-close>ивенты</a>
+  <a href="#wall" data-close>стена</a>
+  <a href="#gallery" data-close>моменты</a>
+</nav>
+
+<div id="wipe"></div>
+<div id="toast"></div>
+
+<header class="topbar themable">
+  <div class="wrap">
+    <div class="server-icon"><span id="logoEmoji">🌸</span></div>
+    <div class="server-name" data-f="Девичник" data-m="Братство">Девичник</div>
+    <nav class="nav">
+      <a href="#team">команда</a><a href="#play">игровая</a><a href="#events">ивенты</a><a href="#wall">стена</a><a href="#gallery">моменты</a>
+    </nav>
+    <button class="burger" id="burgerBtn" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="sync-dot" id="syncDot" title="Статус синхронизации"></span>
+    <button class="switch" id="themeBtn" aria-label="Переключить тему">
+      <span class="lbl on" id="lblF">🌸 девичий</span>
+      <span class="track"><span class="knob"></span></span>
+      <span class="lbl" id="lblM">мужской ⚡</span>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <div class="hero-kick" data-f="✦ сайт нашего сервера ✦" data-m="✦ сайт нашего сервера ✦">✦ сайт нашего сервера ✦</div>
+      <h1 class="scr" id="heroTitle" data-f="Привет, красавицы!" data-m="Привет, легенды!">Привет, красавицы!</h1>
+      <p class="lead" data-f="Это самый уютный уголок интернета: наш сервер, наши девочки, караоке по субботам и тёплые слова без лимита."
+         data-m="Это база нашего сервера: наша команда, турниры по средам и респекты без лимита.">Это самый уютный уголок интернета: наш сервер, наши девочки, караоке по субботам и тёплые слова без лимита.</p>
+      <div class="hero-btns">
+        <a href="https://discord.gg/GMyqZraKr5" target="_blank" rel="noopener" class="btn solid" data-f="залетай в Discord 💌" data-m="выдвигайся в Discord ⚡">залетай в Discord 💌</a>
+      </div>
+      <div class="chips">
+        <span class="chipst" data-f="💗 уют: включён" data-m="⚡ боеготовность: 100%">💗 уют: включён</span>
+        <span class="chipst" data-f="🎤 караоке: по субботам" data-m="🎮 катки: по средам">🎤 караоке: по субботам</span>
+        <span class="chipst" data-f="🌙 онлайн: 24/7" data-m="📡 связь: 24/7">🌙 онлайн: 24/7</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ribbon themable" aria-hidden="true"><div class="mtrack" id="marquee"></div></div>
+
+<section id="team">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-kick" data-f="наш цветник" data-m="наш отряд">наш цветник</div>
+      <h2 class="sec-title scr" data-f="Наши звёздочки" data-m="Боевой состав">Наши звёздочки</h2>
+    </div>
+    <div class="placeholder-grid" id="teamGrid"></div>
+  </div>
+</section>
+
+<section id="play">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-kick" data-f="уголок веселья" data-m="полигон досуга">уголок веселья</div>
+      <h2 class="sec-title scr" data-f="Игровая комната" data-m="Штаб досуга">Игровая комната</h2>
+    </div>
+    <div class="play" id="playGrid"></div>
+  </div>
+</section>
+
+<section id="events">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-kick" data-f="доска объявлений" data-m="расписание операций">доска объявлений</div>
+      <h2 class="sec-title scr" data-f="Планы на неделю" data-m="Боевое расписание">Планы на неделю</h2>
+    </div>
+    <div class="notes" id="eventsGrid"></div>
+  </div>
+</section>
+
+<section id="wall">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-kick" data-f="прикреплено с любовью" data-m="прикреплено с уважением">прикреплено с любовью</div>
+      <h2 class="sec-title scr" data-f="Стена тёплых слов" data-m="Доска почёта">Стена тёплых слов</h2>
+    </div>
+    <div class="wall" id="wallGrid"></div>
+  </div>
+</section>
+
+<section id="vote">
+  <div class="wrap">
+    <div class="sec-head reveal" style="text-align:center">
+      <div class="sec-kick" data-f="решаем вместе" data-m="голосование отряда">решаем вместе</div>
+      <h2 class="sec-title scr" data-f="Что смотрим в пятницу?" data-m="Какая операция в пятницу?">Что смотрим в пятницу?</h2>
+    </div>
+    <div class="poll themable reveal" id="poll"></div>
+  </div>
+</section>
+
+<section id="gallery">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-kick" data-f="наш фотоальбом" data-m="архив записей">наш фотоальбом</div>
+      <h2 class="sec-title scr" data-f="Моменты сервера" data-m="Хроника отряда">Моменты сервера</h2>
+    </div>
+    <div id="galGrid"></div>
+  </div>
+</section>
+
+<footer class="themable">
+  <div class="wrap">
+    <p class="thanks" data-f="сделано с 💗 для самых лучших девчонок этого сервера" data-m="сделано с 🫡 для лучших бойцов этого сервера">сделано с 💗 для самых лучших девчонок этого сервера</p>
+    <div class="love" id="loveZone">
+      <button class="heartbtn themable" id="heartBtn" aria-label="Отправить любовь">💖</button>
+      <span class="cnt"><span id="heartCnt">0</span> <span data-f="сердечек отправлено" data-m="респектов отдано">сердечек отправлено</span></span>
+    </div>
+    <div><a class="btn solid" href="https://discord.gg/GMyqZraKr5" target="_blank" rel="noopener" data-f="залетай в Discord 💌" data-m="выдвигайся в Discord ⚡">залетай в Discord 💌</a></div>
+    <p class="foot-small" data-f="✦ сервер «Девичник» • онлайн 24/7 • вход только с хорошим настроением ✦" data-m="✦ база «Братство» • онлайн 24/7 • вход только с хорошим настроением ✦">✦ сервер «Девичник» • онлайн 24/7 • вход только с хорошим настроением ✦</p>
+    <div class="admin-link" id="adminLink">⚙ админ</div>
+  </div>
+</footer>
+
+<div class="modal" id="loginModal">
+  <div class="modal-box">
+    <h2>🔐 Вход админа</h2>
+    <div class="form-row"><label>Имя пользователя</label><input type="text" id="loginUser" autocomplete="username"></div>
+    <div class="form-row"><label>Пароль</label><input type="password" id="loginPass" autocomplete="current-password"></div>
+    <div class="btns">
+      <button class="btn solid" id="loginOk">Войти</button>
+      <button class="btn ghost" onclick="safeCloseModal('loginModal')">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="adminModal">
+  <div class="modal-box">
+    <h2>⚙ Админ-панель</h2>
+    <div class="theme-note" id="themeNote"></div>
+    <div class="setup-note" id="setupNote"></div>
+    <div class="admin-tabs">
+      <button class="active" data-tab="import">👥 Импорт</button>
+      <button data-tab="team">Команда</button>
+      <button data-tab="play">Игровая</button>
+      <button data-tab="events">Ивенты</button>
+      <button data-tab="wall">Стена</button>
+      <button data-tab="gal">Галерея</button>
+      <button data-tab="poll">Опрос</button>
+      <button data-tab="visits">👁 Посещения</button>
+      <button data-tab="data">Данные</button>
+    </div>
+    <div id="adminContent"></div>
+    <div class="btns">
+      <button class="btn ghost" onclick="safeCloseModal('adminModal')">Закрыть</button>
+      <button class="btn solid" onclick="safeLogout()">Выйти</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="photoModal">
+  <div class="modal-box" onclick="if(event.target===this)closePhotoModal()">
+    <button class="photo-close" onclick="closePhotoModal()" aria-label="Закрыть">✕</button>
+    <img id="photoModalImg" alt="">
+    <div class="photo-cap" id="photoModalCap"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+"use strict";
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isMobile=matchMedia('(max-width:860px)').matches;
+let theme=localStorage.getItem('theme')||'f';
+document.body.dataset.theme=theme;
+
+const burgerBtn=$('#burgerBtn');
+const mobileMenu=$('#mobileMenu');
+const mobileOverlay=$('#mobileOverlay');
+
+function toggleMobileMenu(){
+  const isOpen=mobileMenu.classList.contains('open');
+  mobileMenu.classList.toggle('open');
+  mobileOverlay.classList.toggle('open');
+  burgerBtn.classList.toggle('active');
+  document.body.style.overflow=isOpen?'':'hidden';
+}
+
+function closeMobileMenu(){
+  mobileMenu.classList.remove('open');
+  mobileOverlay.classList.remove('open');
+  burgerBtn.classList.remove('active');
+  document.body.style.overflow='';
+}
+
+if(burgerBtn){
+  burgerBtn.addEventListener('click',toggleMobileMenu);
+}
+if(mobileOverlay){
+  mobileOverlay.addEventListener('click',closeMobileMenu);
+}
+$$('.mobile-menu a[data-close]').forEach(a=>{
+  a.addEventListener('click',()=>{
+    closeMobileMenu();
+  });
+});
+window.addEventListener('resize',()=>{
+  if(window.innerWidth>860) closeMobileMenu();
+});
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyB1nhmTV5XgdvgPJxG6xYJ_GeEkohMaykA",
+  authDomain: "furiebi-ac7b6.firebaseapp.com",
+  projectId: "furiebi-ac7b6",
+  storageBucket: "furiebi-ac7b6.firebasestorage.app",
+  messagingSenderId: "144716304483",
+  appId: "1:144716304483:web:71dd805ccc1c183e882856"
+};
+
+const IMGBB_API_KEY = '537bc949008c85e49d38ae20d320f268';
+const STORAGE_KEY='siteData_v18';
+const ADMIN_USER='DEAD';
+const ADMIN_PASS='Dead12pull4';
+const MAX_GAL=25;
+const STRIP_H=240;
+const MAX_DOC_SIZE = 900 * 1024;
+const SAVE_COOLDOWN = 20000;
+
+const EMPTY_POLL_MSG = {
+  f: { emo:'🌙', title:'Опрос пока не создан', text:'Админ ещё не придумал, что будем решать вместе. Открой админку → вкладка Опрос → добавь первый вариант ✨', hint:'✨ настрой опрос в админке' },
+  m: { emo:'🎯', title:'Задач пока нет', text:'Штаб ещё не определил операцию. Открой админку → вкладка Опрос → добавь первый вариант ⚡', hint:'⚡ настрой опрос в админке' }
+};
+
+const DEFAULT_DATA={
+  serverId:'',
+  f:{
+    team:[],
+    play:[{emo:'🔮', title:'Шар судьбы', desc:'скоро тут появится предсказание на день'},{emo:'💌', title:'Генератор комплиментов', desc:'скоро тут можно будет получить порцию тёплых слов'},{emo:'🎧', title:'Плейлист сервера', desc:'скоро тут зазвучит наша любимая музыка'}],
+    events:[{day:'пятница • 20:00', title:'Киновечер', desc:'ромком, пледы и какао. кто уснул — смотрит титры', emo:'🍿'},{day:'суббота • 19:00', title:'Караоке', desc:'поём громко, стыдно никому. закажи песню заранее!', emo:'🎤'}],
+    wall:[], gal:[], poll:[]
+  },
+  m:{
+    team:[],
+    play:[{emo:'🧭', title:'Оракул отряда', desc:'скоро тут появится боевой прогноз'},{emo:'🏆', title:'Генератор похвалы', desc:'скоро тут можно будет получить заслуженный респект'},{emo:'🎧', title:'Саундтрек базы', desc:'скоро тут зазвучит саундтрек отряда'}],
+    events:[{day:'пятница • 20:00', title:'Кинооперация', desc:'фильм выбирает отряд. уснувшие смотрят титры', emo:'🎬'},{day:'среда • 21:00', title:'Тактические катки', desc:'турнир отряда. реванш обязателен', emo:'🎯'}],
+    wall:[], gal:[], poll:[]
+  }
+};
+
+let siteData;
+let db=null;
+let useFirebase=false;
+let useImgBB=false;
+let unsubData=null;
+let isRendering=false;
+let debugLog=[];
+let isSaving=false;
+let lastSaveAttempt=0;
+let _savingUntil=0;
+let importedMembers=[];
+let importFilter='';
+let currentAvatarTransform={x:0,y:0,scale:1};
+
+function newId(){
+  try{ return crypto.randomUUID(); }catch(e){
+    return 'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,10);
+  }
+}
+
+window.addEventListener('error', e=>{
+  try{ dlog('JS error: '+e.message,'err'); }catch(_){}
+});
+window.addEventListener('unhandledrejection', e=>{
+  try{ dlog('Promise error: '+(e.reason?.message||e.reason),'err'); }catch(_){}
+});
+
+function dlog(msg,type='info'){
+  try{
+    const time=new Date().toLocaleTimeString();
+    debugLog.push({time,msg,type});
+    if(debugLog.length>100)debugLog.shift();
+    console.log(`[${type}] ${time}: ${msg}`);
+  }catch(e){}
+}
+
+function probe(url,cb){
+  try{
+    if(!url){ cb(4,3); return; }
+    const im=new Image();
+    let done=false;
+    const fire=(w,h)=>{ if(!done){ done=true; cb(w||4,h||3); } };
+    im.onload=()=>fire(im.naturalWidth,im.naturalHeight);
+    im.onerror=()=>fire(4,3);
+    im.src=url;
+    if(im.complete&&im.naturalWidth)fire(im.naturalWidth,im.naturalHeight);
+  }catch(e){ cb(4,3); }
+}
+
+function initFirebase(){
+  try{
+    if(typeof firebase==='undefined'){ dlog('Firebase SDK не загружен','err'); useFirebase=false; return; }
+    if(!FIREBASE_CONFIG.apiKey){ dlog('apiKey пустой','warn'); useFirebase=false; return; }
+    dlog('Инициализация Firebase... projectId='+FIREBASE_CONFIG.projectId);
+    if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    db=firebase.firestore();
+    if(IMGBB_API_KEY && !IMGBB_API_KEY.includes('ВСТАВЬТЕ')){
+      useImgBB=true;
+      dlog('✓ ImgBB готов к загрузке фото','ok');
+    }else{
+      useImgBB=false;
+      dlog('⚠ ImgBB API ключ не настроен — вставьте ключ в код','warn');
+    }
+    useFirebase=true;
+    dlog('Firebase инициализирован ✓','ok');
+    updateSyncDot('loading');
+    setupSnapshotListener();
+  }catch(e){
+    dlog('Firebase init failed: '+e.message,'err');
+    useFirebase=false;
+    updateSyncDot('off');
+  }
+}
+
+function setupSnapshotListener(){
+  if(!useFirebase || !db) return;
+  if(unsubData){ try{ unsubData(); }catch(e){} }
+  unsubData=db.collection('site').doc('main').onSnapshot(snap=>{
+    try{
+      if(!snap.exists) return;
+      if(snap.metadata && snap.metadata.fromCache){
+        dlog('Snapshot fromCache — пропускаю','warn');
+        return;
+      }
+      const now = Date.now();
+      if(now < _savingUntil){
+        dlog('Snapshot во время saveData — пропускаю','warn');
+        return;
+      }
+      if(now - lastSaveAttempt < 3000){
+        return;
+      }
+      const newData=snap.data()?.data;
+      if(!newData) return;
+      if(!dataEqual(newData, siteData)){
+        dlog('Snapshot: данные обновились из Firebase','ok');
+        siteData=newData;
+        migrateData();
+        dedupeAll();
+        renderAll();
+        renderPoll();
+      }
+      updateSyncDot('ok');
+    }catch(e){ dlog('Snapshot error: '+e.message,'err'); }
+  },err=>{
+    dlog('Snapshot subscription error: '+err.message,'err');
+    updateSyncDot('error');
+  });
+}
+
+function updateSyncDot(state){
+  try{
+    const dot=$('#syncDot');
+    if(!dot)return;
+    dot.classList.remove('on','off','loading');
+    if(!useFirebase){ dot.classList.add('off'); dot.title='Локальный режим'; return; }
+    if(state==='loading'){ dot.classList.add('loading'); dot.title='Загрузка...'; }
+    else if(state==='ok'){ dot.classList.add('on'); dot.title='✓ Синхронизировано'; }
+    else if(state==='error'){ dot.classList.add('off'); dot.title='Ошибка'; }
+  }catch(e){}
+}
+
+function dedupe(arr,keyFn){
+  if(!Array.isArray(arr))return [];
+  const seen=new Set(), out=[];
+  for(const it of arr){
+    try{
+      const key=keyFn(it);
+      if(key==null||key===''){ out.push(it); continue; }
+      if(!seen.has(key)){ seen.add(key); out.push(it); }
+    }catch(e){ out.push(it); }
+  }
+  return out;
+}
+
+function dedupeAll(){
+  try{
+    if(!siteData)return;
+    ['f','m'].forEach(t=>{
+      if(!siteData[t])siteData[t]={};
+      ['team','play','events','wall','gal'].forEach(k=>{
+        if(!Array.isArray(siteData[t][k]))siteData[t][k]=[];
+        siteData[t][k]=dedupe(siteData[t][k], i=>i._id);
+      });
+      if(!Array.isArray(siteData[t].poll))siteData[t].poll=[];
+    });
+  }catch(e){ dlog('dedupeAll error: '+e.message,'err'); }
+}
+
+async function loadData(){
+  initFirebase();
+  const localRaw = localStorage.getItem(STORAGE_KEY);
+  let localData = null;
+  let localSize = 0;
+  if(localRaw){
+    try{
+      localData = JSON.parse(localRaw);
+      localSize = JSON.stringify(localData).length;
+    }catch(e){}
+  }
+  if(useFirebase && db){
+    try{
+      dlog('Чтение из Firestore...');
+      const doc=await db.collection('site').doc('main').get();
+      if(doc.exists){
+        const firebaseData = doc.data()?.data;
+        const fbSize = firebaseData ? JSON.stringify(firebaseData).length : 0;
+        dlog(`Firebase: ${Math.round(fbSize*0.75/1024)} KB, Local: ${Math.round(localSize*0.75/1024)} KB`,'info');
+        if(localData && localSize > fbSize){
+          dlog('Локальные данные больше — используем их','warn');
+          siteData = localData;
+        }else{
+          siteData = firebaseData || JSON.parse(JSON.stringify(DEFAULT_DATA));
+        }
+      }else{
+        siteData = localData || JSON.parse(JSON.stringify(DEFAULT_DATA));
+        try{
+          _savingUntil = Date.now() + SAVE_COOLDOWN;
+          await db.collection('site').doc('main').set({
+            data: siteData,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            version: Date.now()
+          });
+        }catch(e){ dlog('Не удалось создать документ: '+e.message,'err'); }
+      }
+      migrateData();
+      dedupeAll();
+      updateSyncDot('ok');
+    }catch(e){
+      dlog('Firebase load failed: '+e.message,'err');
+      updateSyncDot('error');
+      loadLocal();
+    }
+  }else{
+    loadLocal();
+  }
+}
+
+function dataEqual(a,b){
+  try{
+    if(!a||!b) return false;
+    for(const t of ['f','m']){
+      for(const k of ['team','play','events','wall','gal','poll']){
+        const arrA = (a[t]&&a[t][k]) || [];
+        const arrB = (b[t]&&b[t][k]) || [];
+        if(arrA.length !== arrB.length) return false;
+        for(let i=0;i<arrA.length;i++){
+          if(arrA[i]?._id !== arrB[i]?._id) return false;
+        }
+      }
+    }
+    return true;
+  }catch(e){ return false; }
+}
+
+function migrateData(){
+  try{
+    ['f','m'].forEach(t=>{
+      if(!siteData[t]) siteData[t]=JSON.parse(JSON.stringify(DEFAULT_DATA[t]));
+      if(!Array.isArray(siteData[t].poll)) siteData[t].poll=[];
+      ['team','play','events','wall','gal'].forEach(k=>{
+        if(!Array.isArray(siteData[t][k])) siteData[t][k]=[];
+        siteData[t][k].forEach(item=>{
+          if(item && typeof item==='object' && !item._id){
+            item._id = newId();
+          }
+        });
+      });
+      if(Array.isArray(siteData[t].gal)){
+        siteData[t].gal.forEach(g=>{
+          if(typeof g.rotate!=='number') g.rotate=0;
+        });
+      }
+    });
+  }catch(e){ dlog('migrate error: '+e.message,'err'); }
+}
+
+function loadLocal(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    siteData=raw?JSON.parse(raw):JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }catch(e){
+    siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
+  if(!siteData.f)siteData.f=JSON.parse(JSON.stringify(DEFAULT_DATA.f));
+  if(!siteData.m)siteData.m=JSON.parse(JSON.stringify(DEFAULT_DATA.m));
+  if(typeof siteData.serverId!=='string')siteData.serverId='';
+  migrateData();
+  dedupeAll();
+}
+
+async function saveData(){
+  if(isSaving){ dlog('Сохранение уже идёт — пропускаю','warn'); return; }
+  isSaving = true;
+  lastSaveAttempt = Date.now();
+  _savingUntil = lastSaveAttempt + SAVE_COOLDOWN;
+  try{
+    const json = JSON.stringify(siteData);
+    const sizeBytes = json.length;
+    const sizeKB = Math.round((sizeBytes * 0.75) / 1024);
+    const sizeMB = (sizeKB / 1024).toFixed(2);
+    dlog(`📊 Сохранение: ${sizeMB} MB`,'info');
+
+    try{
+      localStorage.setItem(STORAGE_KEY, json);
+    }catch(e){
+      dlog('localStorage переполнен (не критично): '+e.message,'warn');
+    }
+    if(useFirebase && db){
+      if(sizeBytes * 0.75 > MAX_DOC_SIZE){
+        dlog(`⚠ Данные слишком большие: ${sizeMB} MB`,'err');
+        updateSyncDot('error');
+        toast(`⚠ Лимит Firestore: ${sizeMB} MB. Нажмите «Перенести фото на ImgBB» в админке!`);
+      }else{
+        try{
+          await db.collection('site').doc('main').set({
+            data: siteData,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            version: Date.now()
+          });
+          dlog('✓ Firestore сохранён','ok');
+          updateSyncDot('ok');
+          toast('✓ Сохранено в облаке');
+        }catch(e){
+          dlog('✗ Ошибка Firestore: '+e.message,'err');
+          updateSyncDot('error');
+          if(e.message && e.message.includes('size')){
+            toast('⚠ Превышен лимит. Перенесите фото на ImgBB!');
+          }else if(e.code === 'permission-denied'){
+            toast('⚠ Нет прав. Проверьте правила Firestore!');
+          }else{
+            toast('⚠ Ошибка Firebase: '+e.message);
+          }
+        }
+      }
+    }else{
+      updateSyncDot('off');
+    }
+  }catch(e){
+    dlog('✗ saveData error: '+e.message,'err');
+  }finally{
+    isSaving = false;
+  }
+}
+
+function compressImage(file, maxWidth=600, quality=0.6){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        try{
+          let w = img.width, h = img.height;
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const targetSize = maxWidth || 600;
+          if(w > targetSize){ h = Math.round(h * targetSize / w); w = targetSize; }
+          if(h > targetSize){ w = Math.round(w * targetSize / h); h = targetSize; }
+          canvas.width = w; canvas.height = h;
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(dataUrl);
+        }catch(err){ reject(err); }
+      };
+      img.onerror = () => reject(new Error('Не удалось загрузить изображение'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Ошибка чтения файла'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadToImgBB(dataUrl){
+  if(!useImgBB){
+    throw new Error('ImgBB API ключ не настроен. Вставьте ключ в код (константа IMGBB_API_KEY)');
+  }
+  try{
+    dlog('⏳ Загружаю фото на ImgBB...','info');
+    const formData = new FormData();
+    formData.append('key', IMGBB_API_KEY);
+    formData.append('image', dataUrl.split(',')[1]);
+    const response = await fetch('https://api.imgbb.com/1/upload', {
+      method: 'POST',
+      body: formData
+    });
+    if(!response.ok){
+      throw new Error('ImgBB ответил с ошибкой: ' + response.status);
+    }
+    const result = await response.json();
+    if(result.success && result.data && result.data.url){
+      dlog('✓ Фото загружено на ImgBB: '+result.data.url,'ok');
+      return result.data.url;
+    }else{
+      throw new Error(result.error?.message || 'ImgBB вернул неожиданный ответ');
+    }
+  }catch(e){
+    dlog('✗ ImgBB error: '+e.message,'err');
+    throw e;
+  }
+}
+
+async function compressAndUpload(file, maxWidth, quality){
+  const compressed = await compressImage(file, maxWidth, quality);
+  const sizeKB = Math.round((compressed.length * 0.75) / 1024);
+  if(useImgBB){
+    try{
+      const url = await uploadToImgBB(compressed);
+      return {url, sizeKB, inCloud: true};
+    }catch(e){
+      dlog('ImgBB не сработал: '+e.message,'err');
+      throw e;
+    }
+  }else{
+    if(sizeKB > 80){
+      throw new Error('ImgBB не настроен, а фото слишком большое для Firestore. Настройте IMGBB_API_KEY!');
+    }
+    return {url: compressed, sizeKB, inCloud: false};
+  }
+}
+
+window.migratePhotosToImgBB=async function(){
+  try{
+    if(!useImgBB){
+      toast('ImgBB API ключ не настроен! Вставьте ключ в код.');
+      return;
+    }
+    if(!confirm('Перенести все фото из Firestore на ImgBB? Размер данных уменьшится.'))return;
+    toast('Начинаю миграцию на ImgBB...');
+    let migrated = 0, failed = 0;
+    for(const t of ['f','m']){
+      if(Array.isArray(siteData[t].gal)){
+        for(let i=0; i<siteData[t].gal.length; i++){
+          const g = siteData[t].gal[i];
+          if(g.url && g.url.startsWith('data:')){
+            try{
+              g.url = await uploadToImgBB(g.url);
+              migrated++;
+              dlog(`✓ Мигрировано фото ${t}[${i}] на ImgBB`,'ok');
+            }catch(e){
+              failed++;
+              dlog(`✗ Не удалось мигрировать ${t}[${i}]: ${e.message}`,'err');
+            }
+          }
+        }
+      }
+      if(Array.isArray(siteData[t].team)){
+        for(let i=0; i<siteData[t].team.length; i++){
+          const m = siteData[t].team[i];
+          if(m.avatar && m.avatar.startsWith('data:')){
+            try{
+              m.avatar = await uploadToImgBB(m.avatar);
+              migrated++;
+              dlog(`✓ Мигрирована аватарка ${t}[${i}] на ImgBB`,'ok');
+            }catch(e){
+              failed++;
+            }
+          }
+        }
+      }
+    }
+    await saveData();
+    renderAll();
+    showTab(currentTab);
+    toast(`Миграция завершена: ${migrated} ✓, ${failed} ✗`);
+  }catch(e){
+    toast('Ошибка миграции: '+e.message);
+  }
+};
+
+function cur(){
+  try{ return siteData[theme] || siteData.f || DEFAULT_DATA.f; }
+  catch(e){ return DEFAULT_DATA.f; }
+}
+
+function renderAll(){
+  if(isRendering)return;
+  isRendering=true;
+  try{ renderTeam(); renderPlay(); renderEvents(); renderWall(); renderGal(); observeReveal(); }
+  catch(e){ dlog('renderAll error: '+e.message,'err'); }
+  finally{ isRendering=false; }
+}
+
+function renderTeam(){
+  try{
+    const box=$('#teamGrid'); if(!box)return; box.innerHTML='';
+    const items=cur().team || [];
+    if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">✨</span><h3>Команда пока пуста</h3><p>админ добавит участников через админ-панель (вкладка «👥 Импорт»)</p></div>`; return; }
+    items.forEach(it=>{
+      const el=document.createElement('div');
+      el.className='member themable reveal';
+      const t = it.avatarTransform || {x:0,y:0,scale:1};
+      const transformStyle = `transform: translate(${t.x}px, ${t.y}px) scale(${t.scale})`;
+      const av = it.avatar
+        ? `<div class="mav"><div class="mav-img" style="background-image:url('${escapeHtml(it.avatar)}');${transformStyle}"></div></div>`
+        : `<div class="mav" style="background:linear-gradient(135deg,${it.color||'var(--accent)'},${it.color||'var(--accent2)'})">${(it.name||'?')[0].toUpperCase()}</div>`;
+      el.innerHTML=`<span class="sticker">${escapeHtml(it.sticker||'✨')}</span>${av}<h3>${escapeHtml(it.name||'')}</h3><span class="discord-nick">${it.discord?'@'+escapeHtml(it.discord):''}</span><div class="status${it.status&&it.status.toLowerCase().includes('не')?' dnd':''}"><i></i><span>${escapeHtml(it.status||'в сети')}</span></div><div class="chip" style="background:color-mix(in srgb,${it.color||'var(--accent)'} 20%,transparent);color:${it.color||'var(--accent)'}">${escapeHtml(it.role||'')}</div><q>${escapeHtml(it.quote||'')}</q>`;
+      box.appendChild(el);
+    });
+  }catch(e){ dlog('renderTeam error: '+e.message,'err'); }
+}
+
+function renderPlay(){
+  try{
+    const box=$('#playGrid'); if(!box)return; box.innerHTML='';
+    const items=cur().play || [];
+    if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">🎲</span><h3>Игровая пока пуста</h3><p>админ добавит активности</p></div>`; return; }
+    items.forEach(it=>{
+      const el=document.createElement('div');
+      el.className='panel themable reveal';
+      el.innerHTML=`<span class="pemo">${escapeHtml(it.emo||'🎲')}</span><h3>${escapeHtml(it.title||'')}</h3><div class="pdesc">${escapeHtml(it.desc||'')}</div>`;
+      box.appendChild(el);
+    });
+  }catch(e){ dlog('renderPlay error: '+e.message,'err'); }
+}
+
+function renderEvents(){
+  try{
+    const box=$('#eventsGrid'); if(!box)return; box.innerHTML='';
+    const items=cur().events || [];
+    if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📅</span><h3>Расписания пока нет</h3><p>админ добавит ивенты</p></div>`; return; }
+    items.forEach(it=>{
+      const el=document.createElement('div');
+      el.className='note themable reveal';
+      el.innerHTML=`<div class="day">${escapeHtml(it.day||'')}</div><h4>${escapeHtml(it.title||'')}</h4><p>${escapeHtml(it.desc||'')}</p><span class="emo">${escapeHtml(it.emo||'✨')}</span>`;
+      box.appendChild(el);
+    });
+  }catch(e){ dlog('renderEvents error: '+e.message,'err'); }
+}
+
+function renderWall(){
+  try{
+    const box=$('#wallGrid'); if(!box)return; box.innerHTML='';
+    const items=cur().wall || [];
+    if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📌</span><h3>Стена пока пуста</h3><p>сюда будут крепиться тёплые слова</p></div>`; return; }
+    items.forEach(it=>{
+      const el=document.createElement('div');
+      el.className='pnote themable reveal';
+      el.dataset.pin=it.pin||'📌';
+      el.innerHTML=`<span>${escapeHtml(it.text||'')}</span><small>— ${escapeHtml(it.author||'')}</small>`;
+      box.appendChild(el);
+    });
+  }catch(e){ dlog('renderWall error: '+e.message,'err'); }
+}
+
+function openPhotoModal(url,caption,rotate){
+  try{
+    const img=$('#photoModalImg');
+    const cap=$('#photoModalCap');
+    if(!img)return;
+    img.src=url;
+    img.style.transform=`rotate(${rotate||0}deg)`;
+    if(cap) cap.textContent=caption||'';
+    openModal('photoModal');
+  }catch(e){ dlog('openPhotoModal error: '+e.message,'err'); }
+}
+function closePhotoModal(){ try{ closeModal('photoModal'); }catch(e){} }
+window.closePhotoModal=closePhotoModal;
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){
+    try{
+      const pm=$('#photoModal');
+      if(pm && pm.classList.contains('open')) closePhotoModal();
+    }catch(_){}
+  }
+});
+
+function buildGalItem(it, mode){
+  const fig=document.createElement('figure');
+  fig.className='gitem themable reveal';
+  const t = it.galTransform || {x:0,y:0,scale:1};
+  const rotate = (it.rotate||0)%360;
+  const swapped = rotate%180!==0;
+  const img=document.createElement('img');
+  img.alt=it.caption||'';
+  img.src=it.url||'';
+  const cap=document.createElement('figcaption');
+  cap.textContent=it.caption||'';
+  fig.appendChild(img);
+  fig.appendChild(cap);
+  const fit=()=>{
+    try{
+      const w=img.naturalWidth||4, h=img.naturalHeight||3;
+      const r = swapped ? h/w : w/h;
+      fig.style.aspectRatio=String(r);
+      if(mode==='strip'){ fig.style.width=Math.round(STRIP_H*r)+'px'; }
+      if(swapped){
+        img.style.position='absolute';
+        img.style.left='50%'; img.style.top='50%';
+        img.style.width=(100/r)+'%';
+        img.style.height=(r*100)+'%';
+        img.style.objectFit='fill';
+        img.style.transform=`translate(-50%,-50%) translate(${t.x}px,${t.y}px) scale(${t.scale}) rotate(${rotate}deg)`;
+      }else{
+        img.style.position='absolute';
+        img.style.left='0'; img.style.top='0';
+        img.style.width='100%'; img.style.height='100%';
+        img.style.objectFit='cover';
+        img.style.transform=`translate(${t.x}px,${t.y}px) scale(${t.scale}) rotate(${rotate}deg)`;
+      }
+    }catch(e){}
+  };
+  if(img.complete && img.naturalWidth) fit(); else img.onload=fit;
+  img.onerror=()=>{
+    try{
+      img.style.display='none';
+      fig.style.minHeight='120px';
+      fig.style.display='flex';
+      fig.style.alignItems='center';
+      fig.style.justifyContent='center';
+    }catch(e){}
+  };
+  fig.addEventListener('click', ()=>{ if(it.url) openPhotoModal(it.url, it.caption, rotate); });
+  return fig;
+}
+
+function renderGal(){
+  try{
+    const box=$('#galGrid'); if(!box)return; box.innerHTML='';
+    const items=cur().gal || [];
+    if(!items.length){ box.innerHTML=`<div class="placeholder themable reveal" style="grid-column:1/-1"><span class="ph-emo">📸</span><h3>Альбом пока пуст</h3><p>админ добавит фото через админ-панель (максимум ${MAX_GAL} фото)</p></div>`; return; }
+    
+    const strip=document.createElement('div');
+    strip.className='gal-strip';
+    const track=document.createElement('div');
+    track.className='gal-strip-track';
+    const repeatCount = items.length < 3 ? 4 : 2;
+    for(let r=0; r<repeatCount; r++){
+      items.forEach((it)=>{ track.appendChild(buildGalItem(it,'strip')); });
+    }
+    strip.appendChild(track);
+    box.appendChild(strip);
+    observeReveal();
+  }catch(e){ dlog('renderGal error: '+e.message,'err'); }
+}
+
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+const MARQ={f:['нежность','дружба','мемы','караоке','какао','обнимашки','плейлисты','уют'],m:['братва','честь','мемы','катки','кофе','респект','плейлисты','строй']};
+
+function scrambleTo(el,txt){
+  if(reduced){el.textContent=txt;return;}
+  const chars='✦*#%&!?@'; let i=0; clearInterval(el._si);
+  el._si=setInterval(()=>{ i++;
+    el.textContent=txt.slice(0,i)+Array.from({length:Math.min(5,Math.max(0,txt.length-i))},()=>chars[Math.random()*chars.length|0]).join('');
+    if(i>=txt.length){clearInterval(el._si);el.textContent=txt;}
+  },26);
+}
+function swapTexts(t,animate){
+  try{
+    $$('[data-f]').forEach(el=>{
+      const v=t==='f'?el.dataset.f:el.dataset.m;
+      if(v==null)return;
+      if(animate && el.classList.contains('scr')) scrambleTo(el,v);
+      else el.textContent=v;
+    });
+    $('#lblF').classList.toggle('on',t==='f');
+    $('#lblM').classList.toggle('on',t==='m');
+    $('#logoEmoji').textContent=t==='f'?'🌸':'⚡';
+    $('#heartBtn').textContent=t==='f'?'💖':'🫡';
+  }catch(e){ dlog('swapTexts error: '+e.message,'err'); }
+}
+
+function applyTheme(t,origin){
+  const commit=()=>{
+    try{
+      theme=t; document.body.dataset.theme=t; localStorage.setItem('theme',t);
+      swapTexts(t,true); renderMarquee(t); renderPoll(); renderAll();
+    }catch(e){ dlog('commit error: '+e.message,'err'); }
+  };
+  if(reduced||!origin||isMobile){commit();return;}
+  try{
+    const w=$('#wipe');
+    w.style.background=t==='f'?'#1a0f18':'#0d1220';
+    const r=Math.hypot(Math.max(origin.x,innerWidth-origin.x),Math.max(origin.y,innerHeight-origin.y))+20;
+    w.animate([{clipPath:`circle(0px at ${origin.x}px ${origin.y}px)`,opacity:1},{clipPath:`circle(${r}px at ${origin.x}px ${origin.y}px)`,opacity:1}],{duration:430,easing:'cubic-bezier(.4,0,.2,1)'}).onfinish=()=>{
+      commit();
+      w.animate([{opacity:1},{opacity:0}],{duration:420,easing:'ease'}).onfinish=()=>{ w.style.clipPath='circle(0px at 50% 50%)'; };
+    };
+  }catch(e){ commit(); }
+}
+$('#themeBtn').addEventListener('click',e=>{
+  try{
+    const b=e.currentTarget.getBoundingClientRect();
+    applyTheme(theme==='f'?'m':'f',{x:b.left+b.width/2,y:b.top+b.height/2});
+  }catch(err){ dlog('themeBtn error: '+err.message,'err'); }
+});
+
+function renderMarquee(t){
+  try{ $('#marquee').innerHTML=MARQ[t].map(w=>`<span>${w} ✦</span>`).join('').repeat(2); }catch(e){}
+}
+
+function pollKey(){return 'poll_'+theme;}
+function getPoll(){ try{return JSON.parse(localStorage.getItem(pollKey()))||{c:[],v:null};}catch(e){return{c:[],v:null};} }
+
+function renderPoll(){
+  try{
+    const curData = cur();
+    const opts = Array.isArray(curData?.poll) ? curData.poll : [];
+    const st=getPoll();
+    const box=$('#poll'); if(!box)return; box.innerHTML='';
+    if(!opts.length){
+      const msg = EMPTY_POLL_MSG[theme];
+      box.innerHTML = `
+        <div class="poll-empty themable reveal">
+          <span class="pe-emo">${msg.emo}</span>
+          <h3>${escapeHtml(msg.title)}</h3>
+          <p>${escapeHtml(msg.text)}</p>
+          <span class="pe-hint">${escapeHtml(msg.hint)}</span>
+        </div>`;
+      observeReveal();
+      return;
+    }
+    if(st.c.length!==opts.length)st.c=opts.map(()=>0);
+    const total=st.c.reduce((a,b)=>a+b,0);
+    opts.forEach((o,i)=>{
+      const b=document.createElement('button'); b.className='opt'+(st.v===i?' mine':'');
+      const pct=total?Math.round(st.c[i]/total*100):0;
+      b.innerHTML=`<span class="fill"></span><span>${escapeHtml(o)} <span class="pct">${st.v!=null?pct+'%':''}</span>${st.v===i?' ✓':''}</span>`;
+      b.addEventListener('click',()=>{
+        if(st.v!=null){toast(theme==='f'?'Голос уже отдан! 💗':'Голос уже принят 🫡');return;}
+        st.c[i]++; st.v=i; localStorage.setItem(pollKey(),JSON.stringify(st)); renderPoll();
+      });
+      box.appendChild(b);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{b.querySelector('.fill').style.width=(st.v!=null?pct:0)+'%';}));
+    });
+    const f=document.createElement('div'); f.className='poll-foot';
+    f.textContent=(theme==='f'?'всего голосов: ':'голосов отряда: ')+total+(st.v==null?(theme==='f'?' — выбери свой вариант!':' — сделай свой выбор!'):'');
+    box.appendChild(f);
+    observeReveal();
+  }catch(e){ dlog('renderPoll error: '+e.message,'err'); }
+}
+
+let hearts=parseInt(localStorage.getItem('hearts')||'0',10);
+$('#heartCnt').textContent=hearts;
+$('#heartBtn').addEventListener('click',()=>{
+  try{
+    hearts++; localStorage.setItem('hearts',hearts); $('#heartCnt').textContent=hearts;
+    const zone=$('#loveZone');
+    if(!reduced)for(let k=0;k<5;k++){
+      const s=document.createElement('span'); s.className='fheart';
+      s.textContent=theme==='f'?['💖','💗','✨'][k%3]:['⚡','🔥',''][k%3];
+      s.style.left=(30+Math.random()*40)+'%'; s.style.top='10px';
+      s.style.setProperty('--dx',(Math.random()*80-40)+'px');
+      zone.appendChild(s); setTimeout(()=>s.remove(),1150);
+    }
+  }catch(e){}
+});
+
+let toastT;
+function toast(msg){
+  try{
+    const t=$('#toast'); if(!t)return;
+    t.textContent=msg; t.classList.add('show');
+    clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),3000);
+  }catch(e){}
+}
+
+let lastTrail=0;
+addEventListener('pointermove',e=>{
+  if(reduced||e.pointerType==='touch'||isMobile)return;
+  const now=performance.now(); if(now-lastTrail<80)return; lastTrail=now;
+  try{
+    const s=document.createElement('span'); s.className='trail';
+    const set=theme==='f'?['🌸','✨','💗']:['⚡','🔥','✦'];
+    s.textContent=set[Math.random()*set.length|0];
+    s.style.left=e.clientX+'px'; s.style.top=e.clientY+'px';
+    document.body.appendChild(s); setTimeout(()=>s.remove(),820);
+  }catch(e){}
+});
+
+let io;
+function observeReveal(){
+  try{
+    if(io)io.disconnect();
+    io=new IntersectionObserver(es=>es.forEach(en=>{ if(en.isIntersecting){en.target.classList.add('in'); io.unobserve(en.target);} }),{threshold:.12});
+    $$('.reveal').forEach(el=>io.observe(el));
+  }catch(e){}
+}
+
+let isAdmin=false;
+let currentTab='import';
+
+function openModal(id){ try{ const m=$('#'+id); if(m)m.classList.add('open'); }catch(e){} }
+function closeModal(id){ try{ const m=$('#'+id); if(m)m.classList.remove('open'); }catch(e){} }
+function safeCloseModal(id){ try{ closeModal(id); }catch(e){} }
+function safeLogout(){ try{ logout(); }catch(e){} }
+window.closeModal=closeModal;
+window.safeCloseModal=safeCloseModal;
+window.safeLogout=safeLogout;
+
+document.addEventListener('click', e=>{
+  try{
+    if(e.target && e.target.id === 'adminLink'){
+      e.preventDefault();
+      if(isAdmin) openAdmin();
+      else{ openModal('loginModal'); setTimeout(()=>{try{const i=$('#loginUser');if(i)i.focus();}catch(e){}},100); }
+    }
+  }catch(err){ try{ toast('Ошибка: '+err.message); }catch(_){} }
+});
+
+$('#loginOk').addEventListener('click',()=>{ try{ tryLogin(); }catch(e){} });
+$('#loginPass').addEventListener('keydown',e=>{ if(e.key==='Enter'){ try{ tryLogin(); }catch(_){} } });
+function tryLogin(){
+  try{
+    const u=$('#loginUser').value.trim(), p=$('#loginPass').value;
+    if(u===ADMIN_USER && p===ADMIN_PASS){ isAdmin=true; closeModal('loginModal'); $('#loginPass').value=''; openAdmin(); }
+    else toast('Неверный логин или пароль');
+  }catch(e){ toast('Ошибка входа'); }
+}
+
+function logout(){ isAdmin=false; closeModal('adminModal'); toast('Вы вышли из админки'); }
+window.logout=logout;
+
+function openAdmin(){
+  try{
+    updateThemeNote();
+    updateSetupNote();
+    showTab(currentTab);
+    openModal('adminModal');
+  }catch(e){
+    dlog('openAdmin error: '+e.message,'err');
+    try{ toast('Ошибка при открытии: '+e.message); }catch(_){}
+  }
+}
+
+function updateThemeNote(){
+  try{
+    const n=$('#themeNote');
+    if(n) n.innerHTML=`<b>Редактируешь тему:</b> ${theme==='f'?'🌸 Девичья':'⚡ Мужская'}. Переключи тему сверху, чтобы редактировать другую.`;
+  }catch(e){}
+}
+
+function updateSetupNote(){
+  try{
+    const note=$('#setupNote');
+    if(!note)return;
+    let txt='';
+    if(useFirebase) txt += '☁️ <b>Firebase подключён</b> ✓ ';
+    else txt += '⚠️ <b>Firebase не работает</b> — проверь правила Firestore! ';
+    if(useImgBB) txt += '| 📷 <b>ImgBB активен</b> ✓ — фото хранятся бесплатно и безлимитно';
+    else txt += '| ⚠️ <b>ImgBB не настроен</b> — вставь API ключ в код (константа IMGBB_API_KEY)';
+    note.innerHTML=txt;
+  }catch(e){}
+}
+
+$$('.admin-tabs button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    try{
+      $$('.admin-tabs button').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      currentTab=b.dataset.tab;
+      showTab(currentTab);
+    }catch(e){ dlog('tab click error: '+e.message,'err'); }
+  });
+});
+
+function showTab(tab){
+  try{
+    const box=$('#adminContent');
+    if(!box) return;
+    if(tab==='visits'){ renderVisitsTab(); return; }
+    if(tab==='data'){
+      const sizeKB = Math.round((JSON.stringify(siteData).length * 0.75) / 1024);
+      const sizeMB = (sizeKB / 1024).toFixed(2);
+      const pct = Math.min(100, Math.round((sizeKB / (MAX_DOC_SIZE/1024)) * 100));
+      const color = pct > 80 ? '#ff6b6b' : pct > 60 ? '#ffcc00' : '#3ecf7a';
+      let base64Count = 0;
+      ['f','m'].forEach(t=>{
+        (siteData[t].gal||[]).forEach(g=>{ if(g.url && g.url.startsWith('data:')) base64Count++; });
+        (siteData[t].team||[]).forEach(m=>{ if(m.avatar && m.avatar.startsWith('data:')) base64Count++; });
+      });
+      box.innerHTML=`
+        <p style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:700">
+          ${useFirebase?'🟢 Firebase активен':'🔴 Firebase не работает'} • 
+          ${useImgBB?'🟢 ImgBB активен':'🔴 ImgBB не настроен'}
+        </p>
+        ${base64Count>0?`<div style="background:color-mix(in srgb,#ffcc00 15%,transparent);border:2px solid #ffcc00;border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;font-weight:700;color:#ffcc00">
+          ⚠ Найдено <b>${base64Count}</b> фото/аватарок внутри Firestore. Нажмите «Перенести фото на ImgBB» чтобы освободить место!
+        </div>`:''}
+        <div style="margin-bottom:14px;padding:12px;border-radius:10px;background:var(--bg2);border:2px solid var(--line)">
+          <div style="font-size:12px;color:var(--muted);font-weight:800;margin-bottom:6px">📊 Размер Firestore:</div>
+          <div style="font-size:20px;font-weight:900;color:${color}">${sizeMB} MB <span style="font-size:13px;color:var(--muted)">/ 1 MB</span></div>
+          <div style="height:8px;background:var(--soft);border-radius:4px;margin-top:6px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${color};transition:width .3s"></div>
+          </div>
+        </div>
+        <div class="btns">
+          <button class="btn solid" onclick="window.migratePhotosToImgBB()" style="background:#6fdab8">📷 Перенести фото на ImgBB</button>
+          <button class="btn solid" onclick="window.exportData()">📥 Экспорт</button>
+          <button class="btn ghost" onclick="document.getElementById('importFile').click()">📤 Импорт</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="window.importData(event)">
+          <button class="btn ghost" onclick="window.resetData()" style="border-color:#ff6b6b;color:#ff6b6b">🗑 Сброс</button>
+          <button class="btn ghost" onclick="window.resetFirebase()" style="border-color:#ff3333;color:#ff3333">🔥 Очистить Firebase</button>
+        </div>
+        <h4 style="font-size:13px;margin-top:14px;color:var(--muted)">📋 Лог:</h4>
+        <div class="debug-box">${debugLog.map(e=>`<span class="${e.type}">[${e.time}] ${escapeHtml(e.msg)}</span>`).join('\n')}</div>
+      `;
+      return;
+    }
+    if(tab==='poll'){ renderPollEditor(); return; }
+    if(tab==='import'){ renderImportTab(); return; }
+    renderListEditor(tab);
+  }catch(e){
+    dlog('showTab error: '+e.message,'err');
+    try{ toast('Ошибка вкладки: '+e.message); }catch(_){}
+  }
+}
+
+async function getVisitorIP(){
+  const sources=[
+    'https://ipwho.is/',
+    'https://api.ipify.org?format=json',
+    'https://api.ipapi.co/json/'
+  ];
+  for(const url of sources){
+    try{
+      const ctrl=new AbortController();
+      const to=setTimeout(()=>ctrl.abort(),5000);
+      const res=await fetch(url,{signal:ctrl.signal});
+      clearTimeout(to);
+      if(!res.ok)continue;
+      const d=await res.json();
+      if(d && d.ip)return d;
+    }catch(e){}
+  }
+  return null;
+}
+
+async function logVisit(){
+  try{
+    const info=await getVisitorIP();
+    const visit={
+      ip: (info&&info.ip)||'не определён',
+      city: (info&&(info.city||info.region))||'',
+      country: (info&&info.country)||'',
+      isp: (info&&(info.connection?.isp||info.org||info.connection?.asn))||'',
+      time: new Date().toISOString(),
+      timeLocal: new Date().toLocaleString('ru-RU'),
+      userAgent: navigator.userAgent,
+      path: location.pathname,
+      referer: document.referrer||'',
+      theme: theme
+    };
+    dlog('Визит: '+visit.ip+' • '+visit.timeLocal,'info');
+    if(useFirebase && db){
+      try{
+        await db.collection('visits').add(visit);
+        dlog('Визит сохранён в Firestore','ok');
+      }catch(e){
+        dlog('Не удалось сохранить визит в Firestore: '+e.message,'err');
+      }
+    }
+    try{
+      let local=JSON.parse(localStorage.getItem('visits')||'[]');
+      local.push(visit);
+      if(local.length>500)local=local.slice(-500);
+      localStorage.setItem('visits',JSON.stringify(local));
+    }catch(e){}
+  }catch(e){ dlog('logVisit error: '+e.message,'err'); }
+}
+
+async function loadVisits(){
+  if(useFirebase && db){
+    try{
+      const snap=await db.collection('visits').orderBy('time','desc').limit(100).get();
+      const rows=snap.docs.map(d=>d.data());
+      if(rows.length)return rows;
+    }catch(e){
+      dlog('loadVisits Firestore error: '+e.message,'err');
+    }
+  }
+  try{
+    const local=JSON.parse(localStorage.getItem('visits')||'[]');
+    return local.slice().reverse();
+  }catch(e){ return []; }
+}
+
+async function renderVisitsTab(){
+  try{
+    const box=$('#adminContent');
+    box.innerHTML=`<h3 style="font-size:16px;margin-bottom:8px">👁 Посещения сайта</h3><div class="admin-list-empty">⏳ Загружаю...</div>`;
+    const rows=await loadVisits();
+    if(!rows.length){
+      box.innerHTML=`<h3 style="font-size:16px;margin-bottom:8px">👁 Посещения сайта</h3><div class="admin-list-empty">Пока нет записей о посещениях</div>`;
+      return;
+    }
+    let html=`<h3 style="font-size:16px;margin-bottom:8px">👁 Посещения сайта <span style="color:var(--muted);font-weight:800;font-size:12px">(последние ${rows.length})</span></h3>`;
+    html+=`<div class="admin-list" style="max-height:420px">`;
+    rows.forEach((v)=>{
+      const where=[v.city,v.country].filter(Boolean).join(', ');
+      html+=`<div class="admin-list-item" style="flex-direction:column;align-items:flex-start;gap:4px">
+        <div style="display:flex;justify-content:space-between;width:100%;gap:8px;flex-wrap:wrap">
+          <b style="color:var(--accent);font-family:monospace">${escapeHtml(v.ip||'?')}</b>
+          <span style="color:var(--muted)">${escapeHtml(v.timeLocal||v.time||'')}</span>
+        </div>
+        ${where?`<div style="font-size:11px;color:var(--muted)">📍 ${escapeHtml(where)}${v.isp?' • '+escapeHtml(v.isp):''}</div>`:''}
+        <div style="font-size:11px;color:var(--muted);word-break:break-all">${escapeHtml(v.userAgent||'')}</div>
+      </div>`;
+    });
+    html+=`</div>`;
+    html+=`<div class="btns" style="margin-top:10px"><button class="btn ghost" onclick="window.refreshVisits()">🔄 Обновить</button></div>`;
+    box.innerHTML=html;
+  }catch(e){
+    dlog('renderVisitsTab error: '+e.message,'err');
+    try{toast('Ошибка: '+e.message);}catch(_){}
+  }
+}
+window.refreshVisits=function(){ renderVisitsTab(); };
+
+function renderPollEditor(){
+  try{
+    const box=$('#adminContent');
+    const opts = Array.isArray(cur()?.poll) ? cur().poll : [];
+    let html=`<h3 style="font-size:16px;margin-bottom:8px">Варианты опроса (тема: ${theme==='f'?'🌸':'⚡'})</h3>`;
+    if(opts.length){
+      html += `<div class="admin-list">`;
+      opts.forEach((o,i)=>{
+        html += `<div class="admin-list-item"><span>${i+1}. ${escapeHtml(o).slice(0,50)}</span><div class="acts"><button class="edit" onclick="window.editPollItem(${i})">✎</button><button class="del" onclick="window.delPollItem(${i})">✕</button></div></div>`;
+      });
+      html += `</div>`;
+    }else{
+      html += `<div class="admin-list-empty">Опрос пуст</div>`;
+    }
+    html += `<button class="btn solid" onclick="window.addPollItem()" style="width:100%">➕ Добавить вариант</button>`;
+    html += `<div class="btns" style="margin-top:10px"><button class="btn ghost" onclick="window.clearPoll()" style="border-color:#ffcc00;color:#ffcc00">🗑 Очистить всё</button></div>`;
+    box.innerHTML=html;
+  }catch(e){ dlog('renderPollEditor error: '+e.message,'err'); }
+}
+
+window.addPollItem=function(){try{editPollItem(-1);}catch(e){toast('Ошибка: '+e.message);}};
+window.delPollItem=async function(i){
+  try{
+    if(!confirm('Удалить вариант?'))return;
+    cur().poll.splice(i,1);
+    localStorage.removeItem(pollKey());
+    await saveData();
+    renderPollEditor();
+    renderPoll();
+    toast('Вариант удалён ✓');
+  }catch(e){ toast('Ошибка: '+e.message); }
+};
+window.clearPoll=async function(){
+  try{
+    if(!confirm('Удалить ВСЕ варианты опроса?'))return;
+    cur().poll=[];
+    localStorage.removeItem(pollKey());
+    await saveData();
+    renderPollEditor();
+    renderPoll();
+    toast('Опрос очищен 🗑');
+  }catch(e){ toast('Ошибка: '+e.message); }
+};
+window.editPollItem=function(i){
+  try{
+    const opts=cur().poll||[];
+    const val=i<0?'':(opts[i]||'');
+    let html=`<h3 style="font-size:16px;margin-bottom:12px">${i<0?'Добавить вариант':'Редактировать вариант'}</h3>`;
+    html+=`<div class="form-row"><label>Текст варианта</label><input type="text" id="pollInput" value="${escapeHtml(val)}" placeholder="🍿 Ромком и пледы"></div>`;
+    html+=`<div class="btns"><button class="btn solid" id="savePollItem">💾 Сохранить</button><button class="btn ghost" onclick="window.showTab('poll')">Отмена</button></div>`;
+    $('#adminContent').innerHTML=html;
+    const input=$('#pollInput'); if(input){input.focus();input.select();}
+    const saveBtn=$('#savePollItem');
+    if(saveBtn){
+      saveBtn.addEventListener('click',async ()=>{
+        try{
+          const v=input.value.trim();
+          if(!v){toast('Введите текст');return;}
+          if(!Array.isArray(cur().poll))cur().poll=[];
+          if(i<0)cur().poll.push(v); else cur().poll[i]=v;
+          localStorage.removeItem(pollKey());
+          await saveData();
+          renderPollEditor();
+          renderPoll();
+          toast('Сохранено ✓');
+        }catch(e){ toast('Ошибка: '+e.message); }
+      });
+    }
+  }catch(e){ toast('Ошибка: '+e.message); }
+};
+
+const FIELD_DEFS={
+  team:[
+    {k:'name',label:'Имя / Ник',type:'text'},
+    {k:'discord',label:'Discord username (без @)',type:'text'},
+    {k:'sticker',label:'Стикер сверху (эмодзи)',type:'text',placeholder:'🎀'},
+    {k:'status',label:'Статус',type:'text',placeholder:'в сети'},
+    {k:'role',label:'Роль',type:'text',placeholder:'👑 Королева сервера'},
+    {k:'quote',label:'Цитата',type:'textarea',placeholder:'«Главное правило — уют для всех»'},
+    {k:'color',label:'Цвет (hex)',type:'text',placeholder:'#ff5fa2'}
+  ],
+  play:[{k:'emo',label:'Эмодзи',type:'text'},{k:'title',label:'Заголовок',type:'text'},{k:'desc',label:'Описание',type:'textarea'}],
+  events:[{k:'day',label:'День и время',type:'text'},{k:'title',label:'Название',type:'text'},{k:'desc',label:'Описание',type:'textarea'},{k:'emo',label:'Эмодзи',type:'text'}],
+  wall:[{k:'text',label:'Текст записи',type:'textarea'},{k:'author',label:'Автор',type:'text'},{k:'pin',label:'Иконка-пин',type:'text'}],
+  gal:[
+    {k:'url',label:'🔗 URL фото (или загрузи файл ниже)',type:'text',placeholder:'https://...'},
+    {k:'caption',label:'Подпись',type:'text'}
+  ]
+};
+
+function renderListEditor(tab){
+  try{
+    const box=$('#adminContent');
+    const curData = cur();
+    const items = Array.isArray(curData?.[tab]) ? curData[tab] : [];
+    const titles={team:'Участники команды',play:'Активности',events:'Ивенты',wall:'Записи на стене',gal:`Фото в галерее (${items.length}/${MAX_GAL})`};
+    let html=`<h3 style="font-size:16px;margin-bottom:8px">${titles[tab]}${useImgBB?'<span class="imgbb-badge">📷 ImgBB</span>':''}</h3>`;
+    if(tab==='gal'){
+      html += `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">📸 Максимум <b>${MAX_GAL}</b> фото. ${useImgBB?'Фото загружаются на ImgBB — бесплатно и безлимитно!':'⚠ ImgBB не настроен — фото будут в base64 (лимит 1 MB)'}</p>`;
+    }
+    html+=`<div class="admin-list">`;
+    if(!items.length) html+=`<div class="admin-list-empty">Список пуст ↓</div>`;
+    else items.forEach((it,i)=>{
+      if(tab==='gal'){
+        const thumb = it.url ? `<img class="thumb" src="${escapeHtml(it.url)}" onerror="this.style.visibility='hidden'">` : '';
+        const caption = (it.caption || 'без подписи') + (it.rotate?` ↻${it.rotate}°`:'');
+        const isData = it.url && it.url.startsWith('data:') ? ' 📄' : ' 🌐';
+        html+=`<div class="admin-list-item"><div class="thumb-wrap">${thumb}<span>${i+1}. ${escapeHtml(caption).slice(0,40)}${isData}</span></div><div class="acts"><button class="edit" onclick="window.editItem('${tab}',${i})">✎</button><button class="del" onclick="window.delItem('${tab}',${i})">✕</button></div></div>`;
+      }else if(tab==='team'){
+        const thumb = it.avatar
+          ? `<img class="thumb" style="border-radius:50%" src="${escapeHtml(it.avatar)}" onerror="this.style.visibility='hidden'">`
+          : `<div class="thumb" style="border-radius:50%;background:linear-gradient(135deg,${it.color||'#ff6faf'},${it.color||'#c49cff'});display:grid;place-items:center;color:#fff;font-weight:900">${escapeHtml((it.name||'?')[0].toUpperCase())}</div>`;
+        const name = it.name || 'без имени';
+        html+=`<div class="admin-list-item"><div class="thumb-wrap">${thumb}<span>${i+1}. ${escapeHtml(name).slice(0,40)}</span></div><div class="acts"><button class="edit" onclick="window.editItem('${tab}',${i})">✎</button><button class="del" onclick="window.delItem('${tab}',${i})">✕</button></div></div>`;
+      }else{
+        const main=it.name||it.title||it.text||it.url||'без названия';
+        html+=`<div class="admin-list-item"><span>${i+1}. ${escapeHtml(main).slice(0,50)}</span><div class="acts"><button class="edit" onclick="window.editItem('${tab}',${i})">✎</button><button class="del" onclick="window.delItem('${tab}',${i})">✕</button></div></div>`;
+      }
+    });
+    html+=`</div>`;
+    if(tab==='gal' && items.length>=MAX_GAL){
+      html+=`<button class="btn solid" disabled style="width:100%;opacity:.5;cursor:not-allowed">➕ Максимум ${MAX_GAL} фото</button>`;
+    }else{
+      html+=`<button class="btn solid" onclick="window.addItem('${tab}')" style="width:100%">➕ Добавить</button>`;
+    }
+    box.innerHTML=html;
+  }catch(e){ dlog('renderListEditor error: '+e.message,'err'); try{toast('Ошибка: '+e.message);}catch(_){} }
+}
+
+window.addItem=function(tab){
+  try{
+    if(tab==='gal'){
+      const items=cur().gal || [];
+      if(items.length>=MAX_GAL){ toast(`Максимум ${MAX_GAL} фото в альбоме`); return; }
+    }
+    editItem(tab,-1);
+  }catch(e){toast('Ошибка: '+e.message);}
+};
+window.delItem=async function(tab,i){
+  try{
+    if(!confirm('Удалить элемент?'))return;
+    const arr = cur()[tab];
+    if(Array.isArray(arr)) arr.splice(i,1);
+    await saveData(); renderListEditor(tab); renderAll();
+    toast('Удалено ✓');
+  }catch(e){ toast('Ошибка: '+e.message); }
+};
+
+function setupAvatarCropper(previewEl, innerEl, initialTransform, basePrefix){
+  basePrefix = basePrefix || '';
+  if(previewEl._cropper){
+    const c=previewEl._cropper;
+    c._cfg.inner=innerEl;
+    c._cfg.base=basePrefix;
+    if(initialTransform) c.setState(initialTransform);
+    return c;
+  }
+  let state = {x: initialTransform.x||0, y: initialTransform.y||0, scale: initialTransform.scale||1};
+  const cfg = {inner: innerEl, base: basePrefix};
+  let isDragging=false, startX=0, startY=0, startTx=0, startTy=0;
+  function applyTransform(){
+    try{
+      const rot = previewEl.dataset.rotate || 0;
+      cfg.inner.style.transform = cfg.base + `translate(${state.x}px, ${state.y}px) scale(${state.scale}) rotate(${rot}deg)`;
+      const zoomInfo = previewEl.parentElement.querySelector('.zoom-info');
+      if(zoomInfo) zoomInfo.textContent = Math.round(state.scale*100)+'%';
+    }catch(e){}
+  }
+  previewEl.addEventListener('pointerdown', e=>{
+    if(e.button!==0)return;
+    isDragging=true;
+    startX=e.clientX; startY=e.clientY;
+    startTx=state.x; startTy=state.y;
+    try{previewEl.setPointerCapture(e.pointerId);}catch(_){}
+    e.preventDefault();
+  });
+  previewEl.addEventListener('pointermove', e=>{
+    if(!isDragging)return;
+    state.x = startTx + (e.clientX-startX);
+    state.y = startTy + (e.clientY-startY);
+    applyTransform();
+  });
+  const stopDrag = e=>{ isDragging=false; };
+  previewEl.addEventListener('pointerup', stopDrag);
+  previewEl.addEventListener('pointercancel', stopDrag);
+  previewEl.addEventListener('lostpointercapture', stopDrag);
+  previewEl.addEventListener('wheel', e=>{
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    state.scale = Math.min(4, Math.max(0.3, state.scale * delta));
+    applyTransform();
+  }, {passive:false});
+  applyTransform();
+  const api = {
+    _cfg: cfg,
+    getState: ()=>({...state}),
+    setState: (s)=>{state={...s};applyTransform();},
+    zoom: (mult)=>{state.scale=Math.min(4,Math.max(0.3,state.scale*mult));applyTransform();},
+    reset: ()=>{state={x:0,y:0,scale:1};applyTransform();},
+    setRotate: (deg)=>{previewEl.dataset.rotate=deg;applyTransform();}
+  };
+  previewEl._cropper=api;
+  return api;
+}
+
+function extractUrlFromInner(inner){
+  try{
+    if(!inner) return null;
+    const bg = inner.style.backgroundImage;
+    if(!bg) return null;
+    const start = bg.indexOf('url(');
+    if(start === -1) return null;
+    let i = start + 4;
+    if(bg[i] === '"' || bg[i] === "'") i++;
+    const end = bg.lastIndexOf(')');
+    if(end === -1 || end <= i) return null;
+    let j = end;
+    if(bg[j-1] === '"' || bg[j-1] === "'") j--;
+    const url = bg.slice(i, j).trim();
+    return url || null;
+  }catch(e){ return null; }
+}
+
+window.editItem=function(tab,i){
+  try{
+    const fields=FIELD_DEFS[tab];
+    const curData = cur();
+    const item=i<0?{}:(curData?.[tab]?.[i]||{});
+    let html=`<h3 style="font-size:16px;margin-bottom:12px">${i<0?'Добавить':'Редактировать'}</h3>`;
+    if(tab==='team'){
+      const curUrl = item.avatar || '';
+      const letter = ((item.name || '?')[0] || '?').toUpperCase();
+      const color = item.color || '#ff6faf';
+      const hasImg = !!curUrl;
+      const t = item.avatarTransform || {x:0,y:0,scale:1};
+      currentAvatarTransform = {...t};
+      html += `
+        <div class="upload-block">
+          <div class="up-loading" id="avatarLoading">⏳ Сжимаю и загружаю...</div>
+          ${hasImg?`
+            <div class="crop-controls">
+              <button class="btn ghost" id="zoomOutBtn" type="button">➖</button>
+              <span class="zoom-info">${Math.round(t.scale*100)}%</span>
+              <button class="btn ghost" id="zoomInBtn" type="button">➕</button>
+              <button class="btn ghost" id="resetCropBtn" type="button">↻ Сброс</button>
+            </div>`:''}
+          <div class="up-preview ${hasImg?'has-img':''}" id="avatarPreview"
+               style="${hasImg?'':`background:linear-gradient(135deg,${color},${color})`}">
+            ${hasImg?`<div class="up-inner" style="background-image:url('${escapeHtml(curUrl)}');transform:translate(${t.x}px,${t.y}px) scale(${t.scale})"></div>`:escapeHtml(letter)}
+          </div>
+          <div class="up-hint" id="avatarHint">${hasImg?'🖱 Фото целиком • колесо — приблизить':'Аватарки нет — будет градиент с буквой'}</div>
+          <div class="up-btns">
+            <label class="btn solid" for="avatarFile" style="display:inline-block">📁 Загрузить файл</label>
+            <input type="file" id="avatarFile" accept="image/*">
+            <button class="btn ghost" type="button" id="clearAvatarBtn">✕ Убрать</button>
+          </div>
+        </div>`;
+    }
+    let currentRotate = (item.rotate||0)%360;
+    let lastGalUrl = item.url || '';
+    if(tab==='gal'){
+      const curUrl = item.url || '';
+      const hasImg = !!curUrl;
+      const t = item.galTransform || {x:0,y:0,scale:1};
+      html += `
+        <div class="upload-block">
+          <div class="up-loading" id="galLoading">⏳ Сжимаю и загружаю...</div>
+          ${hasImg?`
+            <div class="crop-controls">
+              <button class="btn ghost" id="galZoomOutBtn" type="button">➖</button>
+              <span class="zoom-info">${Math.round(t.scale*100)}%</span>
+              <button class="btn ghost" id="galZoomInBtn" type="button">➕</button>
+              <button class="btn ghost" id="galResetCropBtn" type="button">↻ Сброс</button>
+              <button class="btn solid" id="galRotateBtn" type="button" style="margin-left:6px">↻ Поворот</button>
+            </div>
+            <div class="rotate-info">Поворот: <b id="rotateDeg">${currentRotate}°</b></div>`:''}
+          <div class="up-preview gal ${hasImg?'has-img':''}" id="galPreview" data-rotate="${currentRotate}"
+               style="${hasImg?'':`background:linear-gradient(135deg,var(--accent),var(--accent2))`}">
+            ${hasImg?`<div class="up-inner" style="background-image:url('${escapeHtml(curUrl)}');transform:translate(${t.x}px,${t.y}px) scale(${t.scale}) rotate(${currentRotate}deg)"></div>`:'📸'}
+          </div>
+          <div class="up-hint" id="galHint">${hasImg?'🖱 Рамка подстроится под фото • колесо — зум':'Фото не загружено'}</div>
+          <div class="up-btns">
+            <label class="btn solid" for="galFile" style="display:inline-block">📁 Загрузить файл</label>
+            <input type="file" id="galFile" accept="image/*">
+            <button class="btn ghost" type="button" id="clearGalBtn">✕ Убрать</button>
+          </div>
+        </div>`;
+    }
+    fields.forEach(f=>{
+      const val=item[f.k]||'';
+      const ph=f.placeholder?`placeholder="${escapeHtml(f.placeholder)}"`:'';
+      if(f.type==='textarea'){
+        html+=`<div class="form-row"><label>${f.label}</label><textarea data-field="${f.k}" ${ph}>${escapeHtml(val)}</textarea></div>`;
+      }else{
+        html+=`<div class="form-row"><label>${f.label}</label><input type="text" data-field="${f.k}" value="${escapeHtml(val)}" ${ph}></div>`;
+      }
+    });
+    html+=`<div class="btns"><button class="btn solid" id="saveItem">💾 Сохранить</button><button class="btn ghost" onclick="window.showTab('${tab}')">Отмена</button></div>`;
+    $('#adminContent').innerHTML=html;
+    let cropper=null;
+    let galCropper=null;
+    if(tab==='team'){
+      const fileInput = $('#avatarFile');
+      const preview = $('#avatarPreview');
+      const inner = preview ? preview.querySelector('.up-inner') : null;
+      const hint = $('#avatarHint');
+      const clearBtn = $('#clearAvatarBtn');
+      const nameInput = $('#adminContent [data-field="name"]');
+      const colorInput = $('#adminContent [data-field="color"]');
+      const loading = $('#avatarLoading');
+      if(inner){ cropper = setupAvatarCropper(preview, inner, currentAvatarTransform); }
+      const zoomIn = $('#zoomInBtn'), zoomOut = $('#zoomOutBtn'), resetCrop = $('#resetCropBtn');
+      if(zoomIn) zoomIn.addEventListener('click',()=>{try{cropper && cropper.zoom(1.2);}catch(e){}});
+      if(zoomOut) zoomOut.addEventListener('click',()=>{try{cropper && cropper.zoom(0.8);}catch(e){}});
+      if(resetCrop) resetCrop.addEventListener('click',()=>{try{cropper && cropper.reset();}catch(e){}});
+      function setAvatarUrl(url){
+        try{
+          if(!preview)return;
+          if(url){
+            preview.innerHTML=`<div class="up-inner" style="background-image:url('${url}');transform:translate(0,0) scale(1)"></div>`;
+            preview.classList.add('has-img');
+            preview.style.background='';
+            const newInner = preview.querySelector('.up-inner');
+            cropper = setupAvatarCropper(preview, newInner, {x:0,y:0,scale:1});
+            currentAvatarTransform = {x:0,y:0,scale:1};
+            const existingControls = preview.parentElement.querySelector('.crop-controls');
+            if(!existingControls){
+              const controls = document.createElement('div');
+              controls.className='crop-controls';
+              controls.innerHTML=`<button class="btn ghost" id="zoomOutBtn" type="button">➖</button><span class="zoom-info">100%</span><button class="btn ghost" id="zoomInBtn" type="button">➕</button><button class="btn ghost" id="resetCropBtn" type="button">↻ Сброс</button>`;
+              preview.parentElement.insertBefore(controls, preview);
+              controls.querySelector('#zoomInBtn').addEventListener('click',()=>{try{cropper.zoom(1.2);}catch(e){}});
+              controls.querySelector('#zoomOutBtn').addEventListener('click',()=>{try{cropper.zoom(0.8);}catch(e){}});
+              controls.querySelector('#resetCropBtn').addEventListener('click',()=>{try{cropper.reset();}catch(e){}});
+            }
+            if(hint) hint.textContent='🖱 Фото целиком • колесо — приблизить';
+          }else{
+            preview.innerHTML = escapeHtml(((nameInput?.value||'?')[0]||'?').toUpperCase());
+            preview.classList.remove('has-img');
+            const c = colorInput?.value || '#ff6faf';
+            preview.style.background=`linear-gradient(135deg,${c},${c})`;
+            cropper = null;
+            currentAvatarTransform = {x:0,y:0,scale:1};
+            const existingControls = preview.parentElement.querySelector('.crop-controls');
+            if(existingControls) existingControls.remove();
+            if(hint) hint.textContent='Аватарки нет — будет градиент с буквой';
+          }
+        }catch(e){}
+      }
+      if(nameInput) nameInput.addEventListener('input', ()=>{
+        try{
+          if(preview && !preview.classList.contains('has-img')){
+            preview.textContent = ((nameInput.value||'?')[0]||'?').toUpperCase();
+          }
+        }catch(e){}
+      });
+      if(colorInput) colorInput.addEventListener('input', ()=>{
+        try{
+          if(preview && !preview.classList.contains('has-img')){
+            const c = colorInput.value || '#ff6faf';
+            preview.style.background=`linear-gradient(135deg,${c},${c})`;
+          }
+        }catch(e){}
+      });
+      if(fileInput){
+        fileInput.addEventListener('change', async e=>{
+          try{
+            const file = e.target.files[0];
+            if(!file) return;
+            if(!file.type.startsWith('image/')){ toast('Выбери файл-картинку'); return; }
+            if(loading)loading.classList.add('show');
+            if(hint)hint.textContent = '⏳ Обрабатываю и загружаю на ImgBB...';
+            const result = await compressAndUpload(file, 400, 0.6);
+            setAvatarUrl(result.url);
+            const where = result.inCloud ? '🌐 ImgBB' : 'локально';
+            toast(`Аватарка готова (${result.sizeKB} KB, ${where})`);
+          }catch(err){
+            toast('Ошибка: '+err.message);
+            if(hint)hint.textContent = '❌ '+err.message;
+          }finally{
+            if(loading)loading.classList.remove('show');
+          }
+        });
+      }
+      if(clearBtn){
+        clearBtn.addEventListener('click', ()=>{
+          try{
+            if(fileInput) fileInput.value = '';
+            setAvatarUrl('');
+          }catch(e){}
+        });
+      }
+    }
+    if(tab==='gal'){
+      const fileInput = $('#galFile');
+      const preview = $('#galPreview');
+      const loading = $('#galLoading');
+      const hint = $('#galHint');
+      const clearBtn = $('#clearGalBtn');
+      const urlField = $('#adminContent [data-field="url"]');
+      const rotateBtn = $('#galRotateBtn');
+      function refreshGalFit(){
+        try{
+          const inner = preview.querySelector('.up-inner');
+          if(!inner || !lastGalUrl) return;
+          probe(lastGalUrl,(w,h)=>{
+            try{
+              const swapped = currentRotate%180!==0;
+              const r = swapped ? h/w : w/h;
+              preview.style.aspectRatio = String(r);
+              if(swapped){
+                inner.style.position='absolute';
+                inner.style.left='50%'; inner.style.top='50%';
+                inner.style.width=(100/r)+'%';
+                inner.style.height=(r*100)+'%';
+                inner.style.backgroundSize='100% 100%';
+              }else{
+                inner.style.position='';
+                inner.style.left=''; inner.style.top='';
+                inner.style.width='100%'; inner.style.height='100%';
+                inner.style.backgroundSize='cover';
+              }
+              const st = galCropper ? galCropper.getState() : {x:0,y:0,scale:1};
+              galCropper = setupAvatarCropper(preview, inner, st, swapped?'translate(-50%,-50%) ':'');
+              galCropper.setRotate(currentRotate);
+            }catch(e){}
+          });
+        }catch(e){}
+      }
+      const inner0 = preview ? preview.querySelector('.up-inner') : null;
+      if(inner0){
+        galCropper = setupAvatarCropper(preview, inner0, item.galTransform || {x:0,y:0,scale:1});
+        refreshGalFit();
+      }
+      const gZoomIn=$('#galZoomInBtn'), gZoomOut=$('#galZoomOutBtn'), gReset=$('#galResetCropBtn');
+      if(gZoomIn) gZoomIn.addEventListener('click',()=>{try{galCropper&&galCropper.zoom(1.2);}catch(e){}});
+      if(gZoomOut) gZoomOut.addEventListener('click',()=>{try{galCropper&&galCropper.zoom(0.8);}catch(e){}});
+      if(gReset) gReset.addEventListener('click',()=>{try{galCropper&&galCropper.reset();}catch(e){}});
+      function doRotate(){
+        try{
+          currentRotate = (currentRotate + 90) % 360;
+          const rd=$('#rotateDeg'); if(rd) rd.textContent = currentRotate+'°';
+          preview.dataset.rotate = currentRotate;
+          refreshGalFit();
+        }catch(e){}
+      }
+      if(rotateBtn) rotateBtn.addEventListener('click', doRotate);
+      function addGalCropControls(){
+        try{
+          const existingControls = preview.parentElement.querySelector('.crop-controls');
+          if(!existingControls){
+            const controls = document.createElement('div');
+            controls.className='crop-controls';
+            controls.innerHTML=`<button class="btn ghost" id="galZoomOutBtn" type="button">➖</button><span class="zoom-info">100%</span><button class="btn ghost" id="galZoomInBtn" type="button">➕</button><button class="btn ghost" id="galResetCropBtn" type="button">↻ Сброс</button><button class="btn solid" id="galRotateBtn" type="button" style="margin-left:6px">↻ Поворот</button>`;
+            preview.parentElement.insertBefore(controls, preview);
+            controls.querySelector('#galZoomInBtn').addEventListener('click',()=>{try{galCropper&&galCropper.zoom(1.2);}catch(e){}});
+            controls.querySelector('#galZoomOutBtn').addEventListener('click',()=>{try{galCropper&&galCropper.zoom(0.8);}catch(e){}});
+            controls.querySelector('#galResetCropBtn').addEventListener('click',()=>{try{galCropper&&galCropper.reset();}catch(e){}});
+            controls.querySelector('#galRotateBtn').addEventListener('click', doRotate);
+          }
+          const existingRotInfo = preview.parentElement.querySelector('.rotate-info');
+          if(!existingRotInfo){
+            const r=document.createElement('div');
+            r.className='rotate-info';
+            r.innerHTML=`Поворот: <b id="rotateDeg">${currentRotate}°</b>`;
+            preview.parentElement.insertBefore(r, preview.parentElement.querySelector('.up-hint'));
+          }
+        }catch(e){}
+      }
+      function setGalUrl(url){
+        try{
+          if(!preview)return;
+          lastGalUrl = url || '';
+          if(url){
+            preview.innerHTML=`<div class="up-inner" style="background-image:url('${url}');transform:translate(0,0) scale(1) rotate(${currentRotate}deg)"></div>`;
+            preview.classList.add('has-img');
+            preview.style.background='';
+            refreshGalFit();
+            addGalCropControls();
+            if(hint) hint.textContent='🖱 Рамка подстроится под фото • колесо — зум';
+          }else{
+            preview.innerHTML='📸';
+            preview.classList.remove('has-img');
+            preview.style.background=`linear-gradient(135deg,var(--accent),var(--accent2))`;
+            preview.style.aspectRatio='';
+            galCropper=null;
+            const existingControls = preview.parentElement.querySelector('.crop-controls');
+            if(existingControls) existingControls.remove();
+            const existingRot = preview.parentElement.querySelector('.rotate-info');
+            if(existingRot) existingRot.remove();
+            if(hint) hint.textContent='Фото не загружено';
+          }
+        }catch(e){}
+      }
+      if(urlField){
+        urlField.addEventListener('change', ()=>{
+          try{
+            const v=(urlField.value||'').trim();
+            if(v) setGalUrl(v);
+          }catch(e){}
+        });
+      }
+      if(fileInput){
+        fileInput.addEventListener('change', async e=>{
+          try{
+            const file = e.target.files[0];
+            if(!file) return;
+            if(!file.type.startsWith('image/')){ toast('Выбери файл-картинку'); return; }
+            if(loading)loading.classList.add('show');
+            if(hint)hint.textContent = '⏳ Обрабатываю и загружаю на ImgBB...';
+            const result = await compressAndUpload(file, 800, 0.6);
+            setGalUrl(result.url);
+            if(urlField) urlField.value = result.url;
+            const where = result.inCloud ? '🌐 ImgBB' : 'локально';
+            toast(`Фото готово (${result.sizeKB} KB, ${where})`);
+          }catch(err){
+            toast('Ошибка: '+err.message);
+            if(hint)hint.textContent = '❌ '+err.message;
+          }finally{
+            if(loading)loading.classList.remove('show');
+          }
+        });
+      }
+      if(clearBtn){
+        clearBtn.addEventListener('click', ()=>{
+          try{
+            if(fileInput) fileInput.value = '';
+            if(urlField) urlField.value = '';
+            setGalUrl('');
+          }catch(e){}
+        });
+      }
+    }
+    const saveBtn=$('#saveItem');
+    if(saveBtn){
+      saveBtn.addEventListener('click',async ()=>{
+        try{
+          const newObj={};
+          fields.forEach(f=>{
+            const el=$('#adminContent [data-field="'+f.k+'"]');
+            if(!el){ newObj[f.k]=''; return; }
+            newObj[f.k] = el.value;
+          });
+          if(i<0){ newObj._id = newId(); }
+          else{
+            const existing = cur()[tab][i];
+            newObj._id = existing?._id || newId();
+          }
+          if(tab==='team'){
+            const preview = $('#avatarPreview');
+            const inner = preview?.querySelector('.up-inner');
+            if(preview && preview.classList.contains('has-img')){
+              if(cropper) newObj.avatarTransform = cropper.getState();
+              const url = extractUrlFromInner(inner);
+              if(url) newObj.avatar = url;
+            } else {
+              delete newObj.avatarTransform;
+              if(!newObj.avatar) newObj.avatar='';
+            }
+          }
+          if(tab==='gal'){
+            const preview = $('#galPreview');
+            const inner = preview?.querySelector('.up-inner');
+            newObj.rotate = (parseInt(preview?.dataset.rotate||0,10) || 0) % 360;
+            if(preview && preview.classList.contains('has-img')){
+              if(galGropper) newObj.galTransform = galGropper.getState();
+              const url = extractUrlFromInner(inner) || lastGalUrl;
+              if(url) newObj.url = url;
+            } else {
+              delete newObj.galTransform;
+            }
+          }
+          if(tab==='gal' && !newObj.url && !newObj.caption){
+            toast('Добавь хотя бы фото или подпись');
+            return;
+          }
+          if(tab==='gal' && i<0){
+            const items = cur().gal || [];
+            if(items.length>=MAX_GAL){ toast(`Максимум ${MAX_GAL} фото в альбоме`); return; }
+          }
+          if(i<0)cur()[tab].push(newObj); else cur()[tab][i]=newObj;
+          await saveData(); renderListEditor(tab); renderAll();
+        }catch(err){
+          dlog('Save error: '+err.message,'err');
+          toast('Ошибка сохранения: '+err.message);
+        }
+      });
+    }
+  }catch(err){
+    dlog('editItem error: '+err.message,'err');
+    try{ toast('Ошибка: '+err.message); }catch(_){}
+  }
+};
+
+window.showTab=showTab;
+
+function avatarUrl(member){
+  try{
+    if(member.avatar){
+      return `https://cdn.discordapp.com/avatars/${member.id}/${member.avatar}.${member.avatar.startsWith('a_')?'gif':'png'}?size=256`;
+    }
+    const defIdx = member.discriminator && member.discriminator!=='0'
+      ? parseInt(member.discriminator)%5
+      : Number((BigInt(member.id)>>22)%6n);
+    return `https://cdn.discordapp.com/embed/avatars/${defIdx}.png`;
+  }catch(e){
+    return `https://cdn.discordapp.com/embed/avatars/0.png`;
+  }
+}
+
+function renderImportTab(){
+  try{
+    const box=$('#adminContent');
+    const serverId = siteData?.serverId || '';
+    let html = `
+      <div class="import-info">
+        📖 <b>Как это работает:</b><br>
+        1. В настройках Discord-сервера включи <b>«Виджет сервера»</b><br>
+        2. Скопируй <b>Server ID</b><br>
+        3. Вставь ID ниже и жми <b>«📡 Загрузить участников»</b>
+      </div>
+      <div class="import-header">
+        <input type="text" id="serverIdInput" value="${escapeHtml(serverId)}" placeholder="Server ID" style="font-size:14px">
+        <button class="btn solid" id="loadMembersBtn" type="button">📡 Загрузить участников</button>
+        <button class="btn ghost" id="saveServerIdBtn" type="button" title="Сохранить ID">💾</button>
+      </div>
+      <div id="importStatus"></div>
+      <div id="importList"></div>`;
+    box.innerHTML=html;
+    $('#saveServerIdBtn').addEventListener('click',async ()=>{
+      try{
+        const val=$('#serverIdInput').value.trim();
+        siteData.serverId=val;
+        await saveData();
+        toast('Server ID сохранён ✓');
+      }catch(e){ toast('Ошибка: '+e.message); }
+    });
+    $('#loadMembersBtn').addEventListener('click',()=>{try{loadMembersFromDiscord();}catch(e){toast('Ошибка: '+e.message);}});
+    $('#serverIdInput').addEventListener('keydown',e=>{
+      if(e.key==='Enter'){try{loadMembersFromDiscord();}catch(err){}}
+    });
+    if(importedMembers.length) renderImportedMemberList();
+  }catch(e){
+    dlog('renderImportTab error: '+e.message,'err');
+  }
+}
+
+async function loadMembersFromDiscord(){
+  try{
+    const id=$('#serverIdInput').value.trim();
+    if(!id){toast('Введи Server ID');return;}
+    if(!/^\d{15,25}$/.test(id)){toast('Server ID должен быть 15-25 цифр');return;}
+    siteData.serverId=id;
+    await saveData();
+    const statusEl=$('#importStatus');
+    statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px">⏳ Загружаю участников с сервера <code>${escapeHtml(id)}</code>...</div>`;
+    const url=`https://discord.com/api/v10/guilds/${id}/widget.json`;
+    const res=await fetch(url);
+    if(!res.ok){
+      if(res.status===404) throw new Error('Виджет не включён или Server ID неверный.');
+      if(res.status===403) throw new Error('Виджет отключён.');
+      throw new Error(`Ошибка Discord: ${res.status}`);
+    }
+    const data=await res.json();
+    if(!data.members || !data.members.length){
+      statusEl.innerHTML=`<div class="setup-note" style="margin-top:12px;background:color-mix(in srgb,#ffcc00 15%,transparent);color:#ffcc00">⚠️ Сейчас никто не онлайн.</div>`;
+      importedMembers=[];
+      $('#importList').innerHTML='';
+      return;
+    }
+    importedMembers=data.members.map(m=>({
+      id:m.id,
+      username:m.username || `user_${m.id}`,
+      globalName: m.username,
+      discriminator:m.discriminator || '0',
+      avatar:m.avatar || null,
+      avatarUrl:avatarUrl(m),
+      status:m.status || 'online',
+      nick:null
+    }));
+    renderImportedMemberList();
+    toast(`Загружено ${importedMembers.length} участников ✓`);
+  }catch(err){
+    dlog('Discord fetch error: '+err.message,'err');
+    try{
+      $('#importStatus').innerHTML=`<div class="setup-note" style="margin-top:12px;background:color-mix(in srgb,#ff6b6b 15%,transparent);color:#ff6b6b">❌ ${escapeHtml(err.message)}</div>`;
+      $('#importList').innerHTML='';
+    }catch(_){}
+  }
+}
+
+function isMemberAddedInTheme(memberId,targetTheme){
+  try{
+    return (siteData?.[targetTheme]?.team||[]).some(t=>t._discordId===memberId);
+  }catch(e){ return false; }
+}
+
+function renderImportedMemberList(){
+  try{
+    const statusEl=$('#importStatus');
+    statusEl.innerHTML=`
+      <div class="mem-filter">
+        <input type="text" id="memFilter" placeholder="🔍 Поиск по нику..." value="${escapeHtml(importFilter)}">
+        <span class="cnt">Найдено: <b id="memCount">${importedMembers.length}</b> 📡</span>
+      </div>`;
+    $('#memFilter').addEventListener('input',e=>{
+      importFilter=e.target.value.toLowerCase().trim();
+      renderImportCards();
+    });
+    renderImportCards();
+  }catch(e){ dlog('renderImportedMemberList error: '+e.message,'err'); }
+}
+
+function renderImportCards(){
+  try{
+    const listEl=$('#importList');
+    const filter=importFilter;
+    const filtered = filter
+      ? importedMembers.filter(m=>m.username.toLowerCase().includes(filter) || (m.globalName||'').toLowerCase().includes(filter))
+      : importedMembers;
+    const cntEl=$('#memCount');
+    if(cntEl) cntEl.textContent=filtered.length;
+    if(!filtered.length){ listEl.innerHTML=`<div class="admin-list-empty">Ничего не найдено</div>`; return; }
+    let html='<div class="member-grid">';
+    filtered.forEach(m=>{
+      const inF = isMemberAddedInTheme(m.id,'f');
+      const inM = isMemberAddedInTheme(m.id,'m');
+      const addedClass = (inF||inM) ? 'added' : '';
+      const displayName = m.globalName || m.username;
+      html+=`
+        <div class="mem-card ${addedClass}" data-id="${m.id}">
+          <div class="mem-top">
+            <div class="mem-avatar" style="background-image:url('${escapeHtml(m.avatarUrl)}')"></div>
+            <div class="mem-info">
+              <div class="mem-name">${escapeHtml(displayName)}</div>
+              <div class="mem-username">${m.discriminator&&m.discriminator!=='0'?'#'+m.discriminator:'@'+m.username}</div>
+              <span class="mem-status ${m.status}"><i></i>${escapeHtml(m.status)}</span>
+            </div>
+          </div>
+          <div class="mem-actions">
+            <button class="btn f-btn" ${inF?'disabled':''} onclick="window.addImportedToTeam('${m.id}','f')">🌸 Женская ${inF?'✓':''}</button>
+            <button class="btn m-btn" ${inM?'disabled':''} onclick="window.addImportedToTeam('${m.id}','m')">⚡ Мужская ${inM?'✓':''}</button>
+          </div>
+        </div>`;
+    });
+    html+='</div>';
+    listEl.innerHTML=html;
+  }catch(e){ dlog('renderImportCards error: '+e.message,'err'); }
+}
+
+window.addImportedToTeam=async function(memberId,targetTheme){
+  try{
+    const m = importedMembers.find(x=>x.id===memberId);
+    if(!m){toast('Участник не найден');return;}
+    if(isMemberAddedInTheme(memberId,targetTheme)){ toast('Уже добавлен'); return; }
+    const colors = targetTheme==='f'
+      ? ['#ff5fa2','#c49cff','#ff8fc8','#b685f0','#ff6faf']
+      : ['#37e6ff','#ff9f45','#c6ff4a','#ffcc00','#6fdab8'];
+    const randColor = colors[Math.floor(Math.random()*colors.length)];
+    const sticker = targetTheme==='f'
+      ? ['🌸','💗','🎀','✨','🦋'][Math.floor(Math.random()*5)]
+      : ['⚡','','🎖️','',''][Math.floor(Math.random()*5)];
+    const role = targetTheme==='f' ? '🌸 Furiebi' : '⚡ Furiebi';
+    const displayName = m.globalName || m.username;
+    const newItem = {
+      _id: newId(),
+      _discordId: memberId,
+      name: displayName,
+      discord: m.discriminator&&m.discriminator!=='0' ? m.username+'#'+m.discriminator : m.username,
+      avatar: m.avatarUrl,
+      avatarTransform: {x:0,y:0,scale:1},
+      status: m.status==='online'?'в сети':m.status==='idle'?'не активен':m.status==='dnd'?'не беспокоить':'офлайн',
+      role: role,
+      quote: '«Напиши цитату через кнопку редактирования»',
+      sticker: sticker,
+      color: randColor
+    };
+    siteData[targetTheme].team.push(newItem);
+    await saveData();
+    renderAll();
+    renderImportCards();
+    toast(`${displayName} добавлен ✓`);
+    const idx = siteData[targetTheme].team.findIndex(t=>t._discordId===memberId);
+    if(idx>=0){
+      theme = targetTheme;
+      document.body.dataset.theme = targetTheme;
+      localStorage.setItem('theme',targetTheme);
+      swapTexts(targetTheme,false);
+      editItem('team',idx);
+    }
+  }catch(err){
+    dlog('addImportedToTeam error: '+err.message,'err');
+    try{ toast('Ошибка: '+err.message); }catch(_){}
+  }
+};
+
+window.exportData=function(){
+  try{
+    const blob=new Blob([JSON.stringify(siteData,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download='site-data-'+Date.now()+'.json'; a.click();
+    URL.revokeObjectURL(url); toast('Экспортировано 📥');
+  }catch(e){ toast('Ошибка: '+e.message); }
+};
+
+window.importData=async function(e){
+  try{
+    const file=e.target.files[0]; if(!file)return;
+    const r=new FileReader();
+    r.onload=async ev=>{
+      try{
+        const data=JSON.parse(ev.target.result);
+        if(!data.f||!data.m)throw new Error('bad format');
+        siteData=data; migrateData(); dedupeAll();
+        await saveData(); renderAll(); renderPoll(); showTab(currentTab);
+        toast('Импортировано ✓');
+      }catch(err){ toast('Ошибка: '+err.message); }
+    };
+    r.readAsText(file); e.target.value='';
+  }catch(err){ toast('Ошибка: '+err.message); }
+};
+
+window.resetData=async function(){
+  try{
+    if(!confirm('Сбросить ЛОКАЛЬНЫЕ данные?'))return;
+    siteData=JSON.parse(JSON.stringify(DEFAULT_DATA)); migrateData(); dedupeAll();
+    await saveData(); renderAll(); renderPoll(); showTab(currentTab);
+    toast('Сброшено');
+  }catch(e){ toast('Ошибка: '+e.message); }
+};
+
+window.resetFirebase=async function(){
+  try{
+    if(!useFirebase){ toast('Firebase не активен'); return; }
+    if(!confirm('Очистить Firebase для всех?'))return;
+    _savingUntil = Date.now() + SAVE_COOLDOWN;
+    await db.collection('site').doc('main').set({data:JSON.parse(JSON.stringify(DEFAULT_DATA)),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    siteData=JSON.parse(JSON.stringify(DEFAULT_DATA));
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(siteData));
+    migrateData(); dedupeAll();
+    renderAll(); renderPoll(); showTab(currentTab);
+    toast('Firebase очищен 🔥');
+  }catch(e){ toast('Ошибка: '+e.message); }
+};
+
+(async ()=>{
+  try{
+    dlog('Старт. theme='+theme);
+    await loadData();
+    logVisit();
+    swapTexts(theme,false);
+    renderMarquee(theme);
+    renderPoll();
+    renderAll();
+    renderPoll();
+    dlog('Старт завершён','ok');
+  }catch(e){
+    dlog('Init error: '+e.message,'err');
+    try{ toast('Ошибка инициализации: '+e.message); }catch(_){}
+  }
+})();
+
+window.addEventListener('beforeunload', ()=>{
+  try{
+    if(siteData) localStorage.setItem(STORAGE_KEY, JSON.stringify(siteData));
+  }catch(e){}
+});
+</script>
+</body>
+</html>
