@@ -1591,19 +1591,11 @@ function showTab(tab){
   }
 }
 
-// Самый точный бесплатный сервис — ipinfo.io (по независимому исследованию 2026).
-// Если есть бесплатный токен ipinfo.io (50k запросов/мес) — вставь его ниже.
-const IPINFO_TOKEN = '';
-
 async function getVisitorIP(){
-  const ipinfoUrl = IPINFO_TOKEN
-    ? 'https://ipinfo.io/json?token=' + IPINFO_TOKEN
-    : 'https://ipinfo.io/json';
   const sources=[
-    ipinfoUrl,
     'https://ipwho.is/',
-    'https://api.ipapi.co/json/',
-    'https://api.ipify.org?format=json'
+    'https://api.ipify.org?format=json',
+    'https://api.ipapi.co/json/'
   ];
   for(const url of sources){
     try{
@@ -1622,24 +1614,11 @@ async function getVisitorIP(){
 async function logVisit(){
   try{
     const info=await getVisitorIP();
-    const conn=info&&info.connection;
-    const tz=info&&info.timezone;
-    const tzStr=typeof tz==='object'?(tz.id||tz.utc||''):(tz||'');
-    const num=(v)=>(typeof v==='number'&&!isNaN(v))?v:null;
-    const locParts=info&&info.loc?String(info.loc).split(','):[];
     const visit={
       ip: (info&&info.ip)||'не определён',
-      country: (info&&(info.country||info.country_name))||'',
-      countryCode: (info&&(info.country_code||info.countryCode))||'',
-      region: (info&&(info.region||info.region_code))||'',
-      city: (info&&info.city)||'',
-      postal: (info&&info.postal)||'',
-      lat: num(info&&info.latitude) ?? (locParts[0]?num(parseFloat(locParts[0])):null),
-      lon: num(info&&info.longitude) ?? (locParts[1]?num(parseFloat(locParts[1])):null),
-      timezone: tzStr,
-      flag: (info&&info.flag&&info.flag.emoji)||'',
-      isp: (conn&&(conn.isp||conn.asn))||(info&&(info.asn||info.org))||'',
-      org: (conn&&conn.org)||(info&&info.org)||'',
+      city: (info&&(info.city||info.region))||'',
+      country: (info&&info.country)||'',
+      isp: (info&&(info.connection?.isp||info.org||info.connection?.asn))||'',
       time: new Date().toISOString(),
       timeLocal: new Date().toLocaleString('ru-RU'),
       userAgent: navigator.userAgent,
@@ -1691,20 +1670,15 @@ async function renderVisitsTab(){
       return;
     }
     let html=`<h3 style="font-size:16px;margin-bottom:8px">👁 Посещения сайта <span style="color:var(--muted);font-weight:800;font-size:12px">(последние ${rows.length})</span></h3>`;
-    html+=`<div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5">ℹ️ IP определяет местоположение приблизительно (город/район, часто — точка провайдера). Точный адрес дома по IP технически невозможен.</div>`;
     html+=`<div class="admin-list" style="max-height:420px">`;
     rows.forEach((v)=>{
-      const addr=[v.country,v.region,v.city].filter(Boolean).join(', ');
-      const coords=(v.lat!=null&&v.lon!=null)?`${v.lat}, ${v.lon}`:'';
-      const maps=coords?`https://www.google.com/maps?q=${encodeURIComponent(coords)}`:'';
+      const where=[v.city,v.country].filter(Boolean).join(', ');
       html+=`<div class="admin-list-item" style="flex-direction:column;align-items:flex-start;gap:4px">
         <div style="display:flex;justify-content:space-between;width:100%;gap:8px;flex-wrap:wrap">
           <b style="color:var(--accent);font-family:monospace">${escapeHtml(v.ip||'?')}</b>
           <span style="color:var(--muted)">${escapeHtml(v.timeLocal||v.time||'')}</span>
         </div>
-        ${addr?`<div style="font-size:12px;color:var(--ink);font-weight:800">${v.flag?escapeHtml(v.flag)+' ':''}📍 ${escapeHtml(addr)}${v.postal?' • '+escapeHtml(v.postal):''}</div>`:''}
-        ${(v.org||v.isp)?`<div style="font-size:11px;color:var(--muted)">🌐 ${escapeHtml(v.org||v.isp)}${v.isp&&v.org&&v.isp!==v.org?' • '+escapeHtml(v.isp):''}</div>`:''}
-        ${coords?`<div style="font-size:11px;color:var(--muted)">🧭 ${escapeHtml(coords)}${maps?` — <a href="${maps}" target="_blank" rel="noopener" style="color:var(--accent)">открыть на карте ↗</a>`:''}</div>`:''}
+        ${where?`<div style="font-size:11px;color:var(--muted)">📍 ${escapeHtml(where)}${v.isp?' • '+escapeHtml(v.isp):''}</div>`:''}
         <div style="font-size:11px;color:var(--muted);word-break:break-all">${escapeHtml(v.userAgent||'')}</div>
       </div>`;
     });
